@@ -1,0 +1,38 @@
+/* Design tokens, defined once. Values come from docs/design-mockups.html. */
+:root {
+  --bg: #fbfaf7;
+  --surface: #ffffff;
+  --fg: #1a1a18;
+  --body: #3d3c38;
+  --soft: #4a4944;
+  --muted: #6b6a64;
+  --rule: #e6e4de;
+  --line: #77746b;
+  --code-bg: #f3f1eb;
+  --hover: #b8330f;
+  --accent: #ff4f2b;
+  --tint: #ffe3dc;
+  color-scheme: light;
+
+  --font-serif: 'Newsreader Variable', Georgia, serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --measure: 720px;
+  --gutter: 20px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #151513;
+    --surface: #1e1e1b;
+    --fg: #f2f0ea;
+    --body: #d9d6ce;
+    --soft: #c4c1b8;
+    --muted: #a3a097;
+    --rule: #34332f;
+    --line: #77746b;
+    --code-bg: #1f1e1b;
+    --hover: #ff8466;
+    --tint: #4a2019;
+    color-scheme: dark;
+  }
+}
