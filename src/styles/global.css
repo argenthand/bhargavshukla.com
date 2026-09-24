@@ -129,3 +129,15 @@ h1 { margin: 0; font-size: 34px; line-height: 1.15; font-weight: 400; letter-spa
 .pagination ul { display: flex; gap: 4px; margin: 0; padding: 0; list-style: none; }
 .pagination a { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 0 8px; }
 .pagination a[aria-current='page'] { text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 5px; font-weight: 500; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 16px 24px; margin: 32px 0 0; font-family: var(--font-mono); font-size: 14px; }
+.controls[hidden] { display: none; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { color: var(--muted); font-size: 13px; }
+.field input, .field select { min-height: 44px; padding: 0 4px; border: 0; border-bottom: 1.5px solid var(--line); border-radius: 0; background: transparent; color: var(--fg); font: inherit; }
+.field input { min-width: 220px; }
+.field input:focus-visible, .field select:focus-visible { border-bottom-width: 2px; border-bottom-color: var(--fg); }
+.field select option { background: var(--surface); color: var(--fg); }
+#writing-results:focus { outline: none; }
+.clear-filters { min-height: 44px; padding: 0 16px; border: 1.5px solid var(--line); border-radius: 6px; background: transparent; color: var(--fg); font-family: var(--font-mono); font-size: 14px; cursor: pointer; }
+.clear-filters:hover { color: var(--hover); border-color: var(--hover); }

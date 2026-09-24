@@ -1,23 +1,23 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
-import WritingList from '../../../components/WritingList.astro';
+import WritingIndex from '../../../components/WritingIndex.astro';
 import { paginate } from '../../../content';
 import { getSiteContent } from '../../../content/site';
 
 // Page 1 lives at /writing; this route builds pages 2 and up.
 export async function getStaticPaths() {
-  const { posts, settings } = await getSiteContent();
+  const { posts, categories, settings } = await getSiteContent();
   const { pageCount } = paginate(posts, { page: 1, pageSize: settings.writingPageSize });
   return Array.from({ length: Math.max(0, pageCount - 1) }, (_, i) => {
     const page = i + 2;
-    return { params: { page: String(page) }, props: { list: paginate(posts, { page, pageSize: settings.writingPageSize }) } };
+    return { params: { page: String(page) }, props: { list: paginate(posts, { page, pageSize: settings.writingPageSize }), posts, categories, pageSize: settings.writingPageSize } };
   });
 }
 
-const { list } = Astro.props;
+const { list, posts, categories, pageSize } = Astro.props;
 ---
 
 <BaseLayout title={`Writing, page ${list.page} — Bhargav Shukla`} description="Every Post, newest first.">
   <h1>Writing</h1>
-  <WritingList list={list} />
+  <WritingIndex list={list} posts={posts} categories={categories} pageSize={pageSize} />
 </BaseLayout>

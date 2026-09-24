@@ -1,5 +1,8 @@
 import { z } from 'astro/zod';
 
+// List logic has no dependencies so the browser can import it directly and run the same code as the build.
+export * from './list';
+
 /** A raw entry as a loader hands it over: id (file name), parsed data and body text. */
 export interface RawEntry {
   id: string;
@@ -182,40 +185,6 @@ export function loadContent(input: ContentInput, options: LoadOptions): Content 
   // Newest first; slug breaks ties so pages never shuffle between builds.
   visible.sort((a, b) => b.publishDate.localeCompare(a.publishDate) || a.slug.localeCompare(b.slug));
   return { settings, categories, posts: visible };
-}
-
-export interface Page<T> {
-  items: T[];
-  /** 1-based, clamped into range. */
-  page: number;
-  /** At least 1, even for an empty list. */
-  pageCount: number;
-  pageSize: number;
-  total: number;
-  /** 1-based position of the first and last item on this page; 0 when the list is empty. */
-  firstItem: number;
-  lastItem: number;
-}
-
-/** Slice a list into one page. An out-of-range page is clamped, so a stale URL still lands somewhere valid. */
-export function paginate<T>(items: readonly T[], options: { page: number; pageSize: number }): Page<T> {
-  const { pageSize } = options;
-  if (!Number.isInteger(pageSize) || pageSize < 1) throw new Error(`pageSize must be a whole number of at least 1, got ${pageSize}`);
-
-  const total = items.length;
-  const pageCount = Math.max(1, Math.ceil(total / pageSize));
-  const page = Math.min(Math.max(1, Math.trunc(options.page) || 1), pageCount);
-  const start = (page - 1) * pageSize;
-  const slice = items.slice(start, start + pageSize);
-  return {
-    items: slice,
-    page,
-    pageCount,
-    pageSize,
-    total,
-    firstItem: total === 0 ? 0 : start + 1,
-    lastItem: total === 0 ? 0 : start + slice.length,
-  };
 }
 
 /** The calendar date at `now` in America/Toronto, as YYYY-MM-DD. */
