@@ -24,9 +24,19 @@ export const categorySchema = z.strictObject({
   name: z.string().min(1),
 });
 
+export const settingsSchema = z.strictObject({
+  writingPageSize: z.number().int().min(1).default(10),
+});
+
+// "page" is reserved: the Writing list's numbered pages live at /writing/page/<n>.
+const RESERVED_SLUGS = ['page'];
+
 export const postSchema = z.strictObject({
   title: z.string().min(1),
-  slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'must be lowercase words joined by hyphens'),
+  slug: z
+    .string()
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'must be lowercase words joined by hyphens')
+    .refine((slug) => !RESERVED_SLUGS.includes(slug), { message: 'is reserved and cannot be used as a slug' }),
   summary: z.string().min(1),
   category: z.string().min(1),
   publishDate: calendarDate,
@@ -38,6 +48,7 @@ export const postSchema = z.strictObject({
   bookAuthor: z.string().min(1).nullable().default(null),
 });
 
+const SETTINGS_ID = 'site';
 const BOOKS_CATEGORY_ID = 'books';
 const WORDS_PER_MINUTE = 200;
 
@@ -88,12 +99,19 @@ export interface Post {
   body: string;
 }
 
+export interface Settings {
+  writingPageSize: number;
+}
+
 export interface ContentInput {
   categories: RawEntry[];
   posts: RawEntry[];
+  /** Site settings files; the only one allowed is "site", and defaults apply when it is absent. */
+  settings?: RawEntry[];
 }
 
 export interface Content {
+  settings: Settings;
   categories: Category[];
   /** Newest first. */
   posts: Post[];
@@ -111,6 +129,13 @@ export interface LoadOptions {
  * Every entry is validated, visible or not. Throws an error naming the failing entry.
  */
 export function loadContent(input: ContentInput, options: LoadOptions): Content {
+  for (const entry of input.settings ?? []) {
+    if (entry.id !== SETTINGS_ID) fail('Settings', entry.id, `unknown settings file; the only one allowed is "${SETTINGS_ID}"`);
+  }
+  const siteSettings = input.settings?.find((entry) => entry.id === SETTINGS_ID);
+  const settings = siteSettings
+    ? parse('Settings', siteSettings.id, settingsSchema, siteSettings.data)
+    : settingsSchema.parse({});
   const categories = input.categories.map((entry) => {
     const data = parse('Category', entry.id, categorySchema, entry.data);
     return { id: entry.id, name: data.name };
@@ -154,8 +179,43 @@ export function loadContent(input: ContentInput, options: LoadOptions): Content 
   const visible = posts.filter(
     (post) => post.publishDate <= today && (!post.draft || options.includeDrafts === true),
   );
-  visible.sort((a, b) => b.publishDate.localeCompare(a.publishDate));
-  return { categories, posts: visible };
+  // Newest first; slug breaks ties so pages never shuffle between builds.
+  visible.sort((a, b) => b.publishDate.localeCompare(a.publishDate) || a.slug.localeCompare(b.slug));
+  return { settings, categories, posts: visible };
+}
+
+export interface Page<T> {
+  items: T[];
+  /** 1-based, clamped into range. */
+  page: number;
+  /** At least 1, even for an empty list. */
+  pageCount: number;
+  pageSize: number;
+  total: number;
+  /** 1-based position of the first and last item on this page; 0 when the list is empty. */
+  firstItem: number;
+  lastItem: number;
+}
+
+/** Slice a list into one page. An out-of-range page is clamped, so a stale URL still lands somewhere valid. */
+export function paginate<T>(items: readonly T[], options: { page: number; pageSize: number }): Page<T> {
+  const { pageSize } = options;
+  if (!Number.isInteger(pageSize) || pageSize < 1) throw new Error(`pageSize must be a whole number of at least 1, got ${pageSize}`);
+
+  const total = items.length;
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const page = Math.min(Math.max(1, Math.trunc(options.page) || 1), pageCount);
+  const start = (page - 1) * pageSize;
+  const slice = items.slice(start, start + pageSize);
+  return {
+    items: slice,
+    page,
+    pageCount,
+    pageSize,
+    total,
+    firstItem: total === 0 ? 0 : start + 1,
+    lastItem: total === 0 ? 0 : start + slice.length,
+  };
 }
 
 /** The calendar date at `now` in America/Toronto, as YYYY-MM-DD. */

@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
-const pages = ['/', '/writing/sample-post/', '/writing/sample-book-review/'];
+const pages = ['/', '/writing/', '/writing/page/2/', '/writing/sample-post/', '/writing/sample-book-review/'];
 
 test('the skip link is the first tab stop and moves focus to the main content', async ({ page }) => {
   await page.goto('/');
@@ -77,6 +77,49 @@ test('code blocks are highlighted and the copy button copies the code and confir
   await expect(button).toHaveText('Copied');
   await expect(page.getByRole('status')).toHaveText('Code copied to clipboard');
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain('export function greet');
+});
+
+test.describe('Writing list', () => {
+  // Sample settings set a page size of 2 and there are 3 published Posts, so there are 2 pages.
+  test.use({ javaScriptEnabled: false });
+
+  test('lists published Posts newest first with date, title and Category, and a range indicator', async ({ page }) => {
+    await page.goto('/writing');
+    const rows = page.getByRole('listitem').filter({ has: page.getByRole('link', { name: /sample/i }) });
+    await expect(page.getByRole('link', { name: 'A sample Post about leading a team' })).toBeVisible();
+    const titles = await page.locator('.post-list .post-title').allTextContents();
+    expect(titles).toEqual(['A sample Post about leading a team', 'A sample Book Review']);
+    await expect(rows.first()).toContainText('September 1, 2026');
+    await expect(rows.first()).toContainText('Leadership');
+    await expect(page.getByText('1–2 of 3')).toBeVisible();
+  });
+
+  test('moves between pages with Next, Previous and page numbers, without JavaScript', async ({ page }) => {
+    await page.goto('/writing');
+    const pagination = page.getByRole('navigation', { name: 'Pagination' });
+    await expect(pagination.getByRole('link', { name: 'Previous' })).toHaveCount(0);
+    await expect(pagination.getByRole('link', { name: 'Page 1' })).toHaveAttribute('aria-current', 'page');
+
+    await pagination.getByRole('link', { name: 'Next' }).click();
+    await expect(page).toHaveURL(/\/writing\/page\/2\/?$/);
+    await expect(page.getByText('3 of 3')).toBeVisible();
+    await expect(page.locator('.post-list .post-title')).toHaveText(['A sample older Post about engineering']);
+    await expect(pagination.getByRole('link', { name: 'Next' })).toHaveCount(0);
+    await expect(pagination.getByRole('link', { name: 'Page 2' })).toHaveAttribute('aria-current', 'page');
+
+    await pagination.getByRole('link', { name: 'Previous' }).click();
+    await expect(page).toHaveURL(/\/writing\/?$/);
+    await pagination.getByRole('link', { name: 'Page 2' }).click();
+    await expect(page).toHaveURL(/\/writing\/page\/2\/?$/);
+  });
+
+  test('links each row to its Post, and Drafts and Scheduled Posts never appear', async ({ page }) => {
+    await page.goto('/writing');
+    await page.getByRole('link', { name: 'A sample Book Review' }).click();
+    await expect(page).toHaveURL(/\/writing\/sample-book-review\/?$/);
+    await page.goto('/writing');
+    await expect(page.getByText(/sample Draft|Scheduled Post/)).toHaveCount(0);
+  });
 });
 
 test('Drafts and Scheduled Posts are not built, even a Draft with a past Publish Date', async ({ request }) => {
