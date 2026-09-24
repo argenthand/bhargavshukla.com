@@ -8,4 +8,6 @@ const base = process.env.CONTENT_PATH ?? './test-content';
 const categories = defineCollection({ loader: glob({ pattern: '*.json', base: `${base}/categories` }) });
 const posts = defineCollection({ loader: glob({ pattern: '*.md', base: `${base}/posts` }) });
 
-export const collections = { categories, posts };
+const settings = defineCollection({ loader: glob({ pattern: '*.json', base: `${base}/settings` }) });
+
+export const collections = { categories, posts, settings };

@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { categorySchema, loadContent as loadContentAt, postSchema, type ContentInput, type RawEntry } from './index';
+import {
+  categorySchema,
+  loadContent as loadContentAt,
+  paginate,
+  postSchema,
+  settingsSchema,
+  type ContentInput,
+  type RawEntry,
+} from './index';
 
 const now = new Date('2026-09-15T16:00:00Z'); // 12:00 in Toronto
 const loadContent = (input: ContentInput, options: { now?: Date; includeDrafts?: boolean } = {}) =>
@@ -51,6 +59,13 @@ describe('loadContent', () => {
     });
 
     expect(posts.map((p) => p.slug)).toEqual(['new', 'mid', 'old']);
+  });
+
+  it('orders Posts sharing a Publish Date by slug, so the order is stable', () => {
+    const slugs = (ids: string[]) =>
+      loadContent({ categories, posts: ids.map((id) => post(id, { publishDate: '2026-05-01' })) }).posts.map((p) => p.slug);
+    expect(slugs(['b', 'c', 'a'])).toEqual(['a', 'b', 'c']);
+    expect(slugs(['c', 'a', 'b'])).toEqual(['a', 'b', 'c']);
   });
 
   it('accepts a Publish Date parsed from unquoted YAML as a Date', () => {
@@ -267,10 +282,93 @@ describe('image alt text', () => {
   });
 });
 
+describe('site settings', () => {
+  it('defaults the Writing page size to 10 when no settings are given', () => {
+    expect(loadContent({ categories, posts: [] }).settings.writingPageSize).toBe(10);
+  });
+
+  it('reads the Writing page size from settings', () => {
+    const settings = [{ id: 'site', data: { writingPageSize: 5 } }];
+    expect(loadContent({ categories, posts: [], settings }).settings.writingPageSize).toBe(5);
+  });
+
+  it.each([0, -1, 2.5, '10'])('fails when the Writing page size is %j', (writingPageSize) => {
+    const settings = [{ id: 'site', data: { writingPageSize } }];
+    expect(() => loadContent({ categories, posts: [], settings })).toThrow(/Settings "site".*writingPageSize/s);
+  });
+
+  it('fails when a settings file is not named "site", instead of silently ignoring it', () => {
+    const settings = [{ id: 'settings', data: { writingPageSize: 5 } }];
+    expect(() => loadContent({ categories, posts: [], settings })).toThrow(/Settings "settings".*"site"/s);
+  });
+
+  it('reserves the slug "page" for the Writing list pages', () => {
+    expect(() => loadContent({ categories, posts: [post('p', { slug: 'page' })] })).toThrow(/Post "p".*slug/s);
+  });
+});
+
+describe('paginate', () => {
+  const items = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
+
+  it('handles an empty list as one empty page', () => {
+    expect(paginate([], { page: 1, pageSize: 10 })).toEqual({
+      items: [],
+      page: 1,
+      pageCount: 1,
+      pageSize: 10,
+      total: 0,
+      firstItem: 0,
+      lastItem: 0,
+    });
+  });
+
+  it('returns the first page with its range', () => {
+    expect(paginate(items(34), { page: 1, pageSize: 10 })).toMatchObject({
+      items: items(10),
+      page: 1,
+      pageCount: 4,
+      total: 34,
+      firstItem: 1,
+      lastItem: 10,
+    });
+  });
+
+  it('returns a short last page', () => {
+    expect(paginate(items(34), { page: 4, pageSize: 10 })).toMatchObject({
+      items: [31, 32, 33, 34],
+      page: 4,
+      firstItem: 31,
+      lastItem: 34,
+    });
+  });
+
+  it('has no extra empty page when the total is an exact multiple of the page size', () => {
+    const result = paginate(items(20), { page: 2, pageSize: 10 });
+    expect(result.pageCount).toBe(2);
+    expect(result.items).toEqual(items(20).slice(10));
+    expect(result.lastItem).toBe(20);
+  });
+
+  it('fits a list smaller than the page size on one page', () => {
+    expect(paginate(items(3), { page: 1, pageSize: 10 })).toMatchObject({ pageCount: 1, firstItem: 1, lastItem: 3 });
+  });
+
+  it('clamps an out-of-range page into range', () => {
+    expect(paginate(items(25), { page: 99, pageSize: 10 }).page).toBe(3);
+    expect(paginate(items(25), { page: 0, pageSize: 10 }).page).toBe(1);
+    expect(paginate(items(25), { page: -4, pageSize: 10 }).page).toBe(1);
+  });
+
+  it('rejects a page size below 1', () => {
+    expect(() => paginate(items(3), { page: 1, pageSize: 0 })).toThrow(/pageSize/);
+  });
+});
+
 describe('schema rule: every field is required with no default, or optional with a default', () => {
   it.each([
     ['Post', postSchema],
     ['Category', categorySchema],
+    ['Settings', settingsSchema],
   ])('holds for every field of %s', (_name, schema) => {
     for (const [field, rule] of Object.entries(schema.shape)) {
       const whenAbsent = rule.safeParse(undefined);

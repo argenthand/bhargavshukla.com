@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getSiteContent } from '../../content/site';
+import { formatDate } from '../../lib/format-date';
 
 export async function getStaticPaths() {
   const { posts, renderBody } = await getSiteContent();
@@ -15,8 +16,7 @@ export async function getStaticPaths() {
 const { post, Content } = Astro.props;
 
 const AUTHOR = 'Bhargav Shukla';
-const formatDate = (date: string) =>
-  new Date(`${date}T00:00:00Z`).toLocaleDateString('en-CA', { timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric' });
+
 ---
 
 <BaseLayout title={`${post.title} — Bhargav Shukla`} description={post.summary}>

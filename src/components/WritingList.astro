@@ -1,0 +1,67 @@
+---
+import type { Page, Post } from '../content';
+import { formatDate } from '../lib/format-date';
+
+interface Props {
+  list: Page<Post>;
+}
+
+const { list } = Astro.props;
+
+const pageUrl = (page: number) => (page === 1 ? '/writing' : `/writing/page/${page}`);
+const range = list.firstItem === list.lastItem ? `${list.firstItem}` : `${list.firstItem}–${list.lastItem}`;
+const pages = Array.from({ length: list.pageCount }, (_, i) => i + 1);
+---
+
+{
+  list.total === 0 ? (
+    <p>No posts yet.</p>
+  ) : (
+    <>
+      <p class="eyebrow">
+        {range} of {list.total}
+      </p>
+      <ol class="post-list">
+        {
+          list.items.map((post) => (
+            <li>
+              <time class="eyebrow" datetime={post.publishDate}>
+                {formatDate(post.publishDate)}
+              </time>
+              <a class="post-title" href={`/writing/${post.slug}`}>
+                {post.title}
+              </a>
+              <span class="eyebrow">{post.category.name}</span>
+            </li>
+          ))
+        }
+      </ol>
+      {
+        list.pageCount > 1 && (
+          <nav class="pagination" aria-label="Pagination">
+            {list.page > 1 && (
+              <a href={pageUrl(list.page - 1)} rel="prev">
+                ← Previous
+              </a>
+            )}
+            <ul>
+              {pages.map((n) => (
+                <li>
+                  <a href={pageUrl(n)} aria-current={n === list.page ? 'page' : undefined}>
+                    <span class="sr-only">Page </span>
+                    {n}
+                  </a>
+                </li>
+              ))}
+            </ul>
+            {list.page < list.pageCount && (
+              <a href={pageUrl(list.page + 1)} rel="next">
+                Next →
+              </a>
+            )}
+          </nav>
+        )
+      }
+    </>
+  )
+}
