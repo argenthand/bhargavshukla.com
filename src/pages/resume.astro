@@ -1,0 +1,113 @@
+---
+import QRCode from 'qrcode';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getSiteContent } from '../content/site';
+
+const { resume } = await getSiteContent();
+if (!resume) {
+  throw new Error('Resume content is missing: add resume/resume.yaml to the content.');
+}
+
+// The QR code points at the live page, so it is generated from the site's public address.
+const resumeUrl = new URL('/resume', Astro.site).href;
+const qrSvg = await QRCode.toString(resumeUrl, {
+  type: 'svg',
+  margin: 0,
+  errorCorrectionLevel: 'M',
+  color: { dark: '#000000', light: '#ffffff' },
+});
+
+// "https://github.com/sample/" -> "github.com/sample", so it also reads well on paper.
+const shown = (url: string) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+---
+
+<BaseLayout title={`Resume — ${resume.name}`} description={`${resume.name}, ${resume.headline}.`}>
+  <article class="resume">
+    <div class="resume-head">
+      <div class="resume-title">
+        <div>
+          <h1>{resume.name}<span class="accent" aria-hidden="true">.</span></h1>
+          <p class="resume-headline">{resume.headline}</p>
+        </div>
+        <!-- Shown by the script: without JavaScript there is nothing to print with. -->
+        <button type="button" class="print-button" hidden>Print or save as PDF</button>
+      </div>
+      <ul class="resume-contact">
+        <li>{resume.location}</li>
+        <li><a href={`mailto:${resume.email}`}>{resume.email}</a></li>
+        {resume.linkedin && <li><a href={resume.linkedin}>{shown(resume.linkedin)}</a></li>}
+        {resume.github && <li><a href={resume.github}>{shown(resume.github)}</a></li>}
+      </ul>
+      <p class="resume-summary">{resume.summary}</p>
+    </div>
+
+    <section aria-labelledby="h-experience" class="resume-section">
+      <h2 id="h-experience" class="section-label">Experience</h2>
+      <ol class="resume-rows">
+        {
+          resume.experience.map((job) => (
+            <li class="resume-row">
+              <p class="resume-dates">{job.dates}</p>
+              <div>
+                <div class="resume-line">
+                  <h3>{job.role}</h3>
+                  <p>{job.company}</p>
+                </div>
+                <p class="resume-detail">{job.detail}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <section aria-labelledby="h-skills" class="resume-section">
+      <h2 id="h-skills" class="section-label">Skills</h2>
+      <dl class="resume-rows resume-skills">
+        {
+          resume.skills.map((skill) => (
+            <div class="resume-row">
+              <dt class="resume-label">{skill.group}</dt>
+              <dd>{skill.items.join(', ')}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </section>
+
+    {
+      resume.education.length > 0 && (
+        <section aria-labelledby="h-education" class="resume-section">
+          <h2 id="h-education" class="section-label">Education</h2>
+          <ol class="resume-rows">
+            {resume.education.map((entry) => (
+              <li class="resume-row">
+                <p class="resume-dates">{entry.year}</p>
+                <div class="resume-line">
+                  <h3>{entry.degree}</h3>
+                  <p>{entry.school}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )
+    }
+
+    <!-- Print only: a way back to the live page, and a small surprise on paper. -->
+    <div class="print-only resume-print">
+      <div class="print-qr">
+        <div class="qr-code" role="img" aria-label={`QR code linking to ${resumeUrl}`} set:html={qrSvg} />
+        <p>
+          <strong>Scan for the latest version</strong><br />
+          {shown(resumeUrl)}
+        </p>
+      </div>
+      <p class="print-egg">{resume.printEasterEgg}</p>
+    </div>
+  </article>
+</BaseLayout>
+
+<script>
+  import '../lib/resume-client';
+</script>

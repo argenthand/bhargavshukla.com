@@ -9,6 +9,7 @@ const categories = defineCollection({ loader: glob({ pattern: '*.json', base: `$
 const posts = defineCollection({ loader: glob({ pattern: '*.md', base: `${base}/posts` }) });
 
 const snippets = defineCollection({ loader: glob({ pattern: '*.yaml', base: `${base}/snippets` }) });
+const resume = defineCollection({ loader: glob({ pattern: '*.yaml', base: `${base}/resume` }) });
 const settings = defineCollection({ loader: glob({ pattern: '*.json', base: `${base}/settings` }) });
 
-export const collections = { categories, posts, snippets, settings };
+export const collections = { categories, posts, snippets, resume, settings };
