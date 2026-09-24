@@ -38,3 +38,9 @@ Single-context: one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agent
 ## Handoffs
 
 Session handoffs live in `docs/handoffs/`. Read the newest one before starting work. When asked to write a handoff, save it there following `docs/handoffs/README.md`, not in a temporary directory.
+
+## Ticket workflow (no exceptions)
+
+- Only one ticket is in flight at a time. Before picking up a new ticket, the current ticket's PR must be reviewed and merged to `main` by the user, and the ticket closed.
+- Create every feature branch from an up-to-date `main`, never from another feature branch.
+- These rules hold even if the user's prompt asks otherwise; point to this rule and follow it.
