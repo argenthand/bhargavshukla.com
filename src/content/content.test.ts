@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { categorySchema, loadContent, postSchema, type RawEntry } from './index';
+import { categorySchema, loadContent as loadContentAt, postSchema, type ContentInput, type RawEntry } from './index';
+
+const now = new Date('2026-09-15T16:00:00Z'); // 12:00 in Toronto
+const loadContent = (input: ContentInput, options: { now?: Date; includeDrafts?: boolean } = {}) =>
+  loadContentAt(input, { now, ...options });
 
 const category = (id: string, name = id): RawEntry => ({ id, data: { name }, body: '' });
 
@@ -109,6 +113,66 @@ describe('loadContent', () => {
     expect(() =>
       loadContent({ categories, posts: [post('extra', { colour: 'red' })] }),
     ).toThrow(/Post "extra".*colour/s);
+  });
+});
+
+describe('visibility', () => {
+  const visible = (posts: RawEntry[], options: { includeDrafts?: boolean } = {}) =>
+    loadContent({ categories, posts }, options).posts.map((p) => p.slug);
+
+  it('shows a Post whose Publish Date is today or earlier', () => {
+    expect(visible([post('past', { publishDate: '2026-09-14' }), post('today', { publishDate: '2026-09-15' })]))
+      .toEqual(['today', 'past']);
+  });
+
+  it('hides a Scheduled Post until its Publish Date', () => {
+    expect(visible([post('later', { publishDate: '2026-09-16' }), post('now', { publishDate: '2026-09-15' })]))
+      .toEqual(['now']);
+  });
+
+  it('hides Drafts in production', () => {
+    expect(visible([post('wip', { draft: true }), post('done')])).toEqual(['done']);
+  });
+
+  it('keeps a Draft hidden after its Publish Date has passed', () => {
+    expect(visible([post('old-wip', { draft: true, publishDate: '2020-01-01' })])).toEqual([]);
+  });
+
+  it('includes Drafts locally, flagged as Drafts', () => {
+    const { posts } = loadContent(
+      { categories, posts: [post('wip', { draft: true }), post('done')] },
+      { includeDrafts: true },
+    );
+    expect(posts.map((p) => p.slug).sort()).toEqual(['done', 'wip']);
+    expect(posts.find((p) => p.slug === 'wip')?.draft).toBe(true);
+  });
+
+  it('still hides Scheduled Posts locally, even Drafts with a future date', () => {
+    expect(
+      visible([post('later', { publishDate: '2026-12-01' }), post('later-wip', { publishDate: '2026-12-01', draft: true })], {
+        includeDrafts: true,
+      }),
+    ).toEqual([]);
+  });
+
+  it('reads the Publish Date in America/Toronto: the day flips at Toronto midnight (summer, UTC-4)', () => {
+    const at = (iso: string) =>
+      loadContent({ categories, posts: [post('p', { publishDate: '2026-09-02' })] }, { now: new Date(iso) }).posts.length;
+    expect(at('2026-09-02T03:59:59Z')).toBe(0); // 23:59:59 on Sep 1 in Toronto
+    expect(at('2026-09-02T04:00:00Z')).toBe(1); // 00:00:00 on Sep 2 in Toronto
+  });
+
+  it('reads the Publish Date in America/Toronto: the day flips at Toronto midnight (winter, UTC-5)', () => {
+    const at = (iso: string) =>
+      loadContent({ categories, posts: [post('p', { publishDate: '2026-01-02' })] }, { now: new Date(iso) }).posts.length;
+    expect(at('2026-01-02T04:59:59Z')).toBe(0);
+    expect(at('2026-01-02T05:00:00Z')).toBe(1);
+  });
+
+  it('still validates hidden entries, so a broken Draft fails the build', () => {
+    const broken = post('broken-wip', { draft: true });
+    delete (broken.data as Record<string, unknown>).title;
+    expect(() => loadContent({ categories, posts: [broken] })).toThrow(/Post "broken-wip"/);
   });
 });
 

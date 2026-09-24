@@ -30,6 +30,11 @@ test('a Post renders at /writing/<slug> with its title and body', async ({ page 
   await expect(page.getByRole('heading', { level: 2, name: 'First section' })).toBeVisible();
 });
 
+test('Drafts and Scheduled Posts are not built, even a Draft with a past Publish Date', async ({ request }) => {
+  expect((await request.get('/writing/sample-draft/')).status()).toBe(404);
+  expect((await request.get('/writing/sample-scheduled/')).status()).toBe(404);
+});
+
 for (const path of pages) {
   test(`${path} has no WCAG 2.2 AA violations and no console errors`, async ({ page }) => {
     const errors: string[] = [];

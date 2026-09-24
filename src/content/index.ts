@@ -65,8 +65,18 @@ export interface Content {
   posts: Post[];
 }
 
-/** Validate raw entries against the schema and return typed, ordered content. Throws an error naming the failing entry. */
-export function loadContent(input: ContentInput): Content {
+export interface LoadOptions {
+  /** The build time. Injected so tests can fix the clock. */
+  now: Date;
+  /** Local development: include Drafts (flagged) so the author can preview them. Scheduled items stay hidden. */
+  includeDrafts?: boolean;
+}
+
+/**
+ * Validate raw entries against the schema and return the visible Posts, newest first.
+ * Every entry is validated, visible or not. Throws an error naming the failing entry.
+ */
+export function loadContent(input: ContentInput, options: LoadOptions): Content {
   const categories = input.categories.map((entry) => {
     const data = parse('Category', entry.id, categorySchema, entry.data);
     return { id: entry.id, name: data.name };
@@ -89,8 +99,24 @@ export function loadContent(input: ContentInput): Content {
     return { id: entry.id, ...data, category, body };
   });
 
-  posts.sort((a, b) => b.publishDate.localeCompare(a.publishDate));
-  return { categories, posts };
+  const today = torontoDate(options.now);
+  const visible = posts.filter(
+    (post) => post.publishDate <= today && (!post.draft || options.includeDrafts === true),
+  );
+  visible.sort((a, b) => b.publishDate.localeCompare(a.publishDate));
+  return { categories, posts: visible };
+}
+
+/** The calendar date at `now` in America/Toronto, as YYYY-MM-DD. */
+function torontoDate(now: Date): string {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Toronto',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(now);
+  const part = (type: string) => parts.find((p) => p.type === type)!.value;
+  return `${part('year')}-${part('month')}-${part('day')}`;
 }
 
 function parse<T extends z.ZodType>(kind: string, id: string, schema: T, data: unknown): z.output<T> {
