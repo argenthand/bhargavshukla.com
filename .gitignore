@@ -25,3 +25,7 @@ pnpm-debug.log*
 
 # editor swap files
 *.swp
+
+# tests
+test-results/
+playwright-report/

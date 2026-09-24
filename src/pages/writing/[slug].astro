@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getSiteContent } from '../../content/site';
+
+export async function getStaticPaths() {
+  const { posts, renderBody } = await getSiteContent();
+  return Promise.all(
+    posts.map(async (post) => {
+      const { Content } = await renderBody(post.id);
+      return { params: { slug: post.slug }, props: { post, Content } };
+    }),
+  );
+}
+
+const { post, Content } = Astro.props;
+---
+
+<BaseLayout title={`${post.title} — Bhargav Shukla`} description={post.summary}>
+  <article>
+    <p class="eyebrow">
+      <a href="/writing">Writing</a> / {post.category.name}
+    </p>
+    <h1>{post.title}</h1>
+    <p>{post.summary}</p>
+    <p class="eyebrow"><time datetime={post.publishDate}>{post.publishDate}</time></p>
+    <div class="prose"><Content /></div>
+  </article>
+</BaseLayout>
