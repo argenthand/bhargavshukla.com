@@ -28,6 +28,8 @@ const isCurrent = (href: string) => pathname === href || pathname.startsWith(`${
     <meta name="generator" content={Astro.generator} />
     {description && <meta name="description" content={description} />}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Lets CSS style the enhanced (JavaScript) version before first paint, so nothing flashes. -->
+    <script is:inline>document.documentElement.classList.add('js');</script>
     <title>{title}</title>
   </head>
   <body>

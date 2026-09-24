@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
-const pages = ['/', '/writing/', '/writing/page/2/', '/writing/?q=zzz', '/writing/sample-post/', '/writing/sample-book-review/'];
+const pages = ['/', '/writing/', '/writing/page/2/', '/writing/?q=zzz', '/writing/sample-post/', '/writing/sample-book-review/', '/snippets/', '/snippets/#retry-with-backoff'];
 
 test('the skip link is the first tab stop and moves focus to the main content', async ({ page }) => {
   await page.goto('/');
@@ -252,6 +252,122 @@ test.describe('Writing search, filter and sort', () => {
     await pagination(page).getByRole('link', { name: 'Next' }).focus();
     await page.keyboard.press('Enter');
     await expect(page.locator('#writing-results')).toBeFocused();
+  });
+});
+
+test.describe('Snippets', () => {
+  const snippet = (page: import('@playwright/test').Page, id: string) => page.locator(`#${id}`);
+
+  test('lists published Snippets newest first with explanation, language, date and line count', async ({ page }) => {
+    await page.goto('/snippets');
+    await expect(page.getByRole('heading', { level: 1, name: 'Snippets' })).toBeVisible();
+    await expect(page.getByText('2 snippets', { exact: true })).toBeVisible();
+    await expect(page.locator('.snippet-title-link')).toHaveText(['Retry with exponential backoff', 'Debounce a function']);
+
+    const debounce = snippet(page, 'debounce');
+    await expect(debounce.getByText('Delay a call until the input has stopped changing.')).toBeVisible();
+    await expect(debounce.locator('.snippet-meta')).toContainText('ts');
+    await expect(debounce.locator('.snippet-meta')).toContainText('August 20, 2026');
+    await expect(debounce.locator('.snippet-meta')).toContainText('7 lines');
+    // The Updated date replaces the date when it is later than the Publish Date.
+    await expect(snippet(page, 'retry-with-backoff').locator('.snippet-meta')).toContainText('Updated September 12, 2026');
+    await expect(snippet(page, 'retry-with-backoff').locator('.snippet-meta')).toContainText('19 lines');
+  });
+
+  test('never shows Drafts or Scheduled Snippets, and has no pages of its own', async ({ page, request }) => {
+    await page.goto('/snippets');
+    await expect(page.getByText(/sample Draft Snippet|sample Scheduled Snippet/)).toHaveCount(0);
+    expect((await request.get('/snippets/debounce/')).status()).toBe(404);
+  });
+
+  test('every Snippet has a copy button that copies its code and confirms it', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await page.goto('/snippets');
+    // A collapsed Snippet's copy button lives in its code panel (as in the mockup), so it appears on expanding.
+    await expect(page.getByRole('button', { name: /^Copy / })).toHaveCount(1);
+    await page.getByRole('button', { name: 'Show code: Retry with exponential backoff' }).click();
+    await expect(page.getByRole('button', { name: /^Copy / })).toHaveCount(2);
+
+    const button = page.getByRole('button', { name: 'Copy Debounce a function' });
+    await button.focus();
+    await page.keyboard.press('Enter');
+    await expect(button).toHaveText('Copied');
+    await expect(page.getByRole('status')).toHaveText('Copied Debounce a function');
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toContain('export function debounce');
+  });
+
+  test('Snippets longer than 15 lines start collapsed and expand from the keyboard', async ({ page }) => {
+    await page.goto('/snippets');
+    const long = snippet(page, 'retry-with-backoff');
+    const toggle = long.getByRole('button', { name: 'Show code: Retry with exponential backoff' });
+
+    await expect(long.locator('pre')).toBeHidden();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(snippet(page, 'debounce').locator('pre')).toBeVisible();
+    await expect(snippet(page, 'debounce').getByRole('button', { name: /Show code/ })).toHaveCount(0);
+
+    await toggle.focus();
+    await page.keyboard.press('Enter');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(long.locator('pre')).toBeVisible();
+
+    await page.keyboard.press('Space');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(long.locator('pre')).toBeHidden();
+  });
+
+  test('a Snippet title is a link to itself and copies that link', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await page.goto('/snippets');
+    const title = page.getByRole('link', { name: 'Debounce a function' });
+    await expect(title).toHaveAttribute('href', '#debounce');
+    await title.click();
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(/\/snippets\/?#debounce$/);
+    await expect(page.getByRole('status')).toHaveText('Link to Debounce a function copied');
+  });
+
+  test('arriving on a Snippet link expands it, focuses it and briefly highlights it', async ({ page }) => {
+    await page.goto('/snippets#retry-with-backoff');
+    const target = snippet(page, 'retry-with-backoff');
+    await expect(target.locator('pre')).toBeVisible();
+    await expect(target).toBeInViewport();
+    await expect(target).toBeFocused();
+    await expect(target).toHaveClass(/is-highlighted/);
+    await expect(target).not.toHaveClass(/is-highlighted/, { timeout: 5000 });
+  });
+
+  test('the highlight still happens, without animation, when reduced motion is preferred', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/snippets#debounce');
+    await expect(snippet(page, 'debounce')).toHaveClass(/is-highlighted/);
+    const transition = await snippet(page, 'debounce').evaluate((node) => getComputedStyle(node).transitionDuration);
+    expect(transition).toBe('0s');
+  });
+
+  test('a malformed fragment does not break the page', async ({ page }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.goto('/snippets#%E0%A4%A');
+    await page.getByRole('link', { name: 'Debounce a function' }).click();
+    expect(errors).toEqual([]);
+  });
+
+  test('following a Snippet link on the page also reveals it', async ({ page }) => {
+    await page.goto('/snippets');
+    await page.evaluate(() => (location.hash = '#retry-with-backoff'));
+    await expect(snippet(page, 'retry-with-backoff').locator('pre')).toBeVisible();
+    await expect(snippet(page, 'retry-with-backoff')).toHaveClass(/is-highlighted/);
+  });
+
+  test.describe('without JavaScript', () => {
+    test.use({ javaScriptEnabled: false });
+
+    test('every Snippet is shown in full, with no controls that need JavaScript', async ({ page }) => {
+      await page.goto('/snippets');
+      await expect(page.locator('.snippet pre')).toHaveCount(2);
+      await expect(page.locator('.snippet pre').first()).toBeVisible();
+      await expect(page.getByRole('button', { name: /Copy|Show code/ })).toHaveCount(0);
+    });
   });
 });
 
