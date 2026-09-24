@@ -68,6 +68,8 @@ test('code blocks are highlighted and the copy button copies the code and confir
   await page.goto('/writing/sample-post');
   await expect(page.locator('pre.astro-code span[style]').first()).toBeVisible();
 
+  await expect(page.locator('.code-language')).toHaveText('ts');
+
   const button = page.getByRole('button', { name: 'Copy code' });
   await button.focus();
   await page.keyboard.press('Enter');

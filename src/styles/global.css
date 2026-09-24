@@ -105,9 +105,11 @@ h1 { margin: 0; font-size: 34px; line-height: 1.15; font-weight: 400; letter-spa
 .prose .astro-code, .prose .astro-code span { color: var(--shiki-light); }
 @media (prefers-color-scheme: dark) { .prose .astro-code, .prose .astro-code span { color: var(--shiki-dark); } }
 
-.code-block { position: relative; }
-.code-block pre { padding-right: 88px; }
-.copy-button { position: absolute; top: 12px; right: 12px; min-width: 64px; min-height: 32px; padding: 0 10px; border: 1.5px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--fg); font-family: var(--font-mono); font-size: 13px; cursor: pointer; }
+.code-block { margin: 1.5em 0; border-radius: 8px; background: var(--code-bg); }
+.code-block pre { margin: 0; border-radius: 0 0 8px 8px; }
+.code-header { display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; border-bottom: 1px solid var(--rule); }
+.code-language { font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+.copy-button { min-width: 64px; min-height: 32px; padding: 0 10px; border: 1.5px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--fg); font-family: var(--font-mono); font-size: 13px; cursor: pointer; }
 .copy-button:hover { color: var(--hover); border-color: var(--hover); }
 
 .callout { margin: 1.5em 0; padding: 12px 16px; border-left: 4px solid var(--accent); border-radius: 0 6px 6px 0; background: var(--tint); }

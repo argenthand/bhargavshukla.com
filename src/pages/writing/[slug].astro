@@ -62,7 +62,13 @@ const formatDate = (date: string) =>
     const wrapper = document.createElement('div');
     wrapper.className = 'code-block';
     pre.replaceWith(wrapper);
-    wrapper.append(pre);
+    const header = document.createElement('div');
+    header.className = 'code-header';
+    const language = document.createElement('span');
+    language.className = 'code-language';
+    language.textContent = pre.dataset.language ?? 'text';
+    header.append(language);
+    wrapper.append(header, pre);
 
     const button = document.createElement('button');
     button.type = 'button';
@@ -84,6 +90,6 @@ const formatDate = (date: string) =>
         if (status) status.textContent = '';
       }, 2000);
     });
-    wrapper.append(button);
+    header.append(button);
   });
 </script>
