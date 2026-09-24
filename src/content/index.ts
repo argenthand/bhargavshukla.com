@@ -33,7 +33,35 @@ export const postSchema = z.strictObject({
   updatedDate: calendarDate.nullable().default(null),
   draft: z.boolean().default(false),
   featured: z.boolean().default(false),
+  // Book Reviews (Posts in the Books Category) must set both; see loadContent.
+  bookTitle: z.string().min(1).nullable().default(null),
+  bookAuthor: z.string().min(1).nullable().default(null),
 });
+
+const BOOKS_CATEGORY_ID = 'books';
+const WORDS_PER_MINUTE = 200;
+
+function readingTime(body: string): number {
+  const words = body.trim().split(/\s+/).length;
+  return Math.max(1, Math.ceil(words / WORDS_PER_MINUTE));
+}
+
+/** Returns the source of the first image with empty or missing alt text, ignoring code. */
+function findImageWithoutAlt(body: string): string | null {
+  const prose = body
+    .replace(/^[ \t]*(```+|~~~+)[\s\S]*?^[ \t]*\1.*$/gm, '')
+    .replace(/(`+)[^\n]*?\1/g, '');
+  for (const match of prose.matchAll(/!\[([^\]]*)\]\(\s*<?([^)\s>]*)/g)) {
+    if (match[1].trim() === '') return `"${match[2]}"`;
+  }
+  for (const match of prose.matchAll(/<img\b[^>]*>/gi)) {
+    const alt = /\balt\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(match[0]);
+    if (!alt || (alt[1] ?? alt[2]).trim() === '') {
+      return `"${/\bsrc\s*=\s*["']([^"']*)/i.exec(match[0])?.[1] ?? 'unknown'}"`;
+    }
+  }
+  return null;
+}
 
 export interface Category {
   id: string;
@@ -51,6 +79,12 @@ export interface Post {
   updatedDate: string | null;
   draft: boolean;
   featured: boolean;
+  bookTitle: string | null;
+  bookAuthor: string | null;
+  /** The Updated Date, only when it is later than the Publish Date. */
+  updatedDateToShow: string | null;
+  /** Whole minutes, at least 1. */
+  readingTime: number;
   body: string;
 }
 
@@ -92,11 +126,28 @@ export function loadContent(input: ContentInput, options: LoadOptions): Content 
     const category = categoriesById.get(data.category);
     if (!category) fail('Post', entry.id, `category: Category "${data.category}" does not exist`);
 
+    if (category.id === BOOKS_CATEGORY_ID) {
+      if (!data.bookTitle) fail('Post', entry.id, 'bookTitle: required for a Book Review');
+      if (!data.bookAuthor) fail('Post', entry.id, 'bookAuthor: required for a Book Review');
+    }
+    if (category.id !== BOOKS_CATEGORY_ID && (data.bookTitle || data.bookAuthor)) {
+      fail('Post', entry.id, 'bookTitle/bookAuthor: only allowed on Posts in the Books Category');
+    }
+    const missingAlt = findImageWithoutAlt(body);
+    if (missingAlt) fail('Post', entry.id, `body: image ${missingAlt} has no alt text`);
+
     const owner = slugOwners.get(data.slug);
     if (owner) throw new Error(`Duplicate slug "${data.slug}" used by Posts "${owner}" and "${entry.id}"`);
     slugOwners.set(data.slug, entry.id);
 
-    return { id: entry.id, ...data, category, body };
+    return {
+      id: entry.id,
+      ...data,
+      category,
+      body,
+      updatedDateToShow: data.updatedDate && data.updatedDate > data.publishDate ? data.updatedDate : null,
+      readingTime: readingTime(body),
+    };
   });
 
   const today = torontoDate(options.now);

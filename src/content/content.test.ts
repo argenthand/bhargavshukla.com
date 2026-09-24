@@ -176,6 +176,97 @@ describe('visibility', () => {
   });
 });
 
+describe('reading time', () => {
+  const minutes = (body: string) => loadContent({ categories, posts: [{ ...post('p'), body }] }).posts[0].readingTime;
+  const words = (n: number) => Array.from({ length: n }, () => 'word').join(' ');
+
+  it('is at least one minute', () => {
+    expect(minutes('Short.')).toBe(1);
+  });
+
+  it('rounds up at 200 words per minute', () => {
+    expect(minutes(words(200))).toBe(1);
+    expect(minutes(words(201))).toBe(2);
+    expect(minutes(words(1000))).toBe(5);
+  });
+});
+
+describe('Updated Date display', () => {
+  const shown = (data: Record<string, unknown>) => loadContent({ categories, posts: [post('p', data)] }).posts[0].updatedDateToShow;
+
+  it('is hidden when there is no Updated Date', () => {
+    expect(shown({})).toBeNull();
+  });
+
+  it('is hidden when the Updated Date equals the Publish Date', () => {
+    expect(shown({ updatedDate: '2026-09-01' })).toBeNull();
+  });
+
+  it('is hidden when the Updated Date is earlier than the Publish Date', () => {
+    expect(shown({ updatedDate: '2026-08-01' })).toBeNull();
+  });
+
+  it('is shown when the Updated Date is later than the Publish Date', () => {
+    expect(shown({ updatedDate: '2026-09-10' })).toBe('2026-09-10');
+  });
+});
+
+describe('Book Reviews', () => {
+  const review = (data: Record<string, unknown> = {}) =>
+    post('review', { category: 'books', bookTitle: 'High Output Management', bookAuthor: 'Andrew Grove', ...data });
+
+  it('loads a Post in the Books Category with its book title and author', () => {
+    const { posts } = loadContent({ categories, posts: [review()] });
+    expect(posts[0]).toMatchObject({ bookTitle: 'High Output Management', bookAuthor: 'Andrew Grove' });
+  });
+
+  it.each(['bookTitle', 'bookAuthor'])('fails naming the Post when %s is missing', (field) => {
+    const entry = review();
+    delete (entry.data as Record<string, unknown>)[field];
+    expect(() => loadContent({ categories, posts: [entry] })).toThrow(new RegExp(`Post "review".*${field}`, 's'));
+  });
+
+  it('rejects book fields on a Post outside the Books Category', () => {
+    expect(() => loadContent({ categories, posts: [post('plain', { bookTitle: 'A Book' })] })).toThrow(
+      /Post "plain".*Books Category/s,
+    );
+  });
+
+  it('does not require a book for other Categories', () => {
+    const { posts } = loadContent({ categories, posts: [post('plain')] });
+    expect(posts[0].bookTitle).toBeNull();
+    expect(posts[0].bookAuthor).toBeNull();
+  });
+});
+
+describe('image alt text', () => {
+  const withBody = (body: string) => () => loadContent({ categories, posts: [{ ...post('pic'), body }] });
+
+  it('accepts images with alt text', () => {
+    expect(withBody('![A diagram of a team](/a.png)')).not.toThrow();
+    expect(withBody('<img src="/a.png" alt="A diagram">')).not.toThrow();
+  });
+
+  it('fails naming the Post when a Markdown image has empty alt text', () => {
+    expect(withBody('Text\n\n![](/a.png)')).toThrow(/Post "pic".*"\/a\.png".*alt text/s);
+    expect(withBody('![   ](/a.png)')).toThrow(/Post "pic".*alt text/s);
+  });
+
+  it('fails naming the Post when an HTML image has no alt attribute', () => {
+    expect(withBody('<img src="/a.png">')).toThrow(/Post "pic".*alt text/s);
+    expect(withBody('<img src="/a.png" alt="">')).toThrow(/Post "pic".*alt text/s);
+  });
+
+  it('ignores image syntax in indented code fences and double-backtick inline code', () => {
+    expect(withBody('- item\n\n  ```md\n  ![](/a.png)\n  ```')).not.toThrow();
+    expect(withBody('Use ``![](/a.png)`` for images.')).not.toThrow();
+  });
+
+  it('ignores image syntax inside code blocks', () => {
+    expect(withBody('```md\n![](/a.png)\n```')).not.toThrow();
+  });
+});
+
 describe('schema rule: every field is required with no default, or optional with a default', () => {
   it.each([
     ['Post', postSchema],

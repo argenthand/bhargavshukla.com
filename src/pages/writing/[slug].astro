@@ -13,6 +13,10 @@ export async function getStaticPaths() {
 }
 
 const { post, Content } = Astro.props;
+
+const AUTHOR = 'Bhargav Shukla';
+const formatDate = (date: string) =>
+  new Date(`${date}T00:00:00Z`).toLocaleDateString('en-CA', { timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric' });
 ---
 
 <BaseLayout title={`${post.title} — Bhargav Shukla`} description={post.summary}>
@@ -22,8 +26,64 @@ const { post, Content } = Astro.props;
     </p>
     {post.draft && <p class="badge">Draft</p>}
     <h1>{post.title}</h1>
-    <p>{post.summary}</p>
-    <p class="eyebrow"><time datetime={post.publishDate}>{post.publishDate}</time></p>
+    <p class="summary">{post.summary}</p>
+    {
+      post.bookTitle && (
+        <p class="book">
+          Book: <cite>{post.bookTitle}</cite> by {post.bookAuthor}
+        </p>
+      )
+    }
+    <p class="eyebrow meta">
+      <span>By {AUTHOR}</span>
+      <span>
+        <time datetime={post.publishDate}>{formatDate(post.publishDate)}</time>
+      </span>
+      {
+        post.updatedDateToShow && (
+          <span>
+            Updated <time datetime={post.updatedDateToShow}>{formatDate(post.updatedDateToShow)}</time>
+          </span>
+        )
+      }
+      <span>{post.readingTime} min read</span>
+      <span>{post.category.name}</span>
+    </p>
     <div class="prose"><Content /></div>
+    <p id="copy-status" class="sr-only" role="status" aria-live="polite"></p>
   </article>
 </BaseLayout>
+
+<script>
+  // Progressive enhancement: add a copy button to every code block.
+  const status = document.getElementById('copy-status');
+  let resetTimer: ReturnType<typeof setTimeout> | undefined;
+  document.querySelectorAll<HTMLPreElement>('.prose pre').forEach((pre) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'code-block';
+    pre.replaceWith(wrapper);
+    wrapper.append(pre);
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'copy-button';
+    button.textContent = 'Copy';
+    button.setAttribute('aria-label', 'Copy code');
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(pre.textContent ?? '');
+        button.textContent = 'Copied';
+        if (status) status.textContent = 'Code copied to clipboard';
+      } catch {
+        button.textContent = 'Copy failed';
+        if (status) status.textContent = 'Could not copy the code';
+      }
+      clearTimeout(resetTimer);
+      resetTimer = setTimeout(() => {
+        button.textContent = 'Copy';
+        if (status) status.textContent = '';
+      }, 2000);
+    });
+    wrapper.append(button);
+  });
+</script>
