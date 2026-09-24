@@ -55,13 +55,15 @@ const AUTHOR = 'Bhargav Shukla';
 </BaseLayout>
 
 <script>
-  // Progressive enhancement: add a copy button to every code block.
+  // Progressive enhancement: add a language label and copy button to every code block.
+  import { copyWithFeedback } from '../../lib/copy';
+
   const status = document.getElementById('copy-status');
-  let resetTimer: ReturnType<typeof setTimeout> | undefined;
   document.querySelectorAll<HTMLPreElement>('.prose pre').forEach((pre) => {
     const wrapper = document.createElement('div');
     wrapper.className = 'code-block';
     pre.replaceWith(wrapper);
+
     const header = document.createElement('div');
     header.className = 'code-header';
     const language = document.createElement('span');
@@ -75,21 +77,17 @@ const AUTHOR = 'Bhargav Shukla';
     button.className = 'copy-button';
     button.textContent = 'Copy';
     button.setAttribute('aria-label', 'Copy code');
-    button.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(pre.textContent ?? '');
-        button.textContent = 'Copied';
-        if (status) status.textContent = 'Code copied to clipboard';
-      } catch {
-        button.textContent = 'Copy failed';
-        if (status) status.textContent = 'Could not copy the code';
-      }
-      clearTimeout(resetTimer);
-      resetTimer = setTimeout(() => {
-        button.textContent = 'Copy';
-        if (status) status.textContent = '';
-      }, 2000);
-    });
+    button.addEventListener('click', () =>
+      copyWithFeedback({
+        text: pre.textContent ?? '',
+        button,
+        status,
+        idleLabel: 'Copy',
+        doneLabel: 'Copied',
+        message: 'Code copied to clipboard',
+        failMessage: 'Could not copy the code',
+      }),
+    );
     header.append(button);
   });
 </script>

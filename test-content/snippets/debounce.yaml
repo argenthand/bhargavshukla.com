@@ -1,0 +1,13 @@
+title: Debounce a function
+explanation: Delay a call until the input has stopped changing. Sample content used by tests.
+code: |
+  export function debounce<T extends unknown[]>(fn: (...args: T) => void, ms: number) {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    return (...args: T) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn(...args), ms);
+    };
+  }
+language: ts
+category: engineering
+publishDate: 2026-08-20

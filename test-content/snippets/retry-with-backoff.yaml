@@ -1,0 +1,26 @@
+title: Retry with exponential backoff
+explanation: Retry an async call with growing delays. Sample content used by tests, and long enough to start collapsed.
+code: |
+  export async function retry<T>(
+    task: () => Promise<T>,
+    options: { attempts?: number; baseMs?: number } = {},
+  ): Promise<T> {
+    const { attempts = 5, baseMs = 200 } = options;
+    let lastError: unknown;
+
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      try {
+        return await task();
+      } catch (error) {
+        lastError = error;
+        const delay = baseMs * 2 ** attempt;
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+
+    throw lastError;
+  }
+language: ts
+category: engineering
+publishDate: 2026-09-05
+updatedDate: 2026-09-12

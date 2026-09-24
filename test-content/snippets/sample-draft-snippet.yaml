@@ -1,0 +1,8 @@
+title: A sample Draft Snippet that must never be published
+explanation: Sample content used by tests. It is a Draft with a past Publish Date.
+code: |
+  console.log('draft');
+language: js
+category: engineering
+publishDate: 2020-01-01
+draft: true

@@ -1,0 +1,7 @@
+title: A sample Scheduled Snippet that is not live yet
+explanation: Sample content used by tests. Its Publish Date is far in the future.
+code: |
+  console.log('later');
+language: js
+category: engineering
+publishDate: 2099-01-01

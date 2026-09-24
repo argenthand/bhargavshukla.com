@@ -1,0 +1,92 @@
+---
+import { Code } from 'astro:components';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getSiteContent } from '../content/site';
+import { formatDate } from '../lib/format-date';
+
+const { snippets } = await getSiteContent();
+const count = `${snippets.length} ${snippets.length === 1 ? 'snippet' : 'snippets'}`;
+// Keep in step with markdown.shikiConfig.themes in astro.config.mjs.
+const themes = { light: 'github-light-high-contrast', dark: 'github-dark-high-contrast' } as const;
+---
+
+<BaseLayout title="Snippets — Bhargav Shukla" description="Small, reusable pieces of code I keep coming back to.">
+  <div class="page-head">
+    <h1>Snippets</h1>
+    <p class="eyebrow">{count}</p>
+  </div>
+  <p class="summary">Small, reusable pieces of code I keep coming back to.</p>
+
+  {
+    snippets.length === 0 ? (
+      <p>No snippets yet.</p>
+    ) : (
+      <ul class="snippet-list">
+        {snippets.map((snippet) => (
+          <li>
+            <article
+              class="snippet"
+              id={snippet.id}
+              tabindex="-1"
+              data-collapsed={snippet.collapsedByDefault ? 'true' : undefined}
+            >
+              <div class="snippet-head">
+                <div class="snippet-main">
+                  <h2 class="snippet-title">
+                    <a class="snippet-title-link" href={`#${snippet.id}`} data-title={snippet.title}>
+                      {snippet.title}
+                    </a>
+                    {snippet.draft && <span class="badge">Draft</span>}
+                  </h2>
+                  <p class="snippet-explanation">{snippet.explanation}</p>
+                  <p class="snippet-meta">
+                    <span class="snippet-lang">{snippet.language}</span>
+                    <span aria-hidden="true">·</span>
+                    <span>
+                      {snippet.updatedDateToShow ? (
+                        <>
+                          Updated <time datetime={snippet.updatedDateToShow}>{formatDate(snippet.updatedDateToShow)}</time>
+                        </>
+                      ) : (
+                        <time datetime={snippet.publishDate}>{formatDate(snippet.publishDate)}</time>
+                      )}
+                    </span>
+                    <span aria-hidden="true">·</span>
+                    <span>{snippet.lineCount} {snippet.lineCount === 1 ? 'line' : 'lines'}</span>
+                  </p>
+                </div>
+                {snippet.collapsedByDefault && (
+                  // Shown by the script; without JavaScript the code is simply always visible.
+                  <button
+                    type="button"
+                    class="snippet-toggle"
+                    aria-expanded="false"
+                    aria-controls={`${snippet.id}-code`}
+                    aria-label={`Show code: ${snippet.title}`}
+                    hidden
+                  >
+                    <span aria-hidden="true" class="snippet-toggle-icon">+</span>
+                  </button>
+                )}
+              </div>
+              <figure class="snippet-code" id={`${snippet.id}-code`}>
+                <figcaption class="code-header">
+                  <span class="code-language">{snippet.language}</span>
+                  <button type="button" class="copy-button" data-copy aria-label={`Copy ${snippet.title}`} hidden>
+                    Copy
+                  </button>
+                </figcaption>
+                <Code code={snippet.code} lang={snippet.language as never} themes={themes} defaultColor={false} />
+              </figure>
+            </article>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+  <p id="snippet-status" class="sr-only" role="status" aria-live="polite"></p>
+</BaseLayout>
+
+<script>
+  import '../lib/snippets-client';
+</script>
