@@ -34,3 +34,7 @@ Default five-role vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `
 ### Domain docs
 
 Single-context: one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+
+## Handoffs
+
+Session handoffs live in `docs/handoffs/`. Read the newest one before starting work. When asked to write a handoff, save it there following `docs/handoffs/README.md`, not in a temporary directory.
