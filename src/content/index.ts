@@ -59,6 +59,7 @@ export const postSchema = z.strictObject({
 });
 
 const SETTINGS_ID = 'site';
+const RESUME_ID = 'resume';
 const BOOKS_CATEGORY_ID = 'books';
 const WORDS_PER_MINUTE = 200;
 
@@ -96,6 +97,39 @@ export const snippetSchema = z.strictObject({
   updatedDate: calendarDate.nullable().default(null),
   draft: z.boolean().default(false),
 });
+
+const DEFAULT_PRINT_EASTER_EGG = 'You found the hidden line. It only shows up on paper.';
+
+export const resumeSchema = z.strictObject({
+  name: z.string().min(1),
+  headline: z.string().min(1),
+  location: z.string().min(1),
+  email: z.email(),
+  linkedin: z.url().nullable().default(null),
+  github: z.url().nullable().default(null),
+  summary: z.string().min(1),
+  experience: z
+    .array(
+      z.strictObject({
+        role: z.string().min(1),
+        company: z.string().min(1),
+        /** Shown as written, for example "2026 — Present". */
+        dates: z.string().min(1),
+        detail: z.string().min(1),
+      }),
+    )
+    .min(1),
+  skills: z
+    .array(z.strictObject({ group: z.string().min(1), items: z.array(z.string().min(1)).min(1) }))
+    .min(1),
+  education: z
+    .array(z.strictObject({ year: z.string().min(1), degree: z.string().min(1), school: z.string().min(1) }))
+    .default([]),
+  /** A line that appears only on the printed Resume. */
+  printEasterEgg: z.string().min(1).default(DEFAULT_PRINT_EASTER_EGG),
+});
+
+export type Resume = z.output<typeof resumeSchema>;
 
 /** Snippets longer than this many lines start collapsed. */
 export const SNIPPET_COLLAPSE_LINES = 15;
@@ -151,6 +185,8 @@ export interface ContentInput {
   categories: RawEntry[];
   posts: RawEntry[];
   snippets?: RawEntry[];
+  /** Resume content files; the only one allowed is "resume". */
+  resume?: RawEntry[];
   /** Site settings files; the only one allowed is "site", and defaults apply when it is absent. */
   settings?: RawEntry[];
 }
@@ -162,6 +198,8 @@ export interface Content {
   posts: Post[];
   /** Newest first. */
   snippets: Snippet[];
+  /** Null when no Resume content exists. */
+  resume: Resume | null;
 }
 
 export interface LoadOptions {
@@ -183,6 +221,11 @@ export function loadContent(input: ContentInput, options: LoadOptions): Content 
   const settings = siteSettings
     ? parse('Settings', siteSettings.id, settingsSchema, siteSettings.data)
     : settingsSchema.parse({});
+  for (const entry of input.resume ?? []) {
+    if (entry.id !== RESUME_ID) fail('Resume', entry.id, `unknown Resume file; the only one allowed is "${RESUME_ID}"`);
+  }
+  const resumeEntry = input.resume?.find((entry) => entry.id === RESUME_ID);
+  const resume = resumeEntry ? parse('Resume', resumeEntry.id, resumeSchema, resumeEntry.data) : null;
   const categories = input.categories.map((entry) => {
     const data = parse('Category', entry.id, categorySchema, entry.data);
     return { id: entry.id, name: data.name };
@@ -250,7 +293,7 @@ export function loadContent(input: ContentInput, options: LoadOptions): Content 
   visiblePosts.sort((a, b) => b.publishDate.localeCompare(a.publishDate) || a.slug.localeCompare(b.slug));
   const visibleSnippets = snippets.filter(isVisible);
   visibleSnippets.sort((a, b) => b.publishDate.localeCompare(a.publishDate) || a.id.localeCompare(b.id));
-  return { settings, categories, posts: visiblePosts, snippets: visibleSnippets };
+  return { settings, categories, posts: visiblePosts, snippets: visibleSnippets, resume };
 }
 
 /** The calendar date at `now` in America/Toronto, as YYYY-MM-DD. */

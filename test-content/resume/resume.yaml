@@ -1,0 +1,26 @@
+name: Sample Person
+headline: Engineering Manager
+location: Sample City, ON
+email: sample@example.com
+linkedin: https://www.linkedin.com/in/sample
+github: https://github.com/sample
+summary: Sample summary used by tests. It describes an imaginary engineering manager and is not real content.
+experience:
+  - role: Engineering Manager
+    company: Sample Company
+    dates: 2026 — Present
+    detail: Sample detail about leading a team and the outcomes it delivered.
+  - role: Senior Software Engineer
+    company: Example Industries
+    dates: 2021 — 2026
+    detail: Sample detail about what was built and shipped.
+skills:
+  - group: Leadership
+    items: [Hiring, One-on-ones, Performance reviews]
+  - group: Web and backend
+    items: [TypeScript, Node.js, PostgreSQL]
+education:
+  - year: "2018"
+    degree: B.Sc. in Sample Studies
+    school: Sample University
+printEasterEgg: Sample easter egg, printed only on paper.

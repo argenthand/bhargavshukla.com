@@ -5,6 +5,8 @@ import satteriCallouts from 'satteri-callouts';
 
 // https://astro.build/config
 export default defineConfig({
+  // Used for absolute URLs, such as the QR code on the printed Resume.
+  site: 'https://bhargavshukla.com',
   markdown: {
     // Callouts are written as blockquotes: `> [!NOTE] Optional title`.
     processor: satteri({ hastPlugins: [satteriCallouts()] }),

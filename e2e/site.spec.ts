@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
-const pages = ['/', '/writing/', '/writing/page/2/', '/writing/?q=zzz', '/writing/sample-post/', '/writing/sample-book-review/', '/snippets/', '/snippets/#retry-with-backoff'];
+const pages = ['/', '/writing/', '/writing/page/2/', '/writing/?q=zzz', '/writing/sample-post/', '/writing/sample-book-review/', '/snippets/', '/snippets/#retry-with-backoff', '/resume/'];
 
 test('the skip link is the first tab stop and moves focus to the main content', async ({ page }) => {
   await page.goto('/');
@@ -367,6 +367,87 @@ test.describe('Snippets', () => {
       await expect(page.locator('.snippet pre')).toHaveCount(2);
       await expect(page.locator('.snippet pre').first()).toBeVisible();
       await expect(page.getByRole('button', { name: /Copy|Show code/ })).toHaveCount(0);
+    });
+  });
+});
+
+test.describe('Resume', () => {
+  test('shows the header, contact details, summary, Experience, grouped Skills and Education', async ({ page }) => {
+    await page.goto('/resume');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Sample Person');
+    await expect(page.getByText('Engineering Manager', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Sample City, ON')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'sample@example.com' })).toHaveAttribute('href', 'mailto:sample@example.com');
+    await expect(page.getByRole('link', { name: 'linkedin.com/in/sample' })).toHaveAttribute('href', 'https://www.linkedin.com/in/sample');
+    await expect(page.getByRole('link', { name: 'github.com/sample' })).toHaveAttribute('href', 'https://github.com/sample');
+    await expect(page.getByText('Sample summary used by tests.')).toBeVisible();
+
+    await expect(page.getByRole('heading', { level: 2 })).toHaveText(['Experience', 'Skills', 'Education']);
+    await expect(page.getByRole('heading', { level: 3, name: 'Senior Software Engineer' })).toBeVisible();
+    await expect(page.getByText('2021 — 2026')).toBeVisible();
+    await expect(page.getByRole('term').filter({ hasText: 'Leadership' })).toBeVisible();
+    await expect(page.getByText('Hiring, One-on-ones, Performance reviews')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 3, name: 'B.Sc. in Sample Studies' })).toBeVisible();
+  });
+
+  test('has a print button that opens the print dialog, and offers no PDF download', async ({ page }) => {
+    await page.addInitScript(() => {
+      (window as unknown as { printed: number }).printed = 0;
+      window.print = () => ((window as unknown as { printed: number }).printed += 1);
+    });
+    await page.goto('/resume');
+    await page.getByRole('button', { name: 'Print or save as PDF' }).click();
+    expect(await page.evaluate(() => (window as unknown as { printed: number }).printed)).toBe(1);
+    await expect(page.getByRole('link', { name: /pdf/i })).toHaveCount(0);
+  });
+
+  test('on screen, the QR code and the hidden line are not shown', async ({ page }) => {
+    await page.goto('/resume');
+    await expect(page.getByText('Scan for the latest version')).toBeHidden();
+    await expect(page.getByText('Sample easter egg, printed only on paper.')).toBeHidden();
+    await expect(page.getByRole('img', { name: /QR code/ })).toBeHidden();
+  });
+
+  test.describe('printed', () => {
+    test.beforeEach(async ({ page }) => {
+      await page.emulateMedia({ media: 'print' });
+      await page.goto('/resume');
+    });
+
+    test('has no site navigation, footer, skip link or print button', async ({ page }) => {
+      await expect(page.getByRole('navigation', { name: 'Primary' })).toBeHidden();
+      await expect(page.getByRole('contentinfo')).toBeHidden();
+      await expect(page.getByRole('link', { name: 'Skip to content' })).toBeHidden();
+      await expect(page.getByRole('button', { name: 'Print or save as PDF' })).toBeHidden();
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    });
+
+    test('shows a QR code linking to the live /resume, with a scan line', async ({ page }) => {
+      await expect(page.getByText('Scan for the latest version')).toBeVisible();
+      const qr = page.getByRole('img', { name: 'QR code linking to https://bhargavshukla.com/resume' });
+      await expect(qr).toBeVisible();
+      await expect(qr.locator('svg')).toBeVisible();
+      await expect(page.locator('.print-qr p')).toContainText('bhargavshukla.com/resume');
+    });
+
+    test('shows the hidden easter-egg line', async ({ page }) => {
+      await expect(page.getByText('Sample easter egg, printed only on paper.')).toBeVisible();
+    });
+
+    test('is black on white, whatever the colour scheme', async ({ page }) => {
+      const colours = await page.evaluate(() => {
+        const style = getComputedStyle(document.body);
+        return { background: style.backgroundColor, colour: style.color };
+      });
+      expect(colours.background).toBe('rgb(255, 255, 255)');
+      expect(colours.colour).not.toBe('rgb(255, 255, 255)');
+    });
+
+    test('fits on one to two pages', async ({ page }) => {
+      const pdf = await page.pdf({ format: 'Letter' });
+      const pages = pdf.toString('latin1').match(/\/Type\s*\/Page\b(?!s)/g) ?? [];
+      expect(pages.length).toBeGreaterThanOrEqual(1);
+      expect(pages.length).toBeLessThanOrEqual(2);
     });
   });
 });

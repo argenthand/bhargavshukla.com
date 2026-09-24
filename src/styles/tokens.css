@@ -36,3 +36,20 @@
     color-scheme: dark;
   }
 }
+
+/* Paper is always light, whatever the screen preference. */
+@media print {
+  :root {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --fg: #000000;
+    --body: #1a1a18;
+    --soft: #1a1a18;
+    --muted: #4a4944;
+    --rule: #bdbab2;
+    --line: #4a4944;
+    --code-bg: #f3f1eb;
+    --hover: #000000;
+    color-scheme: light;
+  }
+}
