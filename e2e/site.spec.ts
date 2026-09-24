@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
-const pages = ['/', '/writing/', '/writing/page/2/', '/writing/sample-post/', '/writing/sample-book-review/'];
+const pages = ['/', '/writing/', '/writing/page/2/', '/writing/?q=zzz', '/writing/sample-post/', '/writing/sample-book-review/'];
 
 test('the skip link is the first tab stop and moves focus to the main content', async ({ page }) => {
   await page.goto('/');
@@ -91,7 +91,7 @@ test.describe('Writing list', () => {
     expect(titles).toEqual(['A sample Post about leading a team', 'A sample Book Review']);
     await expect(rows.first()).toContainText('September 1, 2026');
     await expect(rows.first()).toContainText('Leadership');
-    await expect(page.getByText('1–2 of 3')).toBeVisible();
+    await expect(page.getByText('1–2 of 3', { exact: true })).toBeVisible();
   });
 
   test('moves between pages with Next, Previous and page numbers, without JavaScript', async ({ page }) => {
@@ -102,7 +102,7 @@ test.describe('Writing list', () => {
 
     await pagination.getByRole('link', { name: 'Next' }).click();
     await expect(page).toHaveURL(/\/writing\/page\/2\/?$/);
-    await expect(page.getByText('3 of 3')).toBeVisible();
+    await expect(page.getByText('3 of 3', { exact: true })).toBeVisible();
     await expect(page.locator('.post-list .post-title')).toHaveText(['A sample older Post about engineering']);
     await expect(pagination.getByRole('link', { name: 'Next' })).toHaveCount(0);
     await expect(pagination.getByRole('link', { name: 'Page 2' })).toHaveAttribute('aria-current', 'page');
@@ -113,12 +113,145 @@ test.describe('Writing list', () => {
     await expect(page).toHaveURL(/\/writing\/page\/2\/?$/);
   });
 
+  test('hides the search controls, which need JavaScript', async ({ page }) => {
+    await page.goto('/writing');
+    await expect(page.getByRole('searchbox')).toBeHidden();
+  });
+
   test('links each row to its Post, and Drafts and Scheduled Posts never appear', async ({ page }) => {
     await page.goto('/writing');
     await page.getByRole('link', { name: 'A sample Book Review' }).click();
     await expect(page).toHaveURL(/\/writing\/sample-book-review\/?$/);
     await page.goto('/writing');
     await expect(page.getByText(/sample Draft|Scheduled Post/)).toHaveCount(0);
+  });
+});
+
+test.describe('Writing search, filter and sort', () => {
+  const titles = (page: import('@playwright/test').Page) => page.locator('.post-list .post-title');
+  const pagination = (page: import('@playwright/test').Page) => page.getByRole('navigation', { name: 'Pagination' });
+
+  test('searches titles across all pages and puts the state in the URL', async ({ page }) => {
+    await page.goto('/writing');
+    await page.getByRole('searchbox', { name: 'Search titles' }).fill('older');
+    await expect(page).toHaveURL(/\/writing\/?\?q=older$/);
+    await expect(titles(page)).toHaveText(['A sample older Post about engineering']);
+    await expect(page.getByText('1 of 1', { exact: true })).toBeVisible();
+
+    // "sample" appears in all three titles, including the one that is only on page 2.
+    await page.getByRole('searchbox', { name: 'Search titles' }).fill('sample');
+    await expect(page.getByText('1–2 of 3', { exact: true })).toBeVisible();
+    await expect(pagination(page)).toBeVisible();
+  });
+
+  test('filters by Category and sorts oldest first, combined with search', async ({ page }) => {
+    await page.goto('/writing');
+    await page.getByRole('combobox', { name: 'Category' }).selectOption('books');
+    await expect(page).toHaveURL(/\?category=books$/);
+    await expect(titles(page)).toHaveText(['A sample Book Review']);
+
+    await page.getByRole('combobox', { name: 'Category' }).selectOption('');
+    await page.getByRole('combobox', { name: 'Sort' }).selectOption('oldest');
+    await expect(page).toHaveURL(/\?sort=oldest$/);
+    await expect(titles(page)).toHaveText(['A sample older Post about engineering', 'A sample Book Review']);
+
+    await page.getByRole('searchbox', { name: 'Search titles' }).fill('review');
+    await expect(page).toHaveURL(/\?q=review&sort=oldest$/);
+    await expect(titles(page)).toHaveText(['A sample Book Review']);
+  });
+
+  test('any change returns to page 1, and the back button restores the previous state', async ({ page }) => {
+    await page.goto('/writing');
+    await page.getByRole('searchbox', { name: 'Search titles' }).fill('sample');
+    await expect(page).toHaveURL(/\?q=sample$/);
+
+    await pagination(page).getByRole('link', { name: 'Next' }).click();
+    await expect(page).toHaveURL(/\?q=sample&page=2$/);
+    await expect(titles(page)).toHaveText(['A sample older Post about engineering']);
+
+    await page.getByRole('combobox', { name: 'Sort' }).selectOption('oldest');
+    await expect(page).toHaveURL(/\?q=sample&sort=oldest$/);
+    await expect(page.getByText('1–2 of 3', { exact: true })).toBeVisible();
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\?q=sample&page=2$/);
+    await expect(titles(page)).toHaveText(['A sample older Post about engineering']);
+    await expect(page.getByRole('combobox', { name: 'Sort' })).toHaveValue('newest');
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\?q=sample$/);
+    await expect(page.getByText('1–2 of 3', { exact: true })).toBeVisible();
+
+    await page.goForward();
+    await expect(page).toHaveURL(/\?q=sample&page=2$/);
+  });
+
+  test('restores the controls and results from a shared URL', async ({ page }) => {
+    await page.goto('/writing?q=sample&category=leadership&sort=oldest');
+    await expect(page.getByRole('searchbox', { name: 'Search titles' })).toHaveValue('sample');
+    await expect(page.getByRole('combobox', { name: 'Category' })).toHaveValue('leadership');
+    await expect(page.getByRole('combobox', { name: 'Sort' })).toHaveValue('oldest');
+    await expect(titles(page)).toHaveText(['A sample Post about leading a team']);
+
+    await page.goto('/writing?page=2');
+    await expect(titles(page)).toHaveText(['A sample older Post about engineering']);
+  });
+
+  test('corrects a page past the end in the URL', async ({ page }) => {
+    await page.goto('/writing?page=99');
+    await expect(page).toHaveURL(/\?page=2$/);
+    await expect(titles(page)).toHaveText(['A sample older Post about engineering']);
+  });
+
+  test('re-announces the count when only the sort changes', async ({ page }) => {
+    await page.goto('/writing?q=sample');
+    const status = page.getByRole('status');
+    await page.getByRole('combobox', { name: 'Sort' }).selectOption('oldest');
+    await expect(status).toHaveText('Showing 1–2 of 3 posts');
+  });
+
+  test('searching from a numbered page starts from page 1 of the results', async ({ page }) => {
+    await page.goto('/writing/page/2');
+    await page.getByRole('searchbox', { name: 'Search titles' }).fill('sample');
+    await expect(page).toHaveURL(/\/writing\/?\?q=sample$/);
+    await expect(page.getByText('1–2 of 3', { exact: true })).toBeVisible();
+    await page.goBack();
+    await expect(page).toHaveURL(/\/writing\/page\/2\/?$/);
+    await expect(titles(page)).toHaveText(['A sample older Post about engineering']);
+  });
+
+  test('shows "No posts match" with a Clear filters button that resets search and Category', async ({ page }) => {
+    await page.goto('/writing');
+    await page.getByRole('combobox', { name: 'Category' }).selectOption('books');
+    await page.getByRole('searchbox', { name: 'Search titles' }).fill('zzz');
+    await expect(page.locator('#writing-results').getByText('No posts match.')).toBeVisible();
+    await expect(titles(page)).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Clear filters' }).click();
+    await expect(page).toHaveURL(/\/writing\/?$/);
+    await expect(page.getByRole('searchbox', { name: 'Search titles' })).toHaveValue('');
+    await expect(page.getByRole('combobox', { name: 'Category' })).toHaveValue('');
+    await expect(page.getByRole('searchbox', { name: 'Search titles' })).toBeFocused();
+    await expect(titles(page)).toHaveText(['A sample Post about leading a team', 'A sample Book Review']);
+  });
+
+  test('announces the result count to screen readers when results change', async ({ page }) => {
+    await page.goto('/writing');
+    const status = page.getByRole('status');
+    await expect(status).toHaveText('');
+    await page.getByRole('searchbox', { name: 'Search titles' }).fill('review');
+    await expect(status).toHaveText('Showing 1 of 1 post');
+    await page.getByRole('searchbox', { name: 'Search titles' }).fill('zzz');
+    await expect(status).toHaveText('No posts match.');
+  });
+
+  test('paging with the keyboard keeps focus in the list', async ({ page }) => {
+    await page.goto('/writing');
+    await page.getByRole('searchbox', { name: 'Search titles' }).fill('sample');
+    await expect(page).toHaveURL(/\?q=sample$/);
+    await pagination(page).getByRole('link', { name: 'Next' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#writing-results')).toBeFocused();
   });
 });
 

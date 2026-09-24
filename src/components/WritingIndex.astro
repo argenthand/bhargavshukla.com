@@ -1,0 +1,53 @@
+---
+import type { Page, Post } from '../content';
+import WritingList from './WritingList.astro';
+
+interface Props {
+  /** The page rendered at build time. */
+  list: Page<Post>;
+  posts: Post[];
+  categories: { id: string; name: string }[];
+  pageSize: number;
+}
+
+const { list, posts, categories, pageSize } = Astro.props;
+
+// Only what the browser needs to run the same list logic; never the body.
+const data = {
+  pageSize,
+  categories,
+  posts: posts.map(({ slug, title, publishDate, category }) => ({ slug, title, publishDate, category })),
+};
+// Escape "<" so a title can never close the script element.
+const json = JSON.stringify(data).replace(/</g, '\\u003c');
+---
+
+{
+  posts.length > 0 && (
+    // Hidden until the script runs: without JavaScript the static pages and Prev/Next links still work.
+    <form id="writing-controls" class="controls" role="search" hidden>
+      <div class="field">
+        <label for="writing-q">Search titles</label>
+        <input id="writing-q" type="search" name="q" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label for="writing-category">Category</label>
+        <select id="writing-category" name="category">
+          <option value="">All categories</option>
+          {categories.map((category) => <option value={category.id}>{category.name}</option>)}
+        </select>
+      </div>
+      <div class="field">
+        <label for="writing-sort">Sort</label>
+        <select id="writing-sort" name="sort">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+        </select>
+      </div>
+    </form>
+    <p id="writing-status" class="sr-only" role="status" aria-live="polite" />
+  )
+}
+<div id="writing-results" tabindex="-1"><WritingList list={list} /></div>
+{posts.length > 0 && <script id="writing-data" type="application/json" set:html={json} />}
+{posts.length > 0 && <script>import '../lib/writing-client';</script>}

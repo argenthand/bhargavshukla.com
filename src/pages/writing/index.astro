@@ -1,14 +1,14 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import WritingList from '../../components/WritingList.astro';
+import WritingIndex from '../../components/WritingIndex.astro';
 import { paginate } from '../../content';
 import { getSiteContent } from '../../content/site';
 
-const { posts, settings } = await getSiteContent();
+const { posts, categories, settings } = await getSiteContent();
 const list = paginate(posts, { page: 1, pageSize: settings.writingPageSize });
 ---
 
 <BaseLayout title="Writing — Bhargav Shukla" description="Every Post, newest first.">
   <h1>Writing</h1>
-  <WritingList list={list} />
+  <WritingIndex list={list} posts={posts} categories={categories} pageSize={settings.writingPageSize} />
 </BaseLayout>
