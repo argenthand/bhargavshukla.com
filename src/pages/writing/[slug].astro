@@ -20,6 +20,7 @@ const { post, Content } = Astro.props;
     <p class="eyebrow">
       <a href="/writing">Writing</a> / {post.category.name}
     </p>
+    {post.draft && <p class="badge">Draft</p>}
     <h1>{post.title}</h1>
     <p>{post.summary}</p>
     <p class="eyebrow"><time datetime={post.publishDate}>{post.publishDate}</time></p>
