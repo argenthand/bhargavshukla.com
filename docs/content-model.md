@@ -1,0 +1,91 @@
+# Content model (Strapi 5)
+
+Draft & Publish is **on** for every collection type except Tag. Long-form fields use Strapi's **Rich text (Markdown)** field, not Blocks.
+
+## Shared components
+
+| Component     | Fields                                                                                                                    |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `shared.seo`  | `metaTitle` string (≤60), `metaDescription` text (≤160), `ogImage` media (image), `canonicalUrl` string (for cross-posts) |
+| `shared.link` | `label` string (required), `url` string (required)                                                                        |
+
+## Collection types
+
+### Tag — `tag` (Draft & Publish off)
+
+| Field  | Type         | Notes            |
+| ------ | ------------ | ---------------- |
+| `name` | string       | required, unique |
+| `slug` | uid ← `name` | required         |
+
+### Post — `post`
+
+| Field         | Type                         | Notes                                                   |
+| ------------- | ---------------------------- | ------------------------------------------------------- |
+| `title`       | string                       | required                                                |
+| `slug`        | uid ← `title`                | required                                                |
+| `summary`     | text (≤280)                  | required; used in lists, RSS, meta description fallback |
+| `body`        | rich text (Markdown)         | required                                                |
+| `cover`       | media (image)                | optional                                                |
+| `tags`        | relation, many-to-many → Tag |                                                         |
+| `featured`    | boolean                      | default `false`                                         |
+| `displayDate` | date                         | optional backdate override; falls back to `publishedAt` |
+| `seo`         | `shared.seo`                 | optional                                                |
+
+Ideas that aren't side projects are short posts tagged `ideas`.
+
+### Snippet — `snippet`
+
+| Field         | Type                         | Notes                                                                                                                                                                            |
+| ------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`       | string                       | required                                                                                                                                                                         |
+| `slug`        | uid ← `title`                | required                                                                                                                                                                         |
+| `description` | text                         | optional                                                                                                                                                                         |
+| `language`    | enumeration                  | `typescript`, `javascript`, `tsx`, `svelte`, `python`, `bash`, `sql`, `go`, `c`, `cpp`, `json`, `yaml`, `dockerfile`, `text` — must match the Shiki languages the frontend loads |
+| `code`        | long text                    | required                                                                                                                                                                         |
+| `notes`       | rich text (Markdown)         | optional                                                                                                                                                                         |
+| `tags`        | relation, many-to-many → Tag |                                                                                                                                                                                  |
+
+### Project — `project`
+
+| Field       | Type                         | Notes                                                           |
+| ----------- | ---------------------------- | --------------------------------------------------------------- |
+| `title`     | string                       | required                                                        |
+| `slug`      | uid ← `title`                | required                                                        |
+| `summary`   | text                         | required                                                        |
+| `body`      | rich text (Markdown)         | optional                                                        |
+| `status`    | enumeration                  | `idea` \| `active` \| `shipped` \| `archived`, default `active` |
+| `links`     | `shared.link`, repeatable    | repo, live site, write-up…                                      |
+| `cover`     | media (image)                | optional                                                        |
+| `startedOn` | date                         | optional                                                        |
+| `featured`  | boolean                      | default `false`                                                 |
+| `sortOrder` | integer                      | optional manual ordering                                        |
+| `tags`      | relation, many-to-many → Tag | doubles as tech stack                                           |
+| `seo`       | `shared.seo`                 | optional                                                        |
+
+### Book review — `book-review`
+
+| Field        | Type                         | Notes                       |
+| ------------ | ---------------------------- | --------------------------- |
+| `title`      | string                       | required (the book's title) |
+| `slug`       | uid ← `title`                | required                    |
+| `author`     | string                       | required                    |
+| `cover`      | media (image)                | optional                    |
+| `rating`     | integer 1–5                  | optional                    |
+| `finishedOn` | date                         | optional                    |
+| `verdict`    | string (≤140)                | one-line takeaway           |
+| `body`       | rich text (Markdown)         | optional                    |
+| `link`       | string                       | publisher / OpenLibrary     |
+| `tags`       | relation, many-to-many → Tag |                             |
+| `seo`        | `shared.seo`                 | optional                    |
+
+## Not in the CMS
+
+- **Resume** — static page backed by typed data in `src/lib/content/resume.ts`. Shape it like future Strapi components (`experience[]`, `education[]`, `skillGroups[]`) so it can move into a `resume` single type later. Reasons are in [architecture.md](architecture.md#decisions).
+- **About page and home intro** — static copy in SvelteKit.
+
+## Working rules
+
+- The Content-Type Builder only works in `develop` mode. Schema changes are made locally in `cms/`, committed as `src/api/**/content-types/**/schema.json` and `src/components/**`, and shipped as a new image. Content is edited in the production admin.
+- The **Public** role gets no permissions. SvelteKit reads with a **read-only API token** (custom token: `find` and `findOne` on the five types).
+- Strapi 5 REST responses are flattened (no `attributes` wrapper) and entries have a `documentId`. Only published entries are returned unless `status=draft` is asked for.

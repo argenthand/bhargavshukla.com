@@ -1,0 +1,108 @@
+# Infrastructure
+
+## Domain and DNS
+
+The domain stays registered at **Porkbun**; DNS moves to **Cloudflare** (required for the Worker custom domain, Cache API, tag purge and Tunnel).
+
+1. Add `bhargavshukla.com` as a zone in Cloudflare (Free plan).
+2. **Before switching nameservers**, check the imported records include every email record — MX, SPF (`TXT v=spf1…`), DKIM, DMARC — or mail to hello@bhargavshukla.com stops arriving.
+3. Turn off DNSSEC at Porkbun.
+4. Set Cloudflare's two nameservers at Porkbun. Wait for the zone to go active (up to 24 h).
+5. Re-enable DNSSEC through Cloudflare (add the DS record it gives you at Porkbun).
+6. SSL/TLS mode: **Full (strict)**.
+
+| Hostname                  | Points to                  |
+| ------------------------- | -------------------------- |
+| `bhargavshukla.com`       | Worker custom domain       |
+| `www.bhargavshukla.com`   | Redirect Rule → apex       |
+| `cms.bhargavshukla.com`   | Cloudflare Tunnel → Strapi |
+| `media.bhargavshukla.com` | R2 public bucket           |
+
+## Frontend: Cloudflare Workers
+
+- `pnpm add -D @sveltejs/adapter-cloudflare wrangler`; swap the adapter import in `vite.config.ts` (this scaffold configures the adapter there — there is no `svelte.config.js`).
+- `wrangler.jsonc`:
+
+  ```jsonc
+  {
+  	"name": "bhargavshukla-com",
+  	"main": ".svelte-kit/cloudflare/_worker.js",
+  	"compatibility_date": "<today>",
+  	"compatibility_flags": ["nodejs_compat"],
+  	"assets": { "binding": "ASSETS", "directory": ".svelte-kit/cloudflare" },
+  	"routes": [{ "pattern": "bhargavshukla.com", "custom_domain": true }],
+  	"vars": { "STRAPI_URL": "https://cms.bhargavshukla.com", "CF_ZONE_ID": "<zone id>" },
+  	"observability": { "enabled": true }
+  }
+  ```
+
+- Connect **Workers Builds** to the GitHub repo so pushes to `main` deploy (PR preview builds included).
+- Free plan limits that matter: 100k requests/day, 3 MB compressed Worker size (watch the Shiki language count).
+
+## VPS: Hetzner Cloud CX23 (EU)
+
+Prices checked 2026-09-28 (Hetzner raised prices on 2026-06-15).
+
+| Option                                                | Spec                               | ~Monthly                                                 | Verdict                                                           |
+| ----------------------------------------------------- | ---------------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------- |
+| **Hetzner CX23** (Falkenstein, Nuremberg or Helsinki) | 2 vCPU, 4 GB, 40 GB, 20 TB traffic | €5.49 + IPv4 (~€0.50) + backups (20%, ~€1.10) ≈ **€7.1** | **Pick**                                                          |
+| Hetzner CAX11 (ARM)                                   | 2 vCPU, 4 GB                       | €5.99 + extras                                           | Fallback if CX shows "not available"; build a `linux/arm64` image |
+| Vultr 2 GB                                            | 1 vCPU, 2 GB                       | ~$10                                                     | Fallback for a US datacenter                                      |
+| DigitalOcean / Akamai 2 GB                            | 1 vCPU, 2 GB                       | $12                                                      | Poor value                                                        |
+| Hetzner US (CPX11)                                    | 2 vCPU, 2 GB                       | ~$20.49                                                  | Not competitive since June 2026                                   |
+| Oracle Always Free                                    | ARM                                | $0                                                       | Rejected: idle reclamation and account-termination risk           |
+
+- **EU is fine** for the origin: readers are served from Cloudflare's edge; the origin only sees cache misses (~100 ms extra) and admin sessions.
+- **4 GB** because Strapi runs in ~300–600 MB but its admin build needs ~2 GB+. The image is built in CI; the headroom allows an emergency on-box build.
+- **Keep IPv4**: GHCR doesn't support IPv6-only hosts.
+
+### Box setup (Ubuntu 24.04)
+
+1. Create the server with your SSH key, IPv4, and automated backups on.
+2. Create a non-root `deploy` user with sudo and Docker group; disable password auth and root login.
+3. Enable `unattended-upgrades`.
+4. Hetzner firewall: inbound **22 only**.
+5. Install Docker Engine and the compose plugin.
+
+### Services (`/opt/cms/docker-compose.yml`)
+
+| Service       | Details                                                                                                                                                  |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `strapi`      | `ghcr.io/argenthand/bhargavshukla-cms:<sha>`; volume `./data` → `/opt/app/data`; `DATABASE_FILENAME=/opt/app/data/data.db`; secrets from `/opt/cms/.env` |
+| `cloudflared` | Tunnel token from `.env`; public hostname `cms.bhargavshukla.com` → `http://strapi:1337`                                                                 |
+
+No reverse proxy, no certificates, no inbound 80/443.
+
+Production secrets in `/opt/cms/.env`: `APP_KEYS`, `API_TOKEN_SALT`, `ADMIN_JWT_SECRET`, `TRANSFER_TOKEN_SALT`, `JWT_SECRET`, `ENCRYPTION_KEY`, the R2 credentials, and `TUNNEL_TOKEN`.
+
+### Access control
+
+- **Cloudflare Access** (free) on `cms.bhargavshukla.com/admin*`, email one-time PIN to hello@bhargavshukla.com.
+- `/api/*` stays reachable but the Public role has no permissions; reads need the token.
+- Don't turn on Bot Fight Mode for the `cms` host — it can challenge the Worker's requests.
+
+### Deploying CMS changes
+
+- GitHub Action on changes under `cms/**` on `main`: buildx → push `ghcr.io/argenthand/bhargavshukla-cms:{sha,latest}`.
+- Deploy (manual for now): `ssh deploy@<vps> 'cd /opt/cms && docker compose pull && docker compose up -d'`.
+
+## Media: Cloudflare R2
+
+- Buckets: `media` (public, custom domain `media.bhargavshukla.com`) and `backups` (private).
+- Strapi upload provider: `@strapi/provider-upload-aws-s3` pointed at the R2 S3 endpoint.
+- Add `media.bhargavshukla.com` to `img-src` and `media-src` in Strapi's `config/middlewares.ts` CSP.
+- Free tier: 10 GB storage, no egress fees.
+
+## Backups
+
+| What                                          | When                | Where                                 |
+| --------------------------------------------- | ------------------- | ------------------------------------- |
+| `sqlite3 data.db ".backup …"` + `rclone copy` | nightly (host cron) | R2 `backups` bucket, 30-day retention |
+| `strapi export --no-encrypt`                  | weekly              | R2 `backups` bucket                   |
+| Hetzner automated backups                     | daily (Hetzner)     | Hetzner                               |
+
+**Restore drill:** at least once, restore a backup into a local Strapi and confirm it boots with content.
+
+## Runbook
+
+Step-by-step ops notes (exact commands, IPs, gotchas) are added here as tickets #10–#15 are done.
