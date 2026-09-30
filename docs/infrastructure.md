@@ -10,7 +10,7 @@ The domain stays registered at **Porkbun**; DNS moves to **Cloudflare** (require
 4. Set Cloudflare's two nameservers at Porkbun. Wait for the zone to go active (up to 24 h).
 5. Check again with `scripts/check-dns.sh` (public resolver) and send a test email from an outside account.
 6. Re-enable DNSSEC through Cloudflare (add the DS record it gives you at Porkbun).
-7. SSL/TLS mode: **Full (strict)**.
+7. SSL/TLS mode: **Full (strict)**, and **Always Use HTTPS** on (SSL/TLS → Edge Certificates) so every `http://` request gets a 301 to `https://`.
 
 Rollback: set Porkbun's nameservers back. Porkbun's own copy of the records stays in place until the move is done.
 
@@ -54,7 +54,7 @@ These must survive the move. `scripts/check-dns.sh` holds the same list.
 
   Branch and PR builds upload a version with a preview URL on `workers.dev` and don't touch production. Preview URLs need the `workers.dev` route, so the Worker is also reachable at `bhargavshukla-com.<account>.workers.dev`; the canonical tag (#6) points search engines at the apex.
 
-- **`www` → apex:** a proxied placeholder record `www` AAAA `100::`, plus a Redirect Rule (Rules → Redirect Rules → "Redirect from WWW to root" template): 301, keep the path and query string.
+- **`www` → apex:** a proxied placeholder record `www` AAAA `100::`, plus a Redirect Rule (Rules → Redirect Rules → "Redirect from WWW to root" template): 301, keep the path and query string. The rule only matches `https://www…`; Always Use HTTPS upgrades `http://www…` first (two hops), otherwise it reaches the `100::` placeholder and fails with a 523.
 - Free plan limits that matter: 100k requests/day, 3 MB compressed Worker size (watch the Shiki language count). The hello page is ~86 KiB gzipped.
 
 ## VPS: Hetzner Cloud CX23 (EU)
