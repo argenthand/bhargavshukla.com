@@ -182,11 +182,18 @@ The order matters: Access must protect `/admin` **before** Strapi is reachable. 
    ssh -t deploy@<vps> 'read -rsp "Tunnel token: " t && echo && echo "TUNNEL_TOKEN=$t" >> /opt/cms/.env'
    ```
 
-4. **Bot Fight Mode:** Security → Bots for `bhargavshukla.com` must be **off**. On the Free plan it's zone-wide and can challenge the Worker's requests to `/api`.
+   The command appends. If you run it again, for example after rotating the token, delete the old `TUNNEL_TOKEN` line so only one is left: `grep -c '^TUNNEL_TOKEN=' /opt/cms/.env` should print `1`. Never paste the token into an editor or chat first. If it leaks, rotate it in the tunnel's settings.
+
+4. **Bot Fight Mode:** must be **off** for `bhargavshukla.com`. It's under Security → Settings → Bot traffic (Security → Bots in the older dashboard). On the Free plan it's zone-wide and can challenge the Worker's requests to `/api`.
 5. **Strapi secrets:** generated on the VPS into `/opt/cms/.env` with `openssl rand -base64 32` (`APP_KEYS` takes four, comma-separated). Never copy them off the box. Losing `ENCRYPTION_KEY` makes stored API tokens unreadable, but they still work.
 6. **Start:** re-copy `docker-compose.yml`, then `docker compose pull && docker compose up -d`. `cloudflared` starts once Strapi is healthy.
 7. **Admin user:** open `https://cms.bhargavshukla.com/admin`, pass the Access PIN, then register the Strapi super admin.
 
-Checks: `/admin` shows the Access login first; `curl https://cms.bhargavshukla.com/api/posts` → 403; `scripts/check-vps.sh <vps>` still shows only port 22 open.
+Checks:
+
+- `/admin` (and `POST /admin/register-admin`) redirect to the Access login first.
+- An email outside the policy gets no PIN, and the allowed email gets one right away. The login page looks the same for both, so it doesn't reveal which emails are allowed.
+- `curl https://cms.bhargavshukla.com/api/posts` → 403.
+- `scripts/check-vps.sh <vps>` still shows only port 22 open.
 
 Strapi runs with `PUBLIC_URL=https://cms.bhargavshukla.com` and `IS_PROXIED=true` (set in the compose file). Without trusting the proxy, Koa sees plain HTTP and the admin login fails with "Cannot send secure cookie over unencrypted connection".
