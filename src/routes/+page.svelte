@@ -1,10 +1,13 @@
 <script lang="ts">
 	import Icon from '$lib/components/Icon.svelte';
-	import { site } from '$lib/site';
+	import { isLive, site } from '$lib/site';
 
 	// F-home-v2 intro. The featured posts and "View all writing" come with the blog routes (#9).
+	// The Resume link shows once /resume ships (#5).
 	const links = [
-		{ href: '/resume', label: 'Resume', icon: 'arrow-right', size: 16 },
+		...(isLive('/resume')
+			? [{ href: '/resume', label: 'Resume', icon: 'arrow-right', size: 16 } as const]
+			: []),
 		{ href: `mailto:${site.email}`, label: 'Email', icon: 'mail', size: 14 },
 		{ href: site.linkedin, label: 'LinkedIn', icon: 'external', size: 14, external: true },
 		{ href: site.github, label: 'GitHub', icon: 'external', size: 14, external: true }
@@ -48,7 +51,7 @@
 			<ul class="flex flex-wrap items-center gap-x-5 gap-y-1">
 				{#each links as link (link.label)}
 					<li>
-						<!-- eslint-disable svelte/no-navigation-without-resolve -- /resume arrives in #5; the rest are external -->
+						<!-- eslint-disable svelte/no-navigation-without-resolve -- /resume is only listed once live; the rest are external -->
 						<a
 							href={link.href}
 							target={'external' in link ? '_blank' : undefined}

@@ -8,9 +8,16 @@ export const site = {
 	github: 'https://github.com/argenthand'
 };
 
-/** Primary nav: the header on md+ and the bottom tab bar below it. */
-export const nav = [
-	{ href: '/blog', label: 'Writing', icon: 'pen' },
-	{ href: '/snippets', label: 'Snippets', icon: 'code' },
-	{ href: '/resume', label: 'Resume', icon: 'file' }
+/**
+ * Primary nav: the header on md+ and the bottom tab bar below it.
+ * `live` stays false until the section's route ships (#9, #18, #5), so visitors never hit a 404.
+ */
+const sections = [
+	{ href: '/blog', label: 'Writing', icon: 'pen', live: false },
+	{ href: '/snippets', label: 'Snippets', icon: 'code', live: false },
+	{ href: '/resume', label: 'Resume', icon: 'file', live: false }
 ] as const;
+
+export const nav = sections.filter((section) => section.live);
+
+export const isLive = (href: string) => nav.some((section) => section.href === href);
