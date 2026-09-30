@@ -1,2 +1,8 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<svelte:head>
+	<title>Bhargav Shukla</title>
+</svelte:head>
+
+<main class="mx-auto max-w-2xl px-5 py-24">
+	<h1 class="text-4xl font-semibold">Bhargav Shukla</h1>
+	<p class="mt-4 text-lg text-neutral-600">A new site is on its way.</p>
+</main>
