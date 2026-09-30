@@ -1,0 +1,11 @@
+node_modules
+.tmp
+.env
+.env.*
+!.env.example
+build
+dist
+.strapi
+exports
+public/uploads/*
+!public/uploads/.gitkeep
