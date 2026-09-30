@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_resume_skill_groups",
+  "info": {
+    "displayName": "Skill group",
+    "icon": "puzzle",
+    "description": "A label and its skills, e.g. Languages: TypeScript, C#, SQL"
+  },
+  "options": {},
+  "attributes": {
+    "label": {
+      "type": "string",
+      "required": true
+    },
+    "skills": {
+      "type": "text",
+      "required": true
+    }
+  }
+}

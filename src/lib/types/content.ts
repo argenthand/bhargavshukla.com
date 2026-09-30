@@ -56,6 +56,23 @@ export interface Profile {
 	github: string | null;
 }
 
+/** The /resume page (single type); the header comes from the Profile. */
+export interface Resume {
+	location: string | null;
+	summary: string;
+	updatedAt: string;
+	experience: {
+		role: string;
+		company: string;
+		location: string | null;
+		startDate: string;
+		endDate: string | null;
+		highlights: string | null;
+	}[];
+	skillGroups: { label: string; skills: string }[];
+	education: { credential: string; school: string; year: string | null }[];
+}
+
 export interface Page<T> {
 	data: T[];
 	meta: { pagination: { page: number; pageSize: number; pageCount: number; total: number } };

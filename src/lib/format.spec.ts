@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { formatDate, isoDay, updatedDate, yearOf } from './format';
+import { formatDate, formatMonth, isoDay, updatedDate, yearOf } from './format';
 
 describe('dates', () => {
 	it('formats in UTC, so a date-only displayDate never shifts a day', () => {
 		expect(formatDate('2026-08-15')).toBe('August 15, 2026');
 		expect(isoDay('2026-09-22T23:30:00.000Z')).toBe('2026-09-22');
 		expect(yearOf('2025-12-31T23:59:00Z')).toBe(2025);
+		expect(formatMonth('2026-03-01')).toBe('Mar 2026');
 	});
 
 	it('shows "Updated" only on a later calendar day', () => {

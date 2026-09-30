@@ -1,0 +1,38 @@
+{
+  "kind": "singleType",
+  "collectionName": "resumes",
+  "info": {
+    "singularName": "resume",
+    "pluralName": "resumes",
+    "displayName": "Resume",
+    "description": "The /resume page. Name, tagline and contact links come from the Profile."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "location": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "text",
+      "required": true
+    },
+    "experience": {
+      "type": "component",
+      "repeatable": true,
+      "component": "resume.experience"
+    },
+    "skillGroups": {
+      "type": "component",
+      "repeatable": true,
+      "component": "resume.skill-group"
+    },
+    "education": {
+      "type": "component",
+      "repeatable": true,
+      "component": "resume.education"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_resume_educations",
+  "info": {
+    "displayName": "Education",
+    "icon": "book",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "credential": {
+      "type": "string",
+      "required": true
+    },
+    "school": {
+      "type": "string",
+      "required": true
+    },
+    "year": {
+      "type": "string"
+    }
+  }
+}

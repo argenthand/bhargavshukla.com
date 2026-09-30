@@ -193,6 +193,7 @@ html {
 - `print:bg-white print:text-black`; all rules black 1px; links print as plain text with full URLs (bhargavshukla.com, linkedin.com/in/…, github.com/…).
 - `break-inside-avoid` on every job; `break-after-avoid` on section headings; `@page { size: letter; margin: 0.6in 0.75in }`.
 - Target: page 1 = header, summary, all experience; page 2 = skills and education.
+- Not built: the mockup's page-2 running header and "Page n of 2" footer. Browsers can't place running content from CSS alone; the browser's own print header/footer option covers page numbers.
 
 ## Accessibility checklist
 

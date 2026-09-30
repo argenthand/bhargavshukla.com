@@ -10,7 +10,9 @@
 		| 'search'
 		| 'chevron-down'
 		| 'list'
-		| 'close';
+		| 'close'
+		| 'printer'
+		| 'globe';
 </script>
 
 <script lang="ts">
@@ -63,5 +65,12 @@
 		<path d="M3 6h.01" /><path d="M3 12h.01" /><path d="M3 18h.01" />
 	{:else if name === 'close'}
 		<path d="M18 6 6 18" /><path d="m6 6 12 12" />
+	{:else if name === 'printer'}
+		<path d="M6 9V3h12v6" />
+		<path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+		<path d="M6 14h12v7H6z" />
+	{:else if name === 'globe'}
+		<circle cx="12" cy="12" r="9" /><path d="M3 12h18" />
+		<path d="M12 3a14 14 0 0 1 0 18" /><path d="M12 3a14 14 0 0 0 0 18" />
 	{/if}
 </svg>

@@ -1,0 +1,32 @@
+{
+  "collectionName": "components_resume_experiences",
+  "info": {
+    "displayName": "Experience",
+    "icon": "briefcase",
+    "description": "One role. Leave the end date empty for a current role (shown as Present)."
+  },
+  "options": {},
+  "attributes": {
+    "role": {
+      "type": "string",
+      "required": true
+    },
+    "company": {
+      "type": "string",
+      "required": true
+    },
+    "location": {
+      "type": "string"
+    },
+    "startDate": {
+      "type": "date",
+      "required": true
+    },
+    "endDate": {
+      "type": "date"
+    },
+    "highlights": {
+      "type": "richtext"
+    }
+  }
+}
