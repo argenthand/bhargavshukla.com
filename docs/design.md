@@ -216,7 +216,7 @@ The handoff was written as if posts were Markdown files. Our posts come from Str
 | `category` enum               | `category` relation → Category collection type ([content-model.md](content-model.md)), so a new category needs no redeploy.       |
 | `related?: string[]` (slugs)  | `related` relation → Post.                                                                                                        |
 | `cover: { src, alt }`         | `cover` media; `alt` from its `alternativeText`.                                                                                  |
-| `featured?: boolean`          | `featured`; home shows the 3 newest featured posts.                                                                               |
+| `featured?: boolean`          | `featured`; home shows the 3 newest featured posts (the 3 newest posts, headed "Latest", while none are featured).                |
 | Snippet frontmatter           | Snippet type as is (`title`, `language`, `description`, `tags`, `code`, `notes`).                                                 |
 
 The handoff's "build it all at once" prompt is not used. The design is built ticket by ticket: #4 layout and typography, #5 resume, #6 SEO/error, #9 blog routes, #18 snippets — see [roadmap.md](roadmap.md).

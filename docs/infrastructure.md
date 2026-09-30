@@ -40,7 +40,7 @@ These must survive the move. `scripts/check-dns.sh` holds the same list.
 - `@sveltejs/adapter-cloudflare` is set in `vite.config.ts` (this scaffold configures the adapter there — there is no `svelte.config.js`). `wrangler` is a dev dependency; `pnpm-workspace.yaml` allows `workerd`'s install script.
 - [`wrangler.jsonc`](../wrangler.jsonc) names the Worker `bs-blog`, points `main` and the `ASSETS` binding at the adapter output in `.svelte-kit/cloudflare`, and claims `bhargavshukla.com` as a custom domain (Cloudflare creates its DNS record and certificate on deploy). `vars` are added by the tickets that need them: `STRAPI_URL` in #9/#15, `CF_ZONE_ID` in #17.
 - Node and pnpm versions for the build come from `.node-version` and `packageManager` in `package.json`.
-- **Test before merging, locally:** `pnpm build && pnpm exec wrangler dev` serves the production build in the Workers runtime at http://localhost:8787. Add `--ip 0.0.0.0` and open `http://<this machine's LAN IP>:8787` to check the layout on a phone. `pnpm exec wrangler deploy --dry-run` shows the bundle size.
+- **Test before merging, locally:** `pnpm build && pnpm exec wrangler dev --env-file .env` serves the production build in the Workers runtime at http://localhost:8787. Add `--ip 0.0.0.0` and open `http://<this machine's LAN IP>:8787` to check the layout on a phone. `pnpm exec wrangler deploy --dry-run` shows the bundle size.
 - **Workers Builds** (dashboard → Workers & Pages → Create → Import a repository) deploys `main` to production:
 
   | Setting                                | Value                  |

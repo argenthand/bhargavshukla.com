@@ -1,9 +1,14 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import Icon from '$lib/components/Icon.svelte';
+	import PostMeta from '$lib/components/PostMeta.svelte';
 	import { isLive, site } from '$lib/site';
 
-	// F-home-v2 intro. The featured posts and "View all writing" come with the blog routes (#9).
-	// The Resume link shows once /resume ships (#5).
+	let { data } = $props();
+
+	const [lead, ...rest] = $derived(data.home.posts);
+
+	// F-home-v2: the intro, then up to 3 featured posts. The Resume link shows once /resume ships (#5).
 	const links = [
 		...(isLive('/resume')
 			? [{ href: '/resume', label: 'Resume', icon: 'arrow-right', size: 16 } as const]
@@ -67,4 +72,56 @@
 			</ul>
 		</div>
 	</section>
+
+	{#if lead}
+		<section aria-labelledby="featured">
+			<h2
+				id="featured"
+				class="border-t-2 border-neutral-900 pt-2.5 text-xs font-semibold tracking-widest uppercase dark:border-neutral-100"
+			>
+				{data.home.heading}
+			</h2>
+			{@render story(lead, true)}
+			{#if rest.length > 0}
+				<div class="md:grid md:grid-cols-2 md:gap-8">
+					{#each rest as post (post.slug)}
+						{@render story(post, false)}
+					{/each}
+				</div>
+			{/if}
+			<div class="pt-3 pb-12 md:border-t md:border-neutral-200 dark:md:border-neutral-800">
+				<a
+					href={resolve('/blog')}
+					class="inline-flex min-h-11 items-center gap-2 font-semibold text-red-700 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+				>
+					View all writing <Icon name="arrow-right" />
+				</a>
+			</div>
+		</section>
+	{/if}
 </div>
+
+{#snippet story(post: (typeof data.home.posts)[number], isLead: boolean)}
+	<article
+		class={[
+			'flex flex-col gap-2 border-b border-neutral-200 py-5 dark:border-neutral-800',
+			!isLead && 'md:border-b-0'
+		]}
+	>
+		<PostMeta {post} />
+		<h3>
+			<a
+				href={resolve('/blog/[slug]', { slug: post.slug })}
+				class={[
+					'text-[22px]/snug font-semibold text-balance hover:text-red-700 dark:hover:text-red-400',
+					isLead ? 'md:text-3xl/snug' : 'md:text-2xl/snug'
+				]}
+			>
+				{post.title}
+			</a>
+		</h3>
+		<p class="line-clamp-2 text-[17px]/[1.55] text-neutral-600 dark:text-neutral-400">
+			{post.summary}
+		</p>
+	</article>
+{/snippet}

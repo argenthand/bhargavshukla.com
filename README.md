@@ -12,6 +12,7 @@ Design, decisions and the roadmap are in [docs/](docs/README.md).
 
 ```sh
 pnpm install
+cp .env.example .env   # STRAPI_URL and the local read-only STRAPI_TOKEN (see ## CMS)
 pnpm dev
 ```
 

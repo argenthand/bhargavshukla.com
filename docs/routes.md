@@ -6,17 +6,20 @@ src/
   app.d.ts                        App.Locals { cacheTags: Set<string> }, App.Platform
   lib/
     content/resume.ts             static resume data (typed)
-    types/content.ts              Post, Category, Snippet, Tag, Seo, Link
-    components/                   Seo.svelte, Nav.svelte (header nav + phone tab bar), PostList.svelte,
-                                  TagList.svelte (snippets), Prose.svelte, Toc.svelte (pill, sheet, sidebar), NextUp.svelte
+    format.ts                     dates as shown (UTC), shown date = displayDate ?? publishedAt
+    site.ts                       name, links, Primary nav (`live` flags hide sections until they ship)
+    types/content.ts              Post, PostSummary, Category, Media, Seo, Link, Heading (Snippet, Tag in #18)
+    components/                   Icon.svelte, PostMeta.svelte (category · date), Prose.svelte (+ code Copy),
+                                  Toc.svelte (pill + sheet, or sidebar), NextUp.svelte; Seo.svelte (#6), TagList.svelte (#18)
     server/
       strapi.ts                   typed REST client; records cache tags into locals
+      posts.ts                    post queries (lists, one post, home picks, Next up)
       markdown.ts                 marked + Shiki (fine-grained bundle, JS regex engine); h2/h3 ids + ToC list
       edge-cache.ts               cache key, bypass rules, TTL constants
       purge.ts                    webhook payload → tags; Cloudflare purge API call
   routes/
-    +layout.svelte                nav (Writing · Snippets · Resume; bottom tab bar below md), footer
-    +page.svelte, +page.server.ts /                 static intro (includes the about copy) + 3 newest featured posts
+    +layout.svelte                header nav (md+) and bottom tab bar (below md), footer
+    +page.svelte, +page.server.ts /                 intro + up to 3 featured posts (the newest posts while none are featured)
     +error.svelte                 404 / 5xx
     resume/+page.svelte           /resume           prerendered, print stylesheet, Save as PDF button
     blog/+page.server.ts          /blog             all posts by year; client-side search + category filter (?q=&cat=)
@@ -31,6 +34,7 @@ src/
 ## Conventions
 
 - Layout, tokens, component classes and behaviour follow [design.md](design.md). The nav stays at three items; see [design.md → Sections](design.md#sections).
+- `app.html` adds a `js` class to `<html>`; the `js:` Tailwind variant shows JavaScript-only UI (ToC pill, Copy buttons) and hides no-JS fallbacks.
 - Every `load` that reads content goes through `strapi(locals)`. The client fetches the data and records a `type:<model>` cache tag for the page (see [caching.md](caching.md)).
 - A missing slug throws `error(404)`. Error responses are never cached.
 - Cacheable `load`s await everything — no streamed promises — so the cached body is complete.

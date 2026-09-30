@@ -1,5 +1,16 @@
 <script lang="ts" module>
-	export type IconName = 'arrow-right' | 'mail' | 'external' | 'rss' | 'pen' | 'code' | 'file';
+	export type IconName =
+		| 'arrow-right'
+		| 'mail'
+		| 'external'
+		| 'rss'
+		| 'pen'
+		| 'code'
+		| 'file'
+		| 'search'
+		| 'chevron-down'
+		| 'list'
+		| 'close';
 </script>
 
 <script lang="ts">
@@ -43,5 +54,14 @@
 	{:else if name === 'file'}
 		<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" />
 		<path d="M8 13h8" /><path d="M8 17h5" />
+	{:else if name === 'search'}
+		<path d="M21 21l-4.3-4.3" /><circle cx="11" cy="11" r="7" />
+	{:else if name === 'chevron-down'}
+		<path d="m6 9 6 6 6-6" />
+	{:else if name === 'list'}
+		<path d="M8 6h13" /><path d="M8 12h13" /><path d="M8 18h13" />
+		<path d="M3 6h.01" /><path d="M3 12h.01" /><path d="M3 18h.01" />
+	{:else if name === 'close'}
+		<path d="M18 6 6 18" /><path d="m6 6 12 12" />
 	{/if}
 </svg>
