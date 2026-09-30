@@ -5,18 +5,35 @@
 The domain stays registered at **Porkbun**; DNS moves to **Cloudflare** (required for the Worker custom domain, Cache API, tag purge and Tunnel).
 
 1. Add `bhargavshukla.com` as a zone in Cloudflare (Free plan).
-2. **Before switching nameservers**, check the imported records include every email record — MX, SPF (`TXT v=spf1…`), DKIM, DMARC — or mail to hello@bhargavshukla.com stops arriving.
-3. Turn off DNSSEC at Porkbun.
+2. **Before switching nameservers**, check the imported records include every mail record below, all **DNS only** (grey cloud), or mail to hello@bhargavshukla.com stops arriving. `scripts/check-dns.sh <name>.ns.cloudflare.com` checks them against Cloudflare directly.
+3. Make sure DNSSEC is off at Porkbun. (It was never enabled there: whois said "unsigned" before the move.)
 4. Set Cloudflare's two nameservers at Porkbun. Wait for the zone to go active (up to 24 h).
-5. Re-enable DNSSEC through Cloudflare (add the DS record it gives you at Porkbun).
-6. SSL/TLS mode: **Full (strict)**.
+5. Check again with `scripts/check-dns.sh` (public resolver) and send a test email from an outside account.
+6. Re-enable DNSSEC through Cloudflare (add the DS record it gives you at Porkbun).
+7. SSL/TLS mode: **Full (strict)**.
 
-| Hostname                  | Points to                  |
-| ------------------------- | -------------------------- |
-| `bhargavshukla.com`       | Worker custom domain       |
-| `www.bhargavshukla.com`   | Redirect Rule → apex       |
-| `cms.bhargavshukla.com`   | Cloudflare Tunnel → Strapi |
-| `media.bhargavshukla.com` | R2 public bucket           |
+Rollback: set Porkbun's nameservers back. Porkbun's own copy of the records stays in place until the move is done.
+
+### Mail records (Proton Mail)
+
+These must survive the move. `scripts/check-dns.sh` holds the same list.
+
+| Name                                                                        | Type  | Value                                                                                          |
+| --------------------------------------------------------------------------- | ----- | ---------------------------------------------------------------------------------------------- |
+| `@`                                                                         | MX    | `10 mail.protonmail.ch`, `20 mailsec.protonmail.ch`                                            |
+| `@`                                                                         | TXT   | `v=spf1 include:_spf.protonmail.ch ~all`                                                       |
+| `@`                                                                         | TXT   | `protonmail-verification=…` (domain ownership for Proton)                                      |
+| `_dmarc`                                                                    | TXT   | `v=DMARC1; p=quarantine`                                                                       |
+| `protonmail._domainkey`, `protonmail2._domainkey`, `protonmail3._domainkey` | CNAME | `<selector>.domainkey.d4lcctuitj4vncts3htjpiqi2y3obpk4ah22jxwrnjskwwavp7iwq.domains.proton.ch` |
+
+### Hostnames
+
+| Hostname                  | Points to                  | Added in |
+| ------------------------- | -------------------------- | -------- |
+| `bhargavshukla.com`       | Worker custom domain       | #3       |
+| `www.bhargavshukla.com`   | Redirect Rule → apex       | #3       |
+| `cms.bhargavshukla.com`   | Cloudflare Tunnel → Strapi | #12      |
+| `media.bhargavshukla.com` | R2 public bucket           | #13      |
 
 ## Frontend: Cloudflare Workers
 
