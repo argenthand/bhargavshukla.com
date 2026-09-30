@@ -100,7 +100,7 @@ Production secrets in `/opt/cms/.env`: `APP_KEYS`, `API_TOKEN_SALT`, `ADMIN_JWT_
 
 ### Deploying CMS changes
 
-- GitHub Action on changes under `cms/**` on `main`: buildx → push `ghcr.io/argenthand/bhargavshukla-cms:{sha,latest}`.
+- [`.github/workflows/cms-image.yml`](../.github/workflows/cms-image.yml): on changes under `cms/**` on `main`, buildx pushes `ghcr.io/argenthand/bhargavshukla-cms:{sha,latest}`. Pull requests only build.
 - Deploy (manual for now): `ssh deploy@<vps> 'cd /opt/cms && docker compose pull && docker compose up -d'`.
 
 ## Media: Cloudflare R2
@@ -147,3 +147,21 @@ Gotchas:
 - First boot takes a few minutes (full upgrade, including a new kernel, then Docker). Until it finishes, root can still log in and `deploy` has no key. That's expected, and the check script waits for it.
 - If `deploy` has no key (step 1 skipped), SSH stays unhardened and root still works. Log in as root, fix `/home/deploy/.ssh/authorized_keys`, then run the last `runcmd` block of the cloud-init file by hand.
 - Hetzner reuses IPs. If `ssh` warns about a changed host key, remove the old entry with `ssh-keygen -R <ipv4>`.
+
+### CMS image and compose file (#11)
+
+The image is built by [`cms-image.yml`](../.github/workflows/cms-image.yml). The compose file is [`cms/deploy/docker-compose.yml`](../cms/deploy/docker-compose.yml), copied by hand to `/opt/cms/` on the VPS.
+
+1. **Package visibility** (once, after the first push from `main`): GitHub → your profile → Packages → `bhargavshukla-cms` → Package settings → Change visibility → Public. The image has no secrets in it, and a public image means the VPS pulls without a token.
+2. **Set up `/opt/cms`** (once):
+
+   ```sh
+   ssh deploy@<vps> 'sudo install -d -o deploy -g deploy /opt/cms /opt/cms/data && touch /opt/cms/.env && chmod 600 /opt/cms/.env'
+   scp cms/deploy/docker-compose.yml deploy@<vps>:/opt/cms/
+   ```
+
+   `data/` must be owned by uid 1000. That's `deploy` on the host and `node` in the image, so the `install -o deploy` above covers it. If Docker creates `data/` itself, it's owned by root and Strapi can't write the database.
+
+3. **Deploy:** `ssh deploy@<vps> 'cd /opt/cms && docker compose pull && docker compose up -d'`. To roll back, set `CMS_TAG=<sha>` in `/opt/cms/.env` and run the same command again. Re-copy `docker-compose.yml` whenever it changes in the repo.
+
+Until #12 fills in `/opt/cms/.env`, only `docker compose pull` is useful. Strapi needs its secrets, and `cloudflared` needs `TUNNEL_TOKEN`.

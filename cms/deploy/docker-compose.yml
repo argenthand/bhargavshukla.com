@@ -1,0 +1,34 @@
+# Production CMS on the VPS, at /opt/cms/docker-compose.yml (#11).
+# Secrets live in /opt/cms/.env (see cms/.env.example, plus TUNNEL_TOKEN from #12).
+# Deploy: docker compose pull && docker compose up -d. See docs/infrastructure.md → Runbook.
+
+services:
+  strapi:
+    # Pin a commit with CMS_TAG=<sha> in .env to roll back.
+    image: ghcr.io/argenthand/bhargavshukla-cms:${CMS_TAG:-latest}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      HOST: 0.0.0.0
+      PORT: '1337'
+      DATABASE_FILENAME: /opt/app/data/data.db
+    volumes:
+      # Must be owned by uid 1000 (`node` in the image, `deploy` on the host).
+      - ./data:/opt/app/data
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '--spider', 'http://127.0.0.1:1337/_health']
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+    # No published ports: only cloudflared reaches Strapi, over the compose network.
+
+  cloudflared:
+    image: cloudflare/cloudflared:2026.9.3
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:-} # from .env; added in #12
+    depends_on:
+      strapi:
+        condition: service_healthy
