@@ -280,3 +280,17 @@ docker compose start strapi
 ```
 
 If the whole VPS is gone: provision a new one (#10), set up the compose file and `.env` (#11, #12) with the **same** `ENCRYPTION_KEY` if you still have it, then restore as above. Hetzner's server backups are the faster route when the project still exists.
+
+### Production frontend ↔ CMS (#15)
+
+1. **Token:** production admin → Settings → API Tokens → Create new API Token. Name `frontend-read`, duration **Unlimited**, type **Custom**, permissions: Post `find` + `findOne`, Category `find` + `findOne` (nothing else). Strapi shows the token once.
+2. **Secret on the Worker:** Cloudflare → Workers & Pages → `bs-blog` → Settings → Variables and Secrets → Add → type **Secret**, name `STRAPI_TOKEN`, paste the token. Don't put it anywhere else. Secrets survive Workers Builds deploys; `STRAPI_URL` is a plain var in [`wrangler.jsonc`](../wrangler.jsonc).
+3. **Merge** the PR that sets `STRAPI_URL` and turns on Writing (`live: true` in `src/lib/site.ts`). The secret must exist first, or `/blog` returns 500.
+
+Checks:
+
+- `curl -s -o /dev/null -w '%{http_code}' https://bhargavshukla.com/blog` → 200.
+- A published post renders at `https://bhargavshukla.com/blog/<slug>`; a draft doesn't (404).
+- Workers & Pages → `bs-blog` → Observability (logs) shows no errors for those requests.
+
+If the token leaks: delete it in Strapi (Settings → API Tokens), create a new one and replace the secret.
