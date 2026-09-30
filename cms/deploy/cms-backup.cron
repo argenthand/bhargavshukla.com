@@ -1,0 +1,4 @@
+# CMS backups (#14). Install as /etc/cron.d/cms-backup (root-owned, mode 644).
+# Times are UTC. Output goes to syslog: journalctl -t cms-backup
+15 3 * * *  deploy  /opt/cms/backup.sh nightly 2>&1 | logger -t cms-backup
+45 3 * * 0  deploy  /opt/cms/backup.sh weekly 2>&1 | logger -t cms-backup

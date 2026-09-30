@@ -10,6 +10,9 @@ packages:
   - ca-certificates
   - curl
   - unattended-upgrades
+  # Backups (#14): cms/deploy/backup.sh
+  - sqlite3
+  - rclone
 
 groups:
   - docker
