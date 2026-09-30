@@ -9,11 +9,11 @@ Issues: https://github.com/argenthand/bhargavshukla.com/issues
 | Milestone                   | Done when                                                                                             |
 | --------------------------- | ----------------------------------------------------------------------------------------------------- |
 | **M0 · Foundations**        | An SSR "hello" page is live at https://bhargavshukla.com; email still works after the DNS move        |
-| **M1 · Static shell**       | Home, about and resume are live with the final layout (no CMS yet)                                    |
+| **M1 · Static shell**       | Home (with the about copy) and resume are live with the final layout (no CMS yet)                     |
 | **M2 · CMS locally**        | Posts written in a local Strapi render in local SvelteKit, with highlighted code                      |
 | **M3 · CMS in production**  | The first real post is published from production Strapi and shows on the live site (uncached)         |
 | **M4 · Edge cache + purge** | Pages come from the edge; publishing in Strapi updates the live site within seconds — **soft launch** |
-| **M5 · All sections**       | Snippets, projects/ideas, books and tag pages are live                                                |
+| **M5 · All sections**       | Snippets, with tag links and the tag filter, are live                                                 |
 | **Backlog**                 | Distribution and polish, in any order                                                                 |
 
 ## Tickets
@@ -22,10 +22,10 @@ Issues: https://github.com/argenthand/bhargavshukla.com/issues
 
 ### Design
 
-| #                                                                | Ticket                                        | Blocked by |
-| ---------------------------------------------------------------- | --------------------------------------------- | ---------- |
-| [#1](https://github.com/argenthand/bhargavshukla.com/issues/1)   | UI mockups                                    | —          |
-| [#23](https://github.com/argenthand/bhargavshukla.com/issues/23) | UI mockups: projects, books, tags, about, 404 | #1         |
+| #                                                                | Ticket                                           | Blocked by |
+| ---------------------------------------------------------------- | ------------------------------------------------ | ---------- |
+| [#1](https://github.com/argenthand/bhargavshukla.com/issues/1)   | UI mockups                                       | —          |
+| [#23](https://github.com/argenthand/bhargavshukla.com/issues/23) | UI mockups: home intro, error page, snippet tags | #1         |
 
 ### Phase 0 → M0
 
@@ -36,19 +36,19 @@ Issues: https://github.com/argenthand/bhargavshukla.com/issues
 
 ### Phase 1 → M1
 
-| #                                                              | Ticket                                | Blocked by |
-| -------------------------------------------------------------- | ------------------------------------- | ---------- |
-| [#4](https://github.com/argenthand/bhargavshukla.com/issues/4) | Layout and typography                 | #1, #3     |
-| [#5](https://github.com/argenthand/bhargavshukla.com/issues/5) | Resume page                           | #1, #4     |
-| [#6](https://github.com/argenthand/bhargavshukla.com/issues/6) | SEO basics, about page and error page | #4, #23    |
+| #                                                              | Ticket                    | Blocked by |
+| -------------------------------------------------------------- | ------------------------- | ---------- |
+| [#4](https://github.com/argenthand/bhargavshukla.com/issues/4) | Layout and typography     | #1, #3     |
+| [#5](https://github.com/argenthand/bhargavshukla.com/issues/5) | Resume page               | #1, #4     |
+| [#6](https://github.com/argenthand/bhargavshukla.com/issues/6) | SEO basics and error page | #4, #23    |
 
 ### Phase 2 → M2
 
-| #                                                              | Ticket                          | Blocked by |
-| -------------------------------------------------------------- | ------------------------------- | ---------- |
-| [#7](https://github.com/argenthand/bhargavshukla.com/issues/7) | Scaffold Strapi in `cms/`       | —          |
-| [#8](https://github.com/argenthand/bhargavshukla.com/issues/8) | Post, Tag and shared components | #7         |
-| [#9](https://github.com/argenthand/bhargavshukla.com/issues/9) | Strapi client and blog routes   | #1, #4, #8 |
+| #                                                              | Ticket                               | Blocked by |
+| -------------------------------------------------------------- | ------------------------------------ | ---------- |
+| [#7](https://github.com/argenthand/bhargavshukla.com/issues/7) | Scaffold Strapi in `cms/`            | —          |
+| [#8](https://github.com/argenthand/bhargavshukla.com/issues/8) | Post, Category and shared components | #7         |
+| [#9](https://github.com/argenthand/bhargavshukla.com/issues/9) | Strapi client and blog routes        | #1, #4, #8 |
 
 ### Phase 3 → M3
 
@@ -70,14 +70,11 @@ Issues: https://github.com/argenthand/bhargavshukla.com/issues
 
 ### Phase 5 → M5
 
-Each is a vertical slice: schema in `cms/`, deploy the image, then routes.
+A vertical slice: schema in `cms/`, deploy the image, then routes. Projects, book reviews and tag pages were cut in #23 (see [design.md → Sections](design.md#sections)).
 
-| #                                                                | Ticket             | Blocked by         |
-| ---------------------------------------------------------------- | ------------------ | ------------------ |
-| [#18](https://github.com/argenthand/bhargavshukla.com/issues/18) | Snippets           | #1, #17            |
-| [#19](https://github.com/argenthand/bhargavshukla.com/issues/19) | Projects and ideas | #17, #23           |
-| [#20](https://github.com/argenthand/bhargavshukla.com/issues/20) | Book reviews       | #17, #23           |
-| [#21](https://github.com/argenthand/bhargavshukla.com/issues/21) | Tag pages          | #18, #19, #20, #23 |
+| #                                                                | Ticket   | Blocked by   |
+| ---------------------------------------------------------------- | -------- | ------------ |
+| [#18](https://github.com/argenthand/bhargavshukla.com/issues/18) | Snippets | #1, #17, #23 |
 
 ### Backlog
 
@@ -89,6 +86,7 @@ Each is a vertical slice: schema in `cms/`, deploy the image, then routes.
 - Uptime checks on `/` and the CMS health endpoint
 - Generated OG images
 - Small animations
+- Projects section (Project type, `/projects`), if side projects outgrow posts
 
 ## Checks for every ticket
 
