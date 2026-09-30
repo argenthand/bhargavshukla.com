@@ -165,3 +165,28 @@ The image is built by [`cms-image.yml`](../.github/workflows/cms-image.yml). The
 3. **Deploy:** `ssh deploy@<vps> 'cd /opt/cms && docker compose pull && docker compose up -d'`. To roll back, set `CMS_TAG=<sha>` in `/opt/cms/.env` and run the same command again. Re-copy `docker-compose.yml` whenever it changes in the repo.
 
 Until #12 fills in `/opt/cms/.env`, only `docker compose pull` is useful. Strapi needs its secrets, and `cloudflared` needs `TUNNEL_TOKEN`.
+
+### Tunnel, Access and first boot (#12)
+
+The order matters: Access must protect `/admin` **before** Strapi is reachable. The first visitor to a fresh admin registers the super admin.
+
+1. **Access** (Cloudflare → Zero Trust; the first visit asks for a team name and the Free plan):
+   - Integrations → Identity providers: make sure **One-time PIN** is enabled.
+   - Access → Applications → Add → **Self-hosted**. Name `cms-admin`; domain `cms.bhargavshukla.com`, path `admin*`; session 24h.
+   - Policy `owner`: action **Allow**, include **Emails** `hello@bhargavshukla.com`.
+2. **Tunnel:** Networks → Tunnels → Create → **Cloudflared**, name `cms`, environment **Docker**. Copy the token: the long string after `--token`.
+   - Public hostname: subdomain `cms`, domain `bhargavshukla.com`, service **HTTP** `strapi:1337`. This also creates the DNS record.
+3. **Token to the VPS.** Paste it into the prompt; it isn't echoed or saved in shell history:
+
+   ```sh
+   ssh -t deploy@<vps> 'read -rsp "Tunnel token: " t && echo && echo "TUNNEL_TOKEN=$t" >> /opt/cms/.env'
+   ```
+
+4. **Bot Fight Mode:** Security → Bots for `bhargavshukla.com` must be **off**. On the Free plan it's zone-wide and can challenge the Worker's requests to `/api`.
+5. **Strapi secrets:** generated on the VPS into `/opt/cms/.env` with `openssl rand -base64 32` (`APP_KEYS` takes four, comma-separated). Never copy them off the box. Losing `ENCRYPTION_KEY` makes stored API tokens unreadable, but they still work.
+6. **Start:** re-copy `docker-compose.yml`, then `docker compose pull && docker compose up -d`. `cloudflared` starts once Strapi is healthy.
+7. **Admin user:** open `https://cms.bhargavshukla.com/admin`, pass the Access PIN, then register the Strapi super admin.
+
+Checks: `/admin` shows the Access login first; `curl https://cms.bhargavshukla.com/api/posts` → 403; `scripts/check-vps.sh <vps>` still shows only port 22 open.
+
+Strapi runs with `PUBLIC_URL=https://cms.bhargavshukla.com` and `IS_PROXIED=true` (set in the compose file). Without trusting the proxy, Koa sees plain HTTP and the admin login fails with "Cannot send secure cookie over unencrypted connection".

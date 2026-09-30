@@ -12,6 +12,8 @@ services:
       HOST: 0.0.0.0
       PORT: '1337'
       DATABASE_FILENAME: /opt/app/data/data.db
+      PUBLIC_URL: https://cms.bhargavshukla.com
+      IS_PROXIED: 'true'
     volumes:
       # Must be owned by uid 1000 (`node` in the image, `deploy` on the host).
       - ./data:/opt/app/data
