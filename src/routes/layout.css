@@ -1,3 +1,50 @@
+/* Broadsheet: the CSS entry from docs/design.md. Default Tailwind theme apart from the fonts. */
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+@theme {
+	--font-sans: 'Newsreader', ui-serif, Georgia, serif;
+	--font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+@page {
+	size: letter;
+	margin: 0.6in 0.75in;
+}
+
+/* Shiki dual themes (#9): render with themes { light: 'github-light', dark: 'github-dark' } */
+@media (prefers-color-scheme: dark) {
+	.shiki,
+	.shiki span {
+		color: var(--shiki-dark) !important;
+		background-color: var(--shiki-dark-bg) !important;
+	}
+}
+
+html {
+	scroll-padding-top: 4.5rem; /* sticky top bar + pill */
+}
+@media (width >= 64rem) {
+	html {
+		scroll-padding-top: 6rem;
+	}
+}
+@media (prefers-reduced-motion: no-preference) {
+	html {
+		scroll-behavior: smooth;
+	}
+}
+
+/* Focus ring for everything focusable (docs/design.md → Components). */
+@layer base {
+	:focus-visible {
+		outline: 2px solid var(--color-red-700);
+		outline-offset: 2px;
+	}
+	@media (prefers-color-scheme: dark) {
+		:focus-visible {
+			outline-color: var(--color-red-400);
+		}
+	}
+}
