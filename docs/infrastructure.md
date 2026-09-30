@@ -73,7 +73,7 @@ Prices checked 2026-09-28 (Hetzner raised prices on 2026-06-15).
 - **4 GB** because Strapi runs in ~300–600 MB but its admin build needs ~2 GB+. The image is built in CI; the headroom allows an emergency on-box build.
 - **Keep IPv4**: GHCR doesn't support IPv6-only hosts.
 
-### Box setup (Ubuntu 24.04)
+### Box setup (Ubuntu 26.04)
 
 1. Create the server with your SSH key, IPv4, and automated backups on.
 2. Create a non-root `deploy` user with sudo and Docker group; disable password auth and root login.
@@ -123,3 +123,27 @@ Production secrets in `/opt/cms/.env`: `APP_KEYS`, `API_TOKEN_SALT`, `ADMIN_JWT_
 ## Runbook
 
 Step-by-step ops notes (exact commands, IPs, gotchas) are added here as tickets #10–#15 are done.
+
+### Provision the VPS (#10)
+
+First-boot setup lives in [`cms/deploy/cloud-init.yaml`](../cms/deploy/cloud-init.yaml): `deploy` user (sudo, docker), Docker Engine + compose plugin, `unattended-upgrades`, and SSH hardening (no root, no passwords). The hardening only applies once `deploy` has a key.
+
+1. **SSH key** (once, on your Mac): `ssh-keygen -t ed25519 -C hello@bhargavshukla.com`, then add `~/.ssh/id_ed25519.pub` in Hetzner Console → Security → SSH keys.
+2. **Firewall:** Hetzner Console → Firewalls → create `cms-fw`. Keep the default inbound rules (TCP 22 and ICMP, from any IPv4/IPv6) and add nothing else. Leave outbound empty: any outbound rule blocks all other outbound traffic.
+3. **Server:** Add Server with:
+   - Location: Falkenstein, Nuremberg or Helsinki
+   - Image: Ubuntu 26.04 (Docker publishes packages for it)
+   - Type: CX23 (shared vCPU, x86). If it shows "not available", use CAX11 (ARM); #11 then builds `linux/arm64`.
+   - Networking: public IPv4 **and** IPv6
+   - SSH key: the one from step 1
+   - Firewall: `cms-fw`
+   - Backups: on. No volume: Hetzner backups skip volumes, and media goes to R2 (#13)
+   - Cloud config: paste the whole `cms/deploy/cloud-init.yaml`
+   - Name: `cms-instance`
+4. **Check:** `scripts/check-vps.sh <ipv4>` waits for first boot, then checks `deploy` + Docker Compose, root refused, password auth off, unattended-upgrades, and that only port 22 is reachable.
+
+Gotchas:
+
+- First boot takes a few minutes (full upgrade, including a new kernel, then Docker). Until it finishes, root can still log in and `deploy` has no key. That's expected, and the check script waits for it.
+- If `deploy` has no key (step 1 skipped), SSH stays unhardened and root still works. Log in as root, fix `/home/deploy/.ssh/authorized_keys`, then run the last `runcmd` block of the cloud-init file by hand.
+- Hetzner reuses IPs. If `ssh` warns about a changed host key, remove the old entry with `ssh-keygen -R <ipv4>`.

@@ -1,0 +1,49 @@
+#cloud-config
+# First-boot setup for the CMS VPS (#10); see docs/infrastructure.md → Runbook.
+# Paste this whole file into "Cloud config" when creating the server in the Hetzner console,
+# with your SSH key selected. Hetzner installs that key for root; this copies it to `deploy`,
+# and only then turns off root and password logins.
+
+package_update: true
+package_upgrade: true
+packages:
+  - ca-certificates
+  - curl
+  - unattended-upgrades
+
+groups:
+  - docker
+
+users:
+  - name: deploy
+    groups: [sudo, docker]
+    shell: /bin/bash
+    lock_passwd: true
+    # Key-only login and no password to type, so sudo can't ask for one.
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+
+write_files:
+  - path: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+
+runcmd:
+  # Docker Engine + compose plugin from Docker's apt repository
+  - install -m 0755 -d /etc/apt/keyrings
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+  - chmod a+r /etc/apt/keyrings/docker.asc
+  - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" > /etc/apt/sources.list.d/docker.list
+  - apt-get update
+  - DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  - systemctl enable --now docker unattended-upgrades
+  # Give deploy root's SSH key (from the Hetzner console)
+  - install -d -m 700 -o deploy -g deploy /home/deploy/.ssh
+  - install -m 600 -o deploy -g deploy /root/.ssh/authorized_keys /home/deploy/.ssh/authorized_keys
+  # Lock down SSH only if deploy can log in, so a failed step above can't lock everyone out.
+  # 10- sorts before Ubuntu's 50-cloud-init.conf, and sshd keeps the first value it reads.
+  - |
+    if [ -s /home/deploy/.ssh/authorized_keys ]; then
+      printf 'PermitRootLogin no\nPasswordAuthentication no\nKbdInteractiveAuthentication no\n' > /etc/ssh/sshd_config.d/10-hardening.conf
+      systemctl restart ssh
+    fi
