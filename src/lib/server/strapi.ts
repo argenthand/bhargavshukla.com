@@ -9,11 +9,12 @@ import type { Page } from '$lib/types/content';
 export const MODELS = {
 	post: 'posts',
 	category: 'categories',
-	profile: 'profile'
+	profile: 'profile',
+	resume: 'resume'
 } as const;
 
 /** Single types: GET returns one entry, not a page. */
-type SingleModel = 'profile';
+type SingleModel = 'profile' | 'resume';
 
 export type Model = keyof typeof MODELS;
 

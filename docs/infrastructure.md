@@ -306,3 +306,10 @@ Merging ships a new content type (CMS image) and a home page that reads it (Work
 3. **Content:** Content Manager → Single Types → Profile. Fill in name, tagline, bio (Markdown, blank line between paragraphs), email, LinkedIn and GitHub URLs → Save.
 
 Check: the home page shows the bio and links again, and `https://cms.bhargavshukla.com/api/profile` without a token → 403.
+
+### Resume single type (#5)
+
+1. **Deploy the CMS** once the `CMS image` workflow for the merge commit has finished: `docker compose pull && docker compose up -d` on the VPS.
+2. **Token:** production admin → Settings → API Tokens → `frontend-read` → add **Resume `find`** → Save.
+3. **Content, in your own time:** Content Manager → Single Types → Resume. Save drafts as often as you like; nothing shows until **Publish**. Until then `/resume` is a 404 and the Resume nav link stays hidden.
+4. **Show it:** once published, set `live: true` for Resume in `src/lib/site.ts` (a one-line PR). That adds it to the nav, the phone tab bar and the home intro's links.

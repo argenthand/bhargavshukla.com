@@ -26,6 +26,26 @@ The home intro and contact links (#42); the resume header reuses them. Edits go 
 
 Until the profile is saved, or when Strapi can't be reached, the home page shows the name from `src/lib/site.ts` and no bio or links.
 
+### Resume — `resume` (Draft & Publish on)
+
+The `/resume` page (#5). The header (name, tagline, email, LinkedIn, GitHub) comes from the Profile. Work on it as a draft; the page shows only the published version and returns 404 until the first publish.
+
+| Field         | Type                                       | Notes                                                             |
+| ------------- | ------------------------------------------ | ----------------------------------------------------------------- |
+| `location`    | string                                     | optional; printed in the header only, e.g. "Guelph, ON, Canada"   |
+| `summary`     | text                                       | required                                                          |
+| `experience`  | component `resume.experience`, repeatable  | shown newest first by start date, whatever the order in the admin |
+| `skillGroups` | component `resume.skill-group`, repeatable | shown in admin order                                              |
+| `education`   | component `resume.education`, repeatable   | shown in admin order                                              |
+
+| Component            | Fields                                                                                                                                                                                                            |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `resume.experience`  | `role` string (required), `company` string (required), `location` string (e.g. "Kitchener, ON · Hybrid"), `startDate` date (required), `endDate` date (empty = Present), `highlights` rich text (a Markdown list) |
+| `resume.skill-group` | `label` string (required), `skills` text (required; comma-separated)                                                                                                                                              |
+| `resume.education`   | `credential` string (required; e.g. "BEng, Computer Engineering"), `school` string (required), `year` string                                                                                                      |
+
+Dates show as month and year ("Mar 2026"); the day is ignored.
+
 ## Collection types
 
 ### Tag — `tag` (Draft & Publish off)
@@ -81,7 +101,6 @@ The post page shows "Updated …" from Strapi's `updatedAt` when it falls on a d
 
 ## Not in the CMS
 
-- **Resume** — static page backed by typed data in `src/lib/content/resume.ts`. Shape it like future Strapi components (`experience[]`, `education[]`, `skillGroups[]`) so it can move into a `resume` single type later. Reasons are in [architecture.md](architecture.md#decisions).
 - **Projects** — not in v1; see the backlog in [roadmap.md](roadmap.md).
 
 ## Writing in Markdown
@@ -93,5 +112,5 @@ The post page shows "Updated …" from Strapi's `updatedAt` when it falls on a d
 ## Working rules
 
 - The Content-Type Builder only works in `develop` mode. Schema changes are made locally in `cms/`, committed as `src/api/**/content-types/**/schema.json` and `src/components/**`, and shipped as a new image. Content is edited in the production admin.
-- The **Public** role gets no permissions. SvelteKit reads with a **read-only API token** (custom token: `find` and `findOne` on Post, Category, Snippet and Tag, and `find` on Profile).
+- The **Public** role gets no permissions. SvelteKit reads with a **read-only API token** (custom token: `find` and `findOne` on Post, Category, Snippet and Tag, and `find` on Profile and Resume).
 - Strapi 5 REST responses are flattened (no `attributes` wrapper) and entries have a `documentId`. Only published entries are returned unless `status=draft` is asked for.

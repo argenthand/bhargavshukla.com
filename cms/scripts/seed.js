@@ -1,6 +1,7 @@
 'use strict';
 
-// Local development seed (#8): categories, a few sample posts with code blocks, the profile (#42)
+// Local development seed (#8): categories, a few sample posts with code blocks, the profile (#42),
+// a sample resume (#5)
 // and a read-only API token for the SvelteKit frontend. Safe to re-run; existing data is kept, and an
 // existing token gets any new permissions.
 // Usage: npm run seed
@@ -16,7 +17,38 @@ const TOKEN_PERMISSIONS = [
   'api::category.category.find',
   'api::category.category.findOne',
   'api::profile.profile.find',
+  'api::resume.resume.find',
 ];
+
+// Placeholder roles from the design mockups, clearly marked; the real resume is written in production.
+const RESUME = {
+  location: 'Guelph, ON, Canada',
+  summary:
+    'Sample summary. Engineering manager with years of experience building web, mobile and embedded software. Recently moved from tech lead to leading a team.',
+  experience: [
+    {
+      role: 'Engineering Manager',
+      company: 'Sample Co.',
+      location: 'Kitchener, ON · Hybrid',
+      startDate: '2026-03-01',
+      endDate: null,
+      highlights: '- Lead a team of engineers shipping the customer web and mobile apps.\n- Introduced a team charter, weekly 1:1s and a quarterly growth-plan cycle.',
+    },
+    {
+      role: 'Senior Software Engineer, Tech Lead',
+      company: 'Sample Co.',
+      location: 'Kitchener, ON · Hybrid',
+      startDate: '2023-01-01',
+      endDate: '2026-03-01',
+      highlights: '- Tech lead for the policy-servicing app (.NET, React, PostgreSQL).\n- Wrote the team’s RFC template and ran fortnightly architecture reviews.',
+    },
+  ],
+  skillGroups: [
+    { label: 'Leadership', skills: '1:1s and coaching, hiring, roadmap planning, incident reviews' },
+    { label: 'Languages', skills: 'C#, TypeScript, Python, SQL' },
+  ],
+  education: [{ credential: 'Sample degree', school: 'Sample University', year: '2018' }],
+};
 
 const PROFILE = {
   name: 'Bhargav Shukla',
@@ -140,6 +172,14 @@ async function seed(strapi) {
   } else {
     await profile.create({ data: PROFILE });
     console.log('Profile: created');
+  }
+
+  const resume = strapi.documents('api::resume.resume');
+  if (await resume.findFirst({ status: 'draft' })) {
+    console.log('Resume: already there');
+  } else {
+    await resume.create({ data: RESUME, status: 'published' });
+    console.log('Resume: sample created and published');
   }
 
   const tokens = strapi.service('admin::api-token');

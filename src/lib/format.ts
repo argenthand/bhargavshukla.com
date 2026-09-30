@@ -14,6 +14,15 @@ export const formatDate = (iso: string) => long.format(new Date(iso));
 /** `YYYY-MM-DD` for `<time datetime>`. */
 export const isoDay = (iso: string) => new Date(iso).toISOString().slice(0, 10);
 
+const monthYear = new Intl.DateTimeFormat('en-US', {
+	month: 'short',
+	year: 'numeric',
+	timeZone: 'UTC'
+});
+
+/** "Mar 2026", for resume dates and "Last updated". */
+export const formatMonth = (iso: string) => monthYear.format(new Date(iso));
+
 export const yearOf = (iso: string) => new Date(iso).getUTCFullYear();
 
 /** "Updated …" shows only when the edit falls on a different calendar day from the shown date. */
