@@ -38,21 +38,21 @@ These must survive the move. `scripts/check-dns.sh` holds the same list.
 ## Frontend: Cloudflare Workers
 
 - `@sveltejs/adapter-cloudflare` is set in `vite.config.ts` (this scaffold configures the adapter there — there is no `svelte.config.js`). `wrangler` is a dev dependency; `pnpm-workspace.yaml` allows `workerd`'s install script.
-- [`wrangler.jsonc`](../wrangler.jsonc) names the Worker `bhargavshukla-com`, points `main` and the `ASSETS` binding at the adapter output in `.svelte-kit/cloudflare`, and claims `bhargavshukla.com` as a custom domain (Cloudflare creates its DNS record and certificate on deploy). `vars` are added by the tickets that need them: `STRAPI_URL` in #9/#15, `CF_ZONE_ID` in #17.
+- [`wrangler.jsonc`](../wrangler.jsonc) names the Worker `bs-blog`, points `main` and the `ASSETS` binding at the adapter output in `.svelte-kit/cloudflare`, and claims `bhargavshukla.com` as a custom domain (Cloudflare creates its DNS record and certificate on deploy). `vars` are added by the tickets that need them: `STRAPI_URL` in #9/#15, `CF_ZONE_ID` in #17.
 - Node and pnpm versions for the build come from `.node-version` and `packageManager` in `package.json`.
 - Run the production build locally in the Workers runtime: `pnpm build && pnpm exec wrangler dev`. `pnpm exec wrangler deploy --dry-run` shows the bundle size.
 - **Workers Builds** (dashboard → Workers & Pages → Create → Import a repository) deploys from GitHub:
 
   | Setting                            | Value                            |
   | ---------------------------------- | -------------------------------- |
-  | Worker name                        | `bhargavshukla-com` (must match) |
+  | Worker name                        | `bs-blog` (must match)           |
   | Production branch                  | `main`                           |
   | Build command                      | `pnpm build`                     |
   | Deploy command                     | `npx wrangler deploy`            |
   | Builds for non-production branches | on                               |
-  | Non-production deploy command      | `npx wrangler versions upload`   |
+  | Preview command                    | `npx wrangler preview` (default) |
 
-  Branch and PR builds upload a version with a preview URL on `workers.dev` and don't touch production. Preview URLs need the `workers.dev` route, so the Worker is also reachable at `bhargavshukla-com.<account>.workers.dev`; the canonical tag (#6) points search engines at the apex.
+  Branch and PR builds create a Preview with its own URL on `workers.dev` and don't touch production. `wrangler preview` (open beta) needs the `previews` block in `wrangler.jsonc`; it can stay empty. Don't use `npx wrangler versions upload` here: Workers Builds fails its Worker-match check on preview builds with "The name in your wrangler.jsonc file … must match the name of your Worker", even when the names match. Preview URLs need the `workers.dev` route, so the Worker is also reachable at `bs-blog.<account>.workers.dev`; the canonical tag (#6) points search engines at the apex.
 
 - **`www` → apex:** a proxied placeholder record `www` AAAA `100::`, plus a Redirect Rule (Rules → Redirect Rules → "Redirect from WWW to root" template): 301, keep the path and query string. The rule only matches `https://www…`; Always Use HTTPS upgrades `http://www…` first (two hops), otherwise it reaches the `100::` placeholder and fails with a 523.
 - Free plan limits that matter: 100k requests/day, 3 MB compressed Worker size (watch the Shiki language count). The hello page is ~86 KiB gzipped.

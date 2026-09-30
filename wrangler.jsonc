@@ -6,5 +6,7 @@
 	"compatibility_flags": ["nodejs_compat"],
 	"assets": { "binding": "ASSETS", "directory": ".svelte-kit/cloudflare" },
 	"routes": [{ "pattern": "bhargavshukla.com", "custom_domain": true }],
-	"observability": { "enabled": true }
+	"observability": { "enabled": true },
+	// Required by `wrangler preview`, the Preview command in Workers Builds. Can stay empty.
+	"previews": {}
 }
