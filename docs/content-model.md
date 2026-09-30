@@ -9,6 +9,23 @@ Draft & Publish is **on** for every collection type except Tag and Category. Lon
 | `shared.seo`  | `metaTitle` string (≤60), `metaDescription` text (≤160), `ogImage` media (image), `canonicalUrl` string (for cross-posts) |
 | `shared.link` | `label` string (required), `url` string (required)                                                                        |
 
+## Single types
+
+### Profile — `profile` (Draft & Publish off)
+
+The home intro and contact links (#42); the resume header reuses them. Edits go live as soon as they're saved.
+
+| Field      | Type                 | Notes                                                      |
+| ---------- | -------------------- | ---------------------------------------------------------- |
+| `name`     | string               | required; the intro heading                                |
+| `tagline`  | string               | required; the italic line under the name                   |
+| `bio`      | rich text (Markdown) | required; the intro paragraphs (there is no `/about` page) |
+| `email`    | email                | optional; the Email link (`mailto:`)                       |
+| `linkedin` | string               | optional; full URL                                         |
+| `github`   | string               | optional; full URL                                         |
+
+Until the profile is saved, or when Strapi can't be reached, the home page shows the name from `src/lib/site.ts` and no bio or links.
+
 ## Collection types
 
 ### Tag — `tag` (Draft & Publish off)
@@ -65,7 +82,6 @@ The post page shows "Updated …" from Strapi's `updatedAt` when it falls on a d
 ## Not in the CMS
 
 - **Resume** — static page backed by typed data in `src/lib/content/resume.ts`. Shape it like future Strapi components (`experience[]`, `education[]`, `skillGroups[]`) so it can move into a `resume` single type later. Reasons are in [architecture.md](architecture.md#decisions).
-- **Home intro** — static copy in SvelteKit. It includes the about copy; there is no `/about` page.
 - **Projects** — not in v1; see the backlog in [roadmap.md](roadmap.md).
 
 ## Writing in Markdown
@@ -77,5 +93,5 @@ The post page shows "Updated …" from Strapi's `updatedAt` when it falls on a d
 ## Working rules
 
 - The Content-Type Builder only works in `develop` mode. Schema changes are made locally in `cms/`, committed as `src/api/**/content-types/**/schema.json` and `src/components/**`, and shipped as a new image. Content is edited in the production admin.
-- The **Public** role gets no permissions. SvelteKit reads with a **read-only API token** (custom token: `find` and `findOne` on the four types: Post, Category, Snippet, Tag).
+- The **Public** role gets no permissions. SvelteKit reads with a **read-only API token** (custom token: `find` and `findOne` on Post, Category, Snippet and Tag, and `find` on Profile).
 - Strapi 5 REST responses are flattened (no `attributes` wrapper) and entries have a `documentId`. Only published entries are returned unless `status=draft` is asked for.

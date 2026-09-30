@@ -46,6 +46,16 @@ export interface Post extends PostSummary {
 	seo: Seo | null;
 }
 
+/** The home intro and contact links (single type). */
+export interface Profile {
+	name: string;
+	tagline: string;
+	bio: string;
+	email: string | null;
+	linkedin: string | null;
+	github: string | null;
+}
+
 export interface Page<T> {
 	data: T[];
 	meta: { pagination: { page: number; pageSize: number; pageCount: number; total: number } };
