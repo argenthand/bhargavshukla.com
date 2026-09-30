@@ -113,18 +113,18 @@ Production secrets in `/opt/cms/.env`: `APP_KEYS`, `API_TOKEN_SALT`, `ADMIN_JWT_
 
 ## Backups
 
-| What                                              | When                          | Where                                   |
-| ------------------------------------------------- | ----------------------------- | --------------------------------------- |
-| `sqlite3 data.db ".backup …"`, gzipped, `rclone`  | nightly 03:15 UTC (host cron) | R2 `cms-backups/nightly/`, kept 30 days |
-| `strapi export --no-encrypt` (content and config) | Sundays 03:45 UTC (host cron) | R2 `cms-backups/weekly/`, kept 90 days  |
-| Hetzner automated backups (whole server)          | daily (Hetzner)               | Hetzner, last 7                         |
+| What                                                  | When                          | Where                                   |
+| ----------------------------------------------------- | ----------------------------- | --------------------------------------- |
+| `sqlite3 data.db ".backup …"`, gzipped, `rclone`      | nightly 03:15 UTC (host cron) | R2 `cms-backups/nightly/`, kept 30 days |
+| `strapi export --no-encrypt` (content, config, media) | Sundays 03:45 UTC (host cron) | R2 `cms-backups/weekly/`, kept 90 days  |
+| Hetzner automated backups (whole server)              | daily (Hetzner)               | Hetzner, last 7                         |
 
 - [`cms/deploy/backup.sh`](../cms/deploy/backup.sh) does both, run by [`cms/deploy/cms-backup.cron`](../cms/deploy/cms-backup.cron) as `deploy`. Output goes to syslog (`journalctl -t cms-backup`).
 - The nightly copy is the whole database, so it restores everything, including admin users and API tokens. The weekly export can be imported into a fresh Strapi running the same schema.
 - It uses its own R2 token, scoped to `cms-backups` only, in `/opt/cms/backup.env`. Retention is an R2 lifecycle rule on each prefix.
-- Uploaded media lives in R2 `cms-media` and isn't copied nightly. R2 stores it durably, but deleting a file in the admin is permanent.
+- Uploaded media lives in R2 `cms-media`. The nightly copy has only the database records; the weekly export also downloads the files from R2. So a file deleted in the admin can be recovered from an export taken before the delete, for 90 days.
 
-**Restore drill:** at least once, restore a backup into a local Strapi and confirm it boots with content. Steps are in the runbook below.
+**Restore drill:** at least once, restore a backup into a local Strapi and confirm it boots with content. Steps are in the runbook below. Done on 2026-09-30 with the nightly copy: a draft post, its category and its image all came back, and the production admin login worked.
 
 ## Runbook
 
