@@ -1,6 +1,6 @@
 # Content model (Strapi 5)
 
-Draft & Publish is **on** for every collection type except Tag. Long-form fields use Strapi's **Rich text (Markdown)** field, not Blocks.
+Draft & Publish is **on** for every collection type except Tag and Category. Long-form fields use Strapi's **Rich text (Markdown)** field, not Blocks.
 
 ## Shared components
 
@@ -18,21 +18,36 @@ Draft & Publish is **on** for every collection type except Tag. Long-form fields
 | `name` | string       | required, unique |
 | `slug` | uid ← `name` | required         |
 
+### Category — `category` (Draft & Publish off)
+
+Every post has exactly one category. It is shown in the post heading and list rows, and drives the Writing filter ([design.md](design.md)). It is a collection type rather than an enumeration so a new category needs no schema change or redeploy.
+
+| Field  | Type         | Notes            |
+| ------ | ------------ | ---------------- |
+| `name` | string       | required, unique |
+| `slug` | uid ← `name` | required         |
+
+Initial categories: Leadership, Engineering, Tools, Ideas.
+
 ### Post — `post`
 
-| Field         | Type                         | Notes                                                   |
-| ------------- | ---------------------------- | ------------------------------------------------------- |
-| `title`       | string                       | required                                                |
-| `slug`        | uid ← `title`                | required                                                |
-| `summary`     | text (≤280)                  | required; used in lists, RSS, meta description fallback |
-| `body`        | rich text (Markdown)         | required                                                |
-| `cover`       | media (image)                | optional                                                |
-| `tags`        | relation, many-to-many → Tag |                                                         |
-| `featured`    | boolean                      | default `false`                                         |
-| `displayDate` | date                         | optional backdate override; falls back to `publishedAt` |
-| `seo`         | `shared.seo`                 | optional                                                |
+| Field         | Type                             | Notes                                                   |
+| ------------- | -------------------------------- | ------------------------------------------------------- |
+| `title`       | string                           | required                                                |
+| `slug`        | uid ← `title`                    | required                                                |
+| `summary`     | text (≤280)                      | required; used in lists, RSS, meta description fallback |
+| `body`        | rich text (Markdown)             | required                                                |
+| `cover`       | media (image)                    | optional; alt text from the media's `alternativeText`   |
+| `category`    | relation, many-to-one → Category | required                                                |
+| `tags`        | relation, many-to-many → Tag     |                                                         |
+| `related`     | relation, one-way → Post (many)  | optional; overrides "Next up" picks, frontend uses ≤ 2  |
+| `featured`    | boolean                          | default `false`; home shows the 3 newest featured       |
+| `displayDate` | date                             | optional backdate override; falls back to `publishedAt` |
+| `seo`         | `shared.seo`                     | optional                                                |
 
-Ideas that aren't side projects are short posts tagged `ideas`.
+Ideas that aren't side projects are short posts in the Ideas category.
+
+The post page shows "Updated …" from Strapi's `updatedAt` when it falls on a different calendar day from the shown publish date.
 
 ### Snippet — `snippet`
 
@@ -87,5 +102,5 @@ Ideas that aren't side projects are short posts tagged `ideas`.
 ## Working rules
 
 - The Content-Type Builder only works in `develop` mode. Schema changes are made locally in `cms/`, committed as `src/api/**/content-types/**/schema.json` and `src/components/**`, and shipped as a new image. Content is edited in the production admin.
-- The **Public** role gets no permissions. SvelteKit reads with a **read-only API token** (custom token: `find` and `findOne` on the five types).
+- The **Public** role gets no permissions. SvelteKit reads with a **read-only API token** (custom token: `find` and `findOne` on the six types).
 - Strapi 5 REST responses are flattened (no `attributes` wrapper) and entries have a `documentId`. Only published entries are returned unless `status=draft` is asked for.

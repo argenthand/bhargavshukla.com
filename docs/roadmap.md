@@ -18,13 +18,14 @@ Issues: https://github.com/argenthand/bhargavshukla.com/issues
 
 ## Tickets
 
-"Blocked by" lists hard dependencies only. UI tickets wait for the mockups in #1; infra tickets don't.
+"Blocked by" lists hard dependencies only. UI tickets wait for the mockups in #1 (or #23 for the pages it covers); infra tickets don't. The final design is in [design.md](design.md).
 
 ### Design
 
-| #                                                              | Ticket     | Blocked by |
-| -------------------------------------------------------------- | ---------- | ---------- |
-| [#1](https://github.com/argenthand/bhargavshukla.com/issues/1) | UI mockups | —          |
+| #                                                                | Ticket                                        | Blocked by |
+| ---------------------------------------------------------------- | --------------------------------------------- | ---------- |
+| [#1](https://github.com/argenthand/bhargavshukla.com/issues/1)   | UI mockups                                    | —          |
+| [#23](https://github.com/argenthand/bhargavshukla.com/issues/23) | UI mockups: projects, books, tags, about, 404 | #1         |
 
 ### Phase 0 → M0
 
@@ -39,7 +40,7 @@ Issues: https://github.com/argenthand/bhargavshukla.com/issues
 | -------------------------------------------------------------- | ------------------------------------- | ---------- |
 | [#4](https://github.com/argenthand/bhargavshukla.com/issues/4) | Layout and typography                 | #1, #3     |
 | [#5](https://github.com/argenthand/bhargavshukla.com/issues/5) | Resume page                           | #1, #4     |
-| [#6](https://github.com/argenthand/bhargavshukla.com/issues/6) | SEO basics, about page and error page | #1, #4     |
+| [#6](https://github.com/argenthand/bhargavshukla.com/issues/6) | SEO basics, about page and error page | #4, #23    |
 
 ### Phase 2 → M2
 
@@ -71,12 +72,12 @@ Issues: https://github.com/argenthand/bhargavshukla.com/issues
 
 Each is a vertical slice: schema in `cms/`, deploy the image, then routes.
 
-| #                                                                | Ticket             | Blocked by        |
-| ---------------------------------------------------------------- | ------------------ | ----------------- |
-| [#18](https://github.com/argenthand/bhargavshukla.com/issues/18) | Snippets           | #1, #17           |
-| [#19](https://github.com/argenthand/bhargavshukla.com/issues/19) | Projects and ideas | #1, #17           |
-| [#20](https://github.com/argenthand/bhargavshukla.com/issues/20) | Book reviews       | #1, #17           |
-| [#21](https://github.com/argenthand/bhargavshukla.com/issues/21) | Tag pages          | #1, #18, #19, #20 |
+| #                                                                | Ticket             | Blocked by         |
+| ---------------------------------------------------------------- | ------------------ | ------------------ |
+| [#18](https://github.com/argenthand/bhargavshukla.com/issues/18) | Snippets           | #1, #17            |
+| [#19](https://github.com/argenthand/bhargavshukla.com/issues/19) | Projects and ideas | #17, #23           |
+| [#20](https://github.com/argenthand/bhargavshukla.com/issues/20) | Book reviews       | #17, #23           |
+| [#21](https://github.com/argenthand/bhargavshukla.com/issues/21) | Tag pages          | #18, #19, #20, #23 |
 
 ### Backlog
 
@@ -86,8 +87,6 @@ Each is a vertical slice: schema in `cms/`, deploy the image, then routes.
 - Draft preview (Strapi 5 Preview → `/api/preview` cookie; the cache bypass already handles it)
 - Cloudflare Web Analytics (free, cookieless)
 - Uptime checks on `/` and the CMS health endpoint
-- Table of contents for long posts
-- Related posts by shared tags
 - Generated OG images
 - Small animations
 
