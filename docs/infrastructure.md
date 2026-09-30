@@ -106,8 +106,9 @@ Production secrets in `/opt/cms/.env`: `APP_KEYS`, `API_TOKEN_SALT`, `ADMIN_JWT_
 ## Media: Cloudflare R2
 
 - Buckets: `media` (public, custom domain `media.bhargavshukla.com`) and `backups` (private).
-- Strapi upload provider: `@strapi/provider-upload-aws-s3` pointed at the R2 S3 endpoint.
-- Add `media.bhargavshukla.com` to `img-src` and `media-src` in Strapi's `config/middlewares.ts` CSP.
+- Strapi upload provider: `@strapi/provider-upload-aws-s3` pointed at the R2 S3 endpoint ([`cms/config/plugins.ts`](../cms/config/plugins.ts)). It's only used when `R2_ACCESS_KEY_ID` is set, so local development keeps uploads in `cms/public/uploads`.
+- `media.bhargavshukla.com` is in `img-src` and `media-src` of Strapi's CSP ([`cms/config/middlewares.ts`](../cms/config/middlewares.ts)), so the admin can preview uploads.
+- One API token per job: Strapi's can only touch `media`, and the backup job (#14) gets its own for `backups`.
 - Free tier: 10 GB storage, no egress fees.
 
 ## Backups
@@ -197,3 +198,26 @@ Checks:
 - `scripts/check-vps.sh <vps>` still shows only port 22 open.
 
 Strapi runs with `PUBLIC_URL=https://cms.bhargavshukla.com` and `IS_PROXIED=true` (set in the compose file). Without trusting the proxy, Koa sees plain HTTP and the admin login fails with "Cannot send secure cookie over unencrypted connection".
+
+### R2 media storage (#13)
+
+1. **Buckets** (Cloudflare → R2 Object Storage → Create bucket; location Automatic, Standard storage): `media` and `backups`.
+2. **Custom domain:** `media` → Settings → Custom Domains → Connect Domain → `media.bhargavshukla.com`. This creates the DNS record. Leave the `r2.dev` public URL disabled, so the custom domain is the only public way in. `backups` stays private.
+3. **API token:** R2 → Manage API tokens → Create **Account API token**. Name `strapi-media`, permission **Object Read & Write**, applied to the `media` bucket only, no expiry. The page shows the Access Key ID and Secret Access Key once; the account ID is in the S3 endpoint (`https://<account-id>.r2.cloudflarestorage.com`).
+4. **Keys to the VPS.** Paste each into the prompt, the same way as the tunnel token:
+
+   ```sh
+   ssh -t deploy@<vps> 'for k in R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY; do read -rsp "$k: " v && echo && echo "$k=$v" >> /opt/cms/.env; done'
+   ```
+
+   `R2_BUCKET` and `R2_PUBLIC_URL` are in the compose file.
+
+5. **Deploy:** re-copy `docker-compose.yml`, then `docker compose pull && docker compose up -d`.
+
+Checks:
+
+- Upload an image in the production admin (Media Library). It previews in the admin, and its URL is `https://media.bhargavshukla.com/<file>`.
+- The object is in the `media` bucket, including the generated `thumbnail_`, `small_` and other format files.
+- Deleting it in the admin removes the objects from the bucket.
+
+The provider sends no ACL (`params.ACL` is explicitly `undefined`): R2 has no object ACLs, and by default the provider adds `public-read`.
