@@ -11,6 +11,8 @@
 	const updated = $derived(updatedDate(post));
 	// The ToC only earns its space with 2 or more sections.
 	const showToc = $derived(data.headings.filter((h) => h.level === 2).length >= 2);
+	// On lg+, the title and cover span the article + ToC columns (964px). Without a ToC they match
+	// the article column (680px), so everything lines up.
 </script>
 
 <svelte:head>
@@ -20,7 +22,10 @@
 
 <div class="px-5 pt-8 pb-14 md:px-8 lg:pt-14 lg:pb-16">
 	<header
-		class="mx-auto mb-7 flex max-w-[42.5rem] flex-col gap-3.5 lg:mb-10 lg:max-w-[60.25rem] lg:items-center lg:text-center"
+		class={[
+			'mx-auto mb-7 flex max-w-[42.5rem] flex-col gap-3.5 lg:mb-10 lg:items-center lg:text-center',
+			showToc && 'lg:max-w-[60.25rem]'
+		]}
 	>
 		{#if post.category}
 			<span class="text-xs font-semibold tracking-widest text-red-700 uppercase dark:text-red-400">
@@ -41,7 +46,12 @@
 
 	{#if post.cover}
 		<!-- Full-bleed on phones. -->
-		<div class="-mx-5 mb-7 md:mx-auto md:max-w-[42.5rem] lg:mb-12 lg:max-w-[60.25rem]">
+		<div
+			class={[
+				'-mx-5 mb-7 md:mx-auto md:max-w-[42.5rem] lg:mb-12',
+				showToc && 'lg:max-w-[60.25rem]'
+			]}
+		>
 			<img
 				src={post.cover.url}
 				alt={post.cover.alternativeText ?? ''}
@@ -53,7 +63,11 @@
 	{/if}
 
 	<div
-		class="mx-auto max-w-[42.5rem] lg:grid lg:max-w-none lg:grid-cols-[minmax(0,42.5rem)_13.75rem] lg:justify-center lg:gap-16"
+		class={[
+			'mx-auto max-w-[42.5rem]',
+			showToc &&
+				'lg:grid lg:max-w-none lg:grid-cols-[minmax(0,42.5rem)_13.75rem] lg:justify-center lg:gap-16'
+		]}
 	>
 		<article class="min-w-0">
 			{#if showToc}
