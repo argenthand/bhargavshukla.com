@@ -53,6 +53,8 @@ These must survive the move. `scripts/check-dns.sh` holds the same list.
 
   There are no preview deploys: the site has one author, local `wrangler dev` covers the same checks, and `workers.dev` preview URLs sit outside the `bhargavshukla.com` zone so they can't show edge-cache behaviour anyway. If the Worker is ever renamed or recreated, disconnect and reconnect the repository under Settings → Build → Git repository; otherwise builds fail with "The name in your wrangler.jsonc file … must match the name of your Worker" even when the names match (the build trigger still points at the old Worker).
 
+- **A merge that never builds:** each build shows up as a "Workers Builds: bs-blog" check on the merge commit, about a minute after the merge. If there's no check after a few minutes and no build in the dashboard, Cloudflare missed the push (seen once, on #44). Any new commit on `main` triggers a fresh build of the whole branch.
+
 - **`www` → apex:** a proxied placeholder record `www` AAAA `100::`, plus a Redirect Rule (Rules → Redirect Rules → "Redirect from WWW to root" template): 301, keep the path and query string. The rule only matches `https://www…`; Always Use HTTPS upgrades `http://www…` first (two hops), otherwise it reaches the `100::` placeholder and fails with a 523.
 - Free plan limits that matter: 100k requests/day, 3 MB compressed Worker size (watch the Shiki language count). The hello page is ~86 KiB gzipped.
 
