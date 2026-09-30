@@ -48,3 +48,18 @@ html {
 		}
 	}
 }
+
+/* `js:` applies once JavaScript runs (app.html adds .js to <html>): progressive enhancement
+   for the ToC pill and the code Copy button. */
+@custom-variant js (&:where(.js, .js *));
+
+/* Code blocks: the wrapper paints the background, not Shiki's <pre>. */
+.code-block .shiki {
+	--shiki-dark-bg: transparent;
+	background-color: transparent !important;
+	margin: 0;
+	padding: 1rem;
+	overflow-x: auto;
+	line-height: 1.7;
+	tab-size: 2;
+}

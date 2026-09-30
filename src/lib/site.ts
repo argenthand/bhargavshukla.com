@@ -10,7 +10,8 @@ export const site = {
 
 /**
  * Primary nav: the header on md+ and the bottom tab bar below it.
- * `live` stays false until the section's route ships (#9, #18, #5), so visitors never hit a 404.
+ * `live` stays false until the section works in production (#15 for Writing, #18, #5), so visitors
+ * never hit a 404 or an error page.
  */
 const sections = [
 	{ href: '/blog', label: 'Writing', icon: 'pen', live: false },

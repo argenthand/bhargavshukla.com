@@ -68,6 +68,12 @@ The post page shows "Updated …" from Strapi's `updatedAt` when it falls on a d
 - **Home intro** — static copy in SvelteKit. It includes the about copy; there is no `/about` page.
 - **Projects** — not in v1; see the backlog in [roadmap.md](roadmap.md).
 
+## Writing in Markdown
+
+- Code fences take the language and an optional filename: ` ```ts rotation.ts `. The block header shows both, with a Copy button.
+- Highlighted languages: TypeScript (`ts`), JavaScript (`js`), TSX, Svelte, Python (`py`), Bash (`sh`), SQL, Go, C, C++, C# (`cs`), JSON, YAML, Dockerfile. Anything else renders as plain text. The list lives in `src/lib/server/markdown.ts`, and each language adds to the Worker size.
+- `##` and `###` headings feed the table of contents, which appears once a post has two or more `##` sections.
+
 ## Working rules
 
 - The Content-Type Builder only works in `develop` mode. Schema changes are made locally in `cms/`, committed as `src/api/**/content-types/**/schema.json` and `src/components/**`, and shipped as a new image. Content is edited in the production admin.
