@@ -43,15 +43,15 @@ These must survive the move. `scripts/check-dns.sh` holds the same list.
 - **Test before merging, locally:** `pnpm build && pnpm exec wrangler dev` serves the production build in the Workers runtime at http://localhost:8787. Add `--ip 0.0.0.0` and open `http://<this machine's LAN IP>:8787` to check the layout on a phone. `pnpm exec wrangler deploy --dry-run` shows the bundle size.
 - **Workers Builds** (dashboard → Workers & Pages → Create → Import a repository) deploys `main` to production:
 
-  | Setting                            | Value                  |
-  | ---------------------------------- | ---------------------- |
-  | Worker name                        | `bs-blog` (must match) |
-  | Git branch (production)            | `main`                 |
-  | Build command                      | `pnpm build`           |
-  | Deploy command                     | `npx wrangler deploy`  |
-  | Builds for non-production branches | off                    |
+  | Setting                                | Value                  |
+  | -------------------------------------- | ---------------------- |
+  | Worker name                            | `bs-blog` (must match) |
+  | Branch control → Production branch     | `main`                 |
+  | Build command                          | `pnpm build`           |
+  | Deploy command                         | `npx wrangler deploy`  |
+  | Branch control → Enable Preview Builds | unchecked              |
 
-  There are no preview deploys: the site has one author, local `wrangler dev` covers the same checks, and `workers.dev` preview URLs sit outside the `bhargavshukla.com` zone so they can't show edge-cache behaviour anyway. If the Worker is ever renamed or recreated, disconnect and reconnect the repository under Settings → Build; otherwise builds fail with "The name in your wrangler.jsonc file … must match the name of your Worker" even when the names match (the build trigger still points at the old Worker).
+  There are no preview deploys: the site has one author, local `wrangler dev` covers the same checks, and `workers.dev` preview URLs sit outside the `bhargavshukla.com` zone so they can't show edge-cache behaviour anyway. If the Worker is ever renamed or recreated, disconnect and reconnect the repository under Settings → Build → Git repository; otherwise builds fail with "The name in your wrangler.jsonc file … must match the name of your Worker" even when the names match (the build trigger still points at the old Worker).
 
 - **`www` → apex:** a proxied placeholder record `www` AAAA `100::`, plus a Redirect Rule (Rules → Redirect Rules → "Redirect from WWW to root" template): 301, keep the path and query string. The rule only matches `https://www…`; Always Use HTTPS upgrades `http://www…` first (two hops), otherwise it reaches the `100::` placeholder and fails with a 523.
 - Free plan limits that matter: 100k requests/day, 3 MB compressed Worker size (watch the Shiki language count). The hello page is ~86 KiB gzipped.
