@@ -2,7 +2,7 @@
 # CMS backups to the R2 `cms-backups` bucket (#14); see docs/infrastructure.md → Backups.
 # Runs on the VPS as deploy, from /etc/cron.d/cms-backup:
 #   backup.sh nightly   SQLite online backup of data.db → nightly/data-<stamp>.db.gz
-#   backup.sh weekly    strapi export (content and config) → weekly/export-<stamp>.tar.gz
+#   backup.sh weekly    strapi export (content, config, media from R2) → weekly/export-<stamp>.tar.gz
 # For restores (by hand):
 #   backup.sh list                 what's in the bucket
 #   backup.sh fetch <key>          download one object into /opt/cms/restore/
