@@ -22,6 +22,11 @@ export RCLONE_CONFIG_R2_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID"
 export RCLONE_CONFIG_R2_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY"
 # The token can't create buckets, so don't let rclone try.
 export RCLONE_CONFIG_R2_NO_CHECK_BUCKET=true
+# rclone 1.60 (Ubuntu's) re-reads each upload by version ID, which R2 answers with 501.
+# Skip that; rclone still checks the MD5 the PUT returns.
+export RCLONE_CONFIG_R2_NO_HEAD=true
+# Everything is in the environment; no rclone.conf.
+export RCLONE_CONFIG=/dev/null
 
 stamp=$(date -u +%Y-%m-%dT%H%MZ)
 tmp=$(mktemp -d)
