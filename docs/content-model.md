@@ -13,6 +13,8 @@ Draft & Publish is **on** for every collection type except Tag and Category. Lon
 
 ### Tag — `tag` (Draft & Publish off)
 
+Used by snippets only. Each tag links to `/snippets?tag=<slug>`.
+
 | Field  | Type         | Notes            |
 | ------ | ------------ | ---------------- |
 | `name` | string       | required, unique |
@@ -27,7 +29,7 @@ Every post has exactly one category. It is shown in the post heading and list ro
 | `name` | string       | required, unique |
 | `slug` | uid ← `name` | required         |
 
-Initial categories: Leadership, Engineering, Tools, Ideas.
+Initial categories: Leadership, Engineering, Tools, Ideas, Books.
 
 ### Post — `post`
 
@@ -39,13 +41,12 @@ Initial categories: Leadership, Engineering, Tools, Ideas.
 | `body`        | rich text (Markdown)             | required                                                |
 | `cover`       | media (image)                    | optional; alt text from the media's `alternativeText`   |
 | `category`    | relation, many-to-one → Category | required                                                |
-| `tags`        | relation, many-to-many → Tag     |                                                         |
 | `related`     | relation, one-way → Post (many)  | optional; overrides "Next up" picks, frontend uses ≤ 2  |
 | `featured`    | boolean                          | default `false`; home shows the 3 newest featured       |
 | `displayDate` | date                             | optional backdate override; falls back to `publishedAt` |
 | `seo`         | `shared.seo`                     | optional                                                |
 
-Ideas that aren't side projects are short posts in the Ideas category.
+Ideas are short posts in the Ideas category. Book reviews are posts in the Books category: put the author in the title or summary, and the takeaway in the summary.
 
 The post page shows "Updated …" from Strapi's `updatedAt` when it falls on a different calendar day from the shown publish date.
 
@@ -61,46 +62,14 @@ The post page shows "Updated …" from Strapi's `updatedAt` when it falls on a d
 | `notes`       | rich text (Markdown)         | optional                                                                                                                                                                         |
 | `tags`        | relation, many-to-many → Tag |                                                                                                                                                                                  |
 
-### Project — `project`
-
-| Field       | Type                         | Notes                                                           |
-| ----------- | ---------------------------- | --------------------------------------------------------------- |
-| `title`     | string                       | required                                                        |
-| `slug`      | uid ← `title`                | required                                                        |
-| `summary`   | text                         | required                                                        |
-| `body`      | rich text (Markdown)         | optional                                                        |
-| `status`    | enumeration                  | `idea` \| `active` \| `shipped` \| `archived`, default `active` |
-| `links`     | `shared.link`, repeatable    | repo, live site, write-up…                                      |
-| `cover`     | media (image)                | optional                                                        |
-| `startedOn` | date                         | optional                                                        |
-| `featured`  | boolean                      | default `false`                                                 |
-| `sortOrder` | integer                      | optional manual ordering                                        |
-| `tags`      | relation, many-to-many → Tag | doubles as tech stack                                           |
-| `seo`       | `shared.seo`                 | optional                                                        |
-
-### Book review — `book-review`
-
-| Field        | Type                         | Notes                       |
-| ------------ | ---------------------------- | --------------------------- |
-| `title`      | string                       | required (the book's title) |
-| `slug`       | uid ← `title`                | required                    |
-| `author`     | string                       | required                    |
-| `cover`      | media (image)                | optional                    |
-| `rating`     | integer 1–5                  | optional                    |
-| `finishedOn` | date                         | optional                    |
-| `verdict`    | string (≤140)                | one-line takeaway           |
-| `body`       | rich text (Markdown)         | optional                    |
-| `link`       | string                       | publisher / OpenLibrary     |
-| `tags`       | relation, many-to-many → Tag |                             |
-| `seo`        | `shared.seo`                 | optional                    |
-
 ## Not in the CMS
 
 - **Resume** — static page backed by typed data in `src/lib/content/resume.ts`. Shape it like future Strapi components (`experience[]`, `education[]`, `skillGroups[]`) so it can move into a `resume` single type later. Reasons are in [architecture.md](architecture.md#decisions).
-- **About page and home intro** — static copy in SvelteKit.
+- **Home intro** — static copy in SvelteKit. It includes the about copy; there is no `/about` page.
+- **Projects** — not in v1; see the backlog in [roadmap.md](roadmap.md).
 
 ## Working rules
 
 - The Content-Type Builder only works in `develop` mode. Schema changes are made locally in `cms/`, committed as `src/api/**/content-types/**/schema.json` and `src/components/**`, and shipped as a new image. Content is edited in the production admin.
-- The **Public** role gets no permissions. SvelteKit reads with a **read-only API token** (custom token: `find` and `findOne` on the six types).
+- The **Public** role gets no permissions. SvelteKit reads with a **read-only API token** (custom token: `find` and `findOne` on the four types: Post, Category, Snippet, Tag).
 - Strapi 5 REST responses are flattened (no `attributes` wrapper) and entries have a `documentId`. Only published entries are returned unless `status=draft` is asked for.

@@ -1,6 +1,6 @@
 # bhargavshukla.com
 
-Source for [bhargavshukla.com](https://bhargavshukla.com) — a personal tech blog about moving from senior engineer / tech lead into engineering management, and beyond. Posts, code snippets, side projects, book reviews and a resume.
+Source for [bhargavshukla.com](https://bhargavshukla.com) — a personal tech blog about moving from senior engineer / tech lead into engineering management, and beyond. Posts (including book reviews), code snippets and a resume.
 
 - **Frontend:** SvelteKit (SSR) on Cloudflare Workers
 - **CMS:** Strapi 5, self-hosted (in `cms/`, once scaffolded)

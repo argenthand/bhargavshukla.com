@@ -1,6 +1,6 @@
 # Architecture
 
-A personal tech blog documenting the move from senior engineer / tech lead to engineering manager, "and beyond". Content: blog posts, code snippets, side projects and ideas, book reviews, and a resume page. Design: extremely minimalist and content-focused; small animations are a later nice-to-have. The final design and its tokens are in [design.md](design.md).
+A personal tech blog documenting the move from senior engineer / tech lead to engineering manager, "and beyond". Content: blog posts (including ideas and book reviews, as categories), code snippets, and a resume page. Design: extremely minimalist and content-focused; small animations are a later nice-to-have. The final design and its tokens are in [design.md](design.md).
 
 ## At a glance
 
@@ -13,7 +13,7 @@ A personal tech blog documenting the move from senior engineer / tech lead to en
                └──────────── zone purge API ◄── /api/purge ◄──────┘
 ```
 
-- **Frontend:** SvelteKit with `@sveltejs/adapter-cloudflare`, deployed as a **Cloudflare Worker with Static Assets** on the free plan. Pages are server-rendered per request (SEO matters); prerenderable pages (resume, about) ship as static assets.
+- **Frontend:** SvelteKit with `@sveltejs/adapter-cloudflare`, deployed as a **Cloudflare Worker with Static Assets** on the free plan. Pages are server-rendered per request (SEO matters); prerenderable pages (resume) ship as static assets.
 - **CMS:** Strapi 5, self-hosted with Docker Compose on a small VPS, SQLite database. SvelteKit reads its REST API with a read-only token.
 - **Decoupling:** content changes go live without redeploying the frontend. Rendered pages are cached at the edge with a short TTL and tagged with the content types they read; a Strapi webhook purges those tags on publish. See [caching.md](caching.md).
 - **Media:** Cloudflare R2 through Strapi's S3 upload provider, served from `media.bhargavshukla.com`.
@@ -27,7 +27,7 @@ A personal tech blog documenting the move from senior engineer / tech lead to en
 | Purge by `Cache-Tag`, not `cache.delete()`                    | `cache.delete()` only clears the data center it runs in, and URL purge doesn't work on Cache API entries. Tag purge is global and on the Free plan.                                                                                                                |
 | Tag pages by content **type** (`type:post`), not per document | Every page that shows posts is purged when any post changes — index, home, tag pages, RSS, sitemap, `__data.json`. Slug renames can't leave stale pages. Over-purging is free at this scale.                                                                       |
 | Resume is a static SvelteKit page                             | One layout-heavy page, edited a few times a year; needs a tuned print stylesheet; must stay up even if the VPS is down; git versions it. The one deliberate exception to "no redeploy for content". Data is shaped so it can move into a Strapi single type later. |
-| No separate "Idea" type                                       | A side-project idea is a Project with `status: idea`; any other idea is a short Post in the Ideas category.                                                                                                                                                        |
+| Few sections: no Project, Book review or cross-type tag pages | Keeps the nav at three items and M5 to one ticket. Ideas and book reviews are posts in their own categories; tags live on snippets only; projects wait in the backlog. The about copy lives in the home intro.                                                     |
 | SQLite, not Postgres                                          | Single author, low write volume, one container instead of two, less RAM, backup is one file. `strapi transfer` moves to Postgres if that ever changes.                                                                                                             |
 | Markdown fields, not Strapi Blocks                            | Code-heavy writing; simple server-side rendering with Shiki highlighting.                                                                                                                                                                                          |
 | Cloudflare Tunnel in front of Strapi                          | No inbound 80/443 on the VPS, no reverse proxy, no certificates to manage.                                                                                                                                                                                         |

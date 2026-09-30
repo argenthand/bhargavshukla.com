@@ -11,9 +11,9 @@ Goal: near-static speed, with content changes live within seconds and no fronten
 
 ## Tagging strategy
 
-Each page is tagged with the **content types it read**: `type:post`, `type:snippet`, `type:project`, `type:book-review`, `type:tag`.
+Each page is tagged with the **content types it read**: `type:post`, `type:snippet`, `type:tag`.
 
-Publishing any post purges `type:post`, which clears every page that shows posts: the post itself, `/blog`, `/`, `/tags/*`, RSS, sitemap, and SvelteKit's `__data.json` for client-side navigation. A renamed slug can't leave a stale page behind. Per-document tags would add bookkeeping for no benefit at this scale.
+Publishing any post purges `type:post`, which clears every page that shows posts: the post itself, `/blog`, `/`, RSS, sitemap, and SvelteKit's `__data.json` for client-side navigation. A renamed slug can't leave a stale page behind. Per-document tags would add bookkeeping for no benefit at this scale.
 
 ## Implementation
 
@@ -35,9 +35,9 @@ interface Platform {
 
 ### 2. Strapi client — `src/lib/server/strapi.ts`
 
-- One map: `MODELS = { post: 'posts', snippet: 'snippets', project: 'projects', 'book-review': 'book-reviews', tag: 'tags' }` (model name → REST path).
+- One map: `MODELS = { post: 'posts', snippet: 'snippets', tag: 'tags' }` (model name → REST path).
 - `strapi(locals).find(model, query)` builds the URL with `qs`, sends `Authorization: Bearer ${STRAPI_TOKEN}`, and calls `locals.cacheTags.add('type:' + model)`.
-- Populating the Tag relation also adds `type:tag`.
+- Populating the Tag relation (snippets only) also adds `type:tag`, so renaming a tag purges the snippet pages.
 
 ### 3. Hook — `src/hooks.server.ts` + `src/lib/server/edge-cache.ts`
 
