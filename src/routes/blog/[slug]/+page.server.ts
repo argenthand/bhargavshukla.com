@@ -20,7 +20,13 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			displayDate: post.displayDate,
 			publishedAt: post.publishedAt,
 			updatedAt: post.updatedAt,
-			cover: post.cover && { ...post.cover, url: mediaUrl(post.cover.url) }
+			cover: post.cover && { ...post.cover, url: mediaUrl(post.cover.url) },
+			seo: {
+				title: post.seo?.metaTitle || post.title,
+				description: post.seo?.metaDescription || post.summary,
+				canonical: post.seo?.canonicalUrl || null,
+				ogImage: post.seo?.ogImage && { ...post.seo.ogImage, url: mediaUrl(post.seo.ogImage.url) }
+			}
 		},
 		html,
 		headings,

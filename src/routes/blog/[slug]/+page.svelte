@@ -1,24 +1,36 @@
 <script lang="ts">
 	import NextUp from '$lib/components/NextUp.svelte';
 	import Prose from '$lib/components/Prose.svelte';
+	import Seo from '$lib/components/Seo.svelte';
 	import Toc from '$lib/components/Toc.svelte';
 	import { formatDate, isoDay, shownDate, updatedDate } from '$lib/format';
-	import { site } from '$lib/site';
 
 	let { data } = $props();
 
 	const post = $derived(data.post);
 	const updated = $derived(updatedDate(post));
+	// Share image: the SEO override, else the cover.
+	const ogImage = $derived.by(() => {
+		const img = post.seo.ogImage ?? post.cover;
+		return img && { url: img.url, alt: img.alternativeText, width: img.width, height: img.height };
+	});
 	// The ToC only earns its space with 2 or more sections.
 	const showToc = $derived(data.headings.filter((h) => h.level === 2).length >= 2);
 	// On lg+, the title and cover span the article + ToC columns (964px). Without a ToC they match
 	// the article column (680px), so everything lines up.
 </script>
 
-<svelte:head>
-	<title>{post.title} · {site.name}</title>
-	<meta name="description" content={post.summary} />
-</svelte:head>
+<Seo
+	title={post.seo.title}
+	description={post.seo.description}
+	canonical={post.seo.canonical}
+	image={ogImage}
+	article={{
+		publishedTime: shownDate(post),
+		modifiedTime: post.updatedAt,
+		section: post.category?.name
+	}}
+/>
 
 <div class="px-5 pt-8 pb-14 md:px-8 lg:pt-14 lg:pb-16">
 	<header

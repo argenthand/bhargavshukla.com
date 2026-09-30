@@ -4,6 +4,7 @@
 	import { page } from '$app/state';
 	import Icon from '$lib/components/Icon.svelte';
 	import PostMeta from '$lib/components/PostMeta.svelte';
+	import Seo from '$lib/components/Seo.svelte';
 	import { shownDate, yearOf } from '$lib/format';
 	import { site } from '$lib/site';
 
@@ -53,16 +54,13 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Writing · {site.name}</title>
-	<meta name="description" content="Notes on leading engineers, and still being one." />
-</svelte:head>
+<Seo title="Writing" description={site.description} />
 
 <div class="mx-auto flex max-w-3xl flex-col gap-7 px-5 pt-8 pb-12 md:px-8 md:pt-12">
 	<div>
 		<h1 class="text-4xl/[1.1] font-medium tracking-tight">Writing</h1>
 		<p class="mt-2 text-lg text-neutral-600 italic dark:text-neutral-400">
-			Notes on leading engineers, and still being one.
+			{site.description}
 		</p>
 	</div>
 

@@ -9,8 +9,11 @@
 	let { children } = $props();
 
 	// A section stays current on its detail pages (/blog/<slug> keeps Writing active).
+	// Error pages have no current section.
 	const current = (href: string) =>
-		page.url.pathname === href || page.url.pathname.startsWith(`${href}/`) ? 'page' : undefined;
+		!page.error && (page.url.pathname === href || page.url.pathname.startsWith(`${href}/`))
+			? 'page'
+			: undefined;
 
 	const year = new Date().getFullYear();
 </script>

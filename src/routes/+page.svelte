@@ -2,6 +2,7 @@
 	import { resolve } from '$app/paths';
 	import Icon from '$lib/components/Icon.svelte';
 	import PostMeta from '$lib/components/PostMeta.svelte';
+	import Seo from '$lib/components/Seo.svelte';
 	import { isLive, site } from '$lib/site';
 
 	let { data } = $props();
@@ -40,9 +41,7 @@
 	);
 </script>
 
-<svelte:head>
-	<title>{site.name}</title>
-</svelte:head>
+<Seo description={profile?.bioSummary || site.description} />
 
 <div class="mx-auto max-w-5xl px-5 md:px-8">
 	<section
