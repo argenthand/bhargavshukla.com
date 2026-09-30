@@ -239,6 +239,8 @@ The provider sends no ACL (`params.ACL` is explicitly `undefined`): R2 has no ob
    ssh -t deploy@<vps> 'umask 077; for k in R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY; do read -rsp "$k: " v && echo && echo "$k=$v" >> /opt/cms/backup.env; done'
    ```
 
+   This writes `backup.env`, not `.env`. Afterwards `grep -c '^R2_' /opt/cms/.env /opt/cms/backup.env` should print 3 for each. If the backup keys land in `.env` too, the later lines win when Strapi restarts, and uploads fail with `AccessDenied`.
+
 4. **Retention:** R2 → `cms-backups` → Settings → Object lifecycle rules. Add `nightly-30d` (prefix `nightly/`, delete objects after 30 days) and `weekly-90d` (prefix `weekly/`, 90 days).
 5. **Script and schedule:**
 
