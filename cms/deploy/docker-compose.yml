@@ -14,6 +14,9 @@ services:
       DATABASE_FILENAME: /opt/app/data/data.db
       PUBLIC_URL: https://cms.bhargavshukla.com
       IS_PROXIED: 'true'
+      # Uploads go to R2 (#13); R2_ACCOUNT_ID and the R2 keys come from .env.
+      R2_BUCKET: media
+      R2_PUBLIC_URL: https://media.bhargavshukla.com
     volumes:
       # Must be owned by uid 1000 (`node` in the image, `deploy` on the host).
       - ./data:/opt/app/data
