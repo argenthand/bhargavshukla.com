@@ -2,7 +2,11 @@
 
 export const site = {
 	/** Header, footer and page titles; also the intro's fallback when the profile can't be loaded. */
-	name: 'Bhargav Shukla'
+	name: 'Bhargav Shukla',
+	/** Production origin for canonical and Open Graph URLs. */
+	url: 'https://bhargavshukla.com',
+	/** The Writing page's standfirst; also the home description when the profile can't load. */
+	description: 'Notes on leading engineers, and still being one.'
 };
 
 /**

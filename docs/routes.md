@@ -9,7 +9,7 @@ src/
     site.ts                       name, links, Primary nav (`live` flags hide sections until they ship)
     types/content.ts              Post, PostSummary, Category, Media, Seo, Link, Heading (Snippet, Tag in #18)
     components/                   Icon.svelte, PostMeta.svelte (category · date), Prose.svelte (+ code Copy),
-                                  Toc.svelte (pill + sheet, or sidebar), NextUp.svelte; Seo.svelte (#6), TagList.svelte (#18)
+                                  Toc.svelte (pill + sheet, or sidebar), NextUp.svelte, Seo.svelte; TagList.svelte (#18)
     server/
       strapi.ts                   typed REST client; records cache tags into locals
       posts.ts                    post queries (lists, one post, home picks, Next up)
@@ -35,6 +35,7 @@ src/
 
 - Layout, tokens, component classes and behaviour follow [design.md](design.md). The nav stays at three items; see [design.md → Sections](design.md#sections).
 - `app.html` adds a `js` class to `<html>`; the `js:` Tailwind variant shows JavaScript-only UI (ToC pill, Copy buttons) and hides no-JS fallbacks.
+- Every page renders `<Seo>`: title (+ site name), description, canonical on the production origin without the query string, Open Graph and Twitter tags. Posts use `seo.metaTitle`, `seo.metaDescription`, `seo.canonicalUrl` and `seo.ogImage` when set, else title, summary and cover. Error pages are `noindex`.
 - Every `load` that reads content goes through `strapi(locals)`. The client fetches the data and records a `type:<model>` cache tag for the page (see [caching.md](caching.md)).
 - A missing slug throws `error(404)`. Error responses are never cached.
 - Cacheable `load`s await everything — no streamed promises — so the cached body is complete.

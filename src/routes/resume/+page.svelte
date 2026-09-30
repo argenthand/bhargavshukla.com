@@ -3,6 +3,7 @@
 	// Content comes from the Strapi Resume; the header (name, tagline, links) from the Profile.
 	import { page } from '$app/state';
 	import Icon from '$lib/components/Icon.svelte';
+	import Seo from '$lib/components/Seo.svelte';
 	import { formatMonth } from '$lib/format';
 	import { site } from '$lib/site';
 
@@ -29,19 +30,16 @@
 	);
 
 	const dates = (start: string, end: string | null) =>
-		`${formatMonth(start)} – ${end ? formatMonth(end) : 'Present'}`;
+		`${formatMonth(start)} - ${end ? formatMonth(end) : 'Present'}`;
 
 	const sectionHeading =
 		'mb-2.5 border-b-2 border-neutral-900 pb-1.5 text-xs font-semibold tracking-widest uppercase break-after-avoid dark:border-neutral-100 print:border-b print:border-black';
 </script>
 
-<svelte:head>
-	<title>Resume · {profile?.name ?? site.name}</title>
-	<meta name="description" content={resume.summary} />
-</svelte:head>
+<Seo title="Resume" description={resume.summary} />
 
 <div
-	class="mx-auto flex max-w-[50rem] flex-col gap-6 px-5 pt-6 pb-14 md:px-8 md:pt-10 print:max-w-none print:p-0 print:text-black"
+	class="mx-auto flex max-w-200 flex-col gap-6 px-5 pt-6 pb-14 md:px-8 md:pt-10 print:max-w-none print:p-0 print:text-black"
 >
 	<div class="flex items-center justify-between gap-3 print:hidden">
 		<p class="text-sm text-neutral-600 dark:text-neutral-400">
