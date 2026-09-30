@@ -296,3 +296,13 @@ Checks:
 - Workers & Pages → `bs-blog` → Observability (logs) shows no errors for those requests.
 
 If the token leaks: delete it in Strapi (Settings → API Tokens), create a new one and replace the secret.
+
+### Profile single type (#42)
+
+Merging ships a new content type (CMS image) and a home page that reads it (Worker) at the same time. Until the steps below are done, the home page shows the name without the bio or links.
+
+1. **Deploy the CMS** once the `CMS image` workflow for the merge commit has finished, run `docker compose pull && docker compose up -d` on the VPS. The compose file doesn't change.
+2. **Token:** production admin → Settings → API Tokens → `frontend-read` → add **Profile `find`** → Save. The token value doesn't change.
+3. **Content:** Content Manager → Single Types → Profile. Fill in name, tagline, bio (Markdown, blank line between paragraphs), email, LinkedIn and GitHub URLs → Save.
+
+Check: the home page shows the bio and links again, and `https://cms.bhargavshukla.com/api/profile` without a token → 403.

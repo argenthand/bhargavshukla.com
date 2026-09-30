@@ -8,8 +8,12 @@ import type { Page } from '$lib/types/content';
 
 export const MODELS = {
 	post: 'posts',
-	category: 'categories'
+	category: 'categories',
+	profile: 'profile'
 } as const;
+
+/** Single types: GET returns one entry, not a page. */
+type SingleModel = 'profile';
 
 export type Model = keyof typeof MODELS;
 
@@ -48,17 +52,29 @@ export function mediaUrl(url: string): string {
 }
 
 export function strapi(locals: App.Locals, fetcher: typeof fetch = fetch) {
-	async function find<T>(model: Model, query: Query = {}): Promise<Page<T>> {
+	async function request(model: Model, query: Query): Promise<Response> {
 		for (const tag of tagsFor(model, query)) locals.cacheTags.add(tag);
 
 		const { STRAPI_URL, STRAPI_TOKEN } = env;
 		if (!STRAPI_URL || !STRAPI_TOKEN) error(500, 'STRAPI_URL and STRAPI_TOKEN must be set');
 
-		const res = await fetcher(buildUrl(STRAPI_URL, model, query), {
+		return fetcher(buildUrl(STRAPI_URL, model, query), {
 			headers: { Authorization: `Bearer ${STRAPI_TOKEN}` }
 		});
+	}
+
+	async function find<T>(model: Model, query: Query = {}): Promise<Page<T>> {
+		const res = await request(model, query);
 		if (!res.ok) error(502, `Strapi ${res.status} for ${MODELS[model]}`);
 		return (await res.json()) as Page<T>;
+	}
+
+	/** A single type's entry, or undefined when it hasn't been saved yet (Strapi answers 404). */
+	async function get<T>(model: SingleModel, query: Query = {}): Promise<T | undefined> {
+		const res = await request(model, query);
+		if (res.status === 404) return undefined;
+		if (!res.ok) error(502, `Strapi ${res.status} for ${MODELS[model]}`);
+		return ((await res.json()) as { data: T }).data;
 	}
 
 	/** Every page of a collection (Strapi caps pageSize at 100). */
@@ -71,5 +87,5 @@ export function strapi(locals: App.Locals, fetcher: typeof fetch = fetch) {
 		}
 	}
 
-	return { find, findAll };
+	return { find, findAll, get };
 }

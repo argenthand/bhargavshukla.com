@@ -1,11 +1,8 @@
-// Site-wide copy and links: the header, the home intro and (later) the resume and SEO tags.
+// Site structure that isn't content. The intro copy and contact links live in the Strapi profile (#42).
 
 export const site = {
-	name: 'Bhargav Shukla',
-	tagline: 'Engineering Manager',
-	email: 'hello@bhargavshukla.com',
-	linkedin: 'https://linkedin.com/in/bhargav-shukla',
-	github: 'https://github.com/argenthand'
+	/** Header, footer and page titles; also the intro's fallback when the profile can't be loaded. */
+	name: 'Bhargav Shukla'
 };
 
 /**

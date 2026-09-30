@@ -87,4 +87,15 @@ describe('strapi(locals)', () => {
 		const fetcher = vi.fn(async () => new Response('nope', { status: 403 }));
 		await expect(strapi(locals, fetcher).find('post')).rejects.toMatchObject({ status: 502 });
 	});
+
+	it('reads a single type, and returns undefined before it is saved', async () => {
+		const locals = { cacheTags: new Set<string>() };
+		const found = vi.fn(async () => new Response(JSON.stringify({ data: { name: 'B' } })));
+		expect(await strapi(locals, found).get('profile')).toEqual({ name: 'B' });
+		expect(found).toHaveBeenCalledWith('http://cms.test/api/profile', expect.anything());
+		expect([...locals.cacheTags]).toEqual(['type:profile']);
+
+		const missing = vi.fn(async () => new Response('{}', { status: 404 }));
+		expect(await strapi(locals, missing).get('profile')).toBeUndefined();
+	});
 });

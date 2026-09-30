@@ -1,7 +1,8 @@
 'use strict';
 
-// Local development seed (#8): categories, a few sample posts with code blocks, and a
-// read-only API token for the SvelteKit frontend. Safe to re-run; existing data is kept.
+// Local development seed (#8): categories, a few sample posts with code blocks, the profile (#42)
+// and a read-only API token for the SvelteKit frontend. Safe to re-run; existing data is kept, and an
+// existing token gets any new permissions.
 // Usage: npm run seed
 
 const { compileStrapi, createStrapi } = require('@strapi/strapi');
@@ -14,7 +15,23 @@ const TOKEN_PERMISSIONS = [
   'api::post.post.findOne',
   'api::category.category.find',
   'api::category.category.findOne',
+  'api::profile.profile.find',
 ];
+
+const PROFILE = {
+  name: 'Bhargav Shukla',
+  tagline: 'Engineering Manager',
+  bio: [
+    "Hey there. I'm a full-stack dev turned Engineering Manager who spends most of my time working with .NET and TypeScript. Over the last few years, I've jumped across a bunch of different stacks, including everything from Django + Vue on AWS to React + React Native + .NET on Azure. Domain-wise, I've moved around a fair bit too, building software for logistics, healthcare, P&C insurance, and currently, fintech.",
+    '',
+    'After serving as Tech Lead for my team since 2024, I recently made the leap into the Engineering Manager role. Trading the deep focus of IC work for 1-on-1s, hiring, and team roadmap strategy has been great, but it is definitely a completely different ballgame.',
+    '',
+    "That transition is the main reason I started this blog. I wanted a place to write about going from IC to EM in real time, focusing on the daily friction, the soft skills you can't really prepare for, and how to stay useful technically without micromanaging the people around you.",
+  ].join('\n'),
+  email: 'hello@bhargavshukla.com',
+  linkedin: 'https://linkedin.com/in/bhargav-shukla',
+  github: 'https://github.com/argenthand',
+};
 
 const POSTS = [
   {
@@ -117,9 +134,19 @@ async function seed(strapi) {
   }
   console.log(`Posts: ${created.length} created, ${POSTS.length - created.length} already there`);
 
+  const profile = strapi.documents('api::profile.profile');
+  if (await profile.findFirst()) {
+    console.log('Profile: already there');
+  } else {
+    await profile.create({ data: PROFILE });
+    console.log('Profile: created');
+  }
+
   const tokens = strapi.service('admin::api-token');
   if (await tokens.exists({ name: TOKEN_NAME })) {
-    console.log(`API token "${TOKEN_NAME}" already exists (view or regenerate it in Settings → API Tokens)`);
+    const existing = await tokens.getByName(TOKEN_NAME);
+    await tokens.update(existing.id, { permissions: TOKEN_PERMISSIONS });
+    console.log(`API token "${TOKEN_NAME}" already exists; permissions updated (view or regenerate it in Settings → API Tokens)`);
   } else {
     const token = await tokens.create({
       name: TOKEN_NAME,
