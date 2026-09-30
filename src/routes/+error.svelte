@@ -16,14 +16,14 @@
 
 <Seo
 	title={notFound ? 'Not found' : 'Something broke'}
-	description={notFound ? 'This page isn’t here.' : 'Something broke on the server.'}
+	description={notFound ? "This page isn't here." : 'Something broke on the server.'}
 	noindex
 />
 
 <div class="mx-auto max-w-3xl px-5 md:px-8">
 	<section
 		aria-labelledby="error-title"
-		class="flex max-w-[35rem] flex-col gap-4 py-14 md:pt-24 md:pb-30"
+		class="flex max-w-140 flex-col gap-4 py-14 md:pt-24 md:pb-30"
 	>
 		<span class="text-xs font-semibold tracking-widest text-red-700 uppercase dark:text-red-400">
 			{page.status} · {label}
@@ -32,7 +32,7 @@
 			id="error-title"
 			class="text-4xl/[1.1] font-medium tracking-tight text-balance md:text-5xl/[1.1]"
 		>
-			{notFound ? 'This page isn’t here' : 'Something broke on my end'}
+			{notFound ? "This page isn't here" : 'Something broke on my end'}
 		</h1>
 		<p class="text-lg/[1.7] text-neutral-700 dark:text-neutral-300">
 			{#if notFound}
@@ -41,7 +41,7 @@
 					? 'Try the writing index, or start from the home page.'
 					: 'Start from the home page.'}
 			{:else}
-				It’s not you. Give it a minute and try again; if it keeps happening, the home page should
+				It's not you. Give it a minute and try again; if it keeps happening, the home page should
 				still load.
 			{/if}
 		</p>

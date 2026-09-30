@@ -169,7 +169,7 @@
 						<li class="border-b border-neutral-200 dark:border-neutral-800">
 							<a
 								href={resolve('/blog/[slug]', { slug: post.slug })}
-								class="group flex flex-col gap-1.5 py-[18px]"
+								class="group flex flex-col gap-1.5 py-4.5"
 							>
 								<span
 									class="text-xl/snug font-semibold text-balance group-hover:text-red-700 md:text-[22px]/snug dark:group-hover:text-red-400"
