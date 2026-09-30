@@ -6,5 +6,7 @@
 	"compatibility_flags": ["nodejs_compat"],
 	"assets": { "binding": "ASSETS", "directory": ".svelte-kit/cloudflare" },
 	"routes": [{ "pattern": "bhargavshukla.com", "custom_domain": true }],
-	"observability": { "enabled": true }
+	"observability": { "enabled": true },
+	// STRAPI_TOKEN is a secret: `pnpm exec wrangler secret put STRAPI_TOKEN` (docs/infrastructure.md).
+	"vars": { "STRAPI_URL": "https://cms.bhargavshukla.com" }
 }
