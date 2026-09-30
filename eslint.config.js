@@ -10,6 +10,8 @@ const gitignorePath = path.resolve(import.meta.dirname, '.gitignore');
 
 export default defineConfig(
 	includeIgnoreFile(gitignorePath),
+	// Strapi app with its own npm project and tooling (#7)
+	{ ignores: ['cms/'] },
 	js.configs.recommended,
 	ts.configs.recommended,
 	svelte.configs.recommended,
