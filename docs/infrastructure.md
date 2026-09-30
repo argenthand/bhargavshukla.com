@@ -113,13 +113,18 @@ Production secrets in `/opt/cms/.env`: `APP_KEYS`, `API_TOKEN_SALT`, `ADMIN_JWT_
 
 ## Backups
 
-| What                                          | When                | Where                                     |
-| --------------------------------------------- | ------------------- | ----------------------------------------- |
-| `sqlite3 data.db ".backup …"` + `rclone copy` | nightly (host cron) | R2 `cms-backups` bucket, 30-day retention |
-| `strapi export --no-encrypt`                  | weekly              | R2 `cms-backups` bucket                   |
-| Hetzner automated backups                     | daily (Hetzner)     | Hetzner                                   |
+| What                                              | When                          | Where                                   |
+| ------------------------------------------------- | ----------------------------- | --------------------------------------- |
+| `sqlite3 data.db ".backup …"`, gzipped, `rclone`  | nightly 03:15 UTC (host cron) | R2 `cms-backups/nightly/`, kept 30 days |
+| `strapi export --no-encrypt` (content and config) | Sundays 03:45 UTC (host cron) | R2 `cms-backups/weekly/`, kept 90 days  |
+| Hetzner automated backups (whole server)          | daily (Hetzner)               | Hetzner, last 7                         |
 
-**Restore drill:** at least once, restore a backup into a local Strapi and confirm it boots with content.
+- [`cms/deploy/backup.sh`](../cms/deploy/backup.sh) does both, run by [`cms/deploy/cms-backup.cron`](../cms/deploy/cms-backup.cron) as `deploy`. Output goes to syslog (`journalctl -t cms-backup`).
+- The nightly copy is the whole database, so it restores everything, including admin users and API tokens. The weekly export can be imported into a fresh Strapi running the same schema.
+- It uses its own R2 token, scoped to `cms-backups` only, in `/opt/cms/backup.env`. Retention is an R2 lifecycle rule on each prefix.
+- Uploaded media lives in R2 `cms-media` and isn't copied nightly. R2 stores it durably, but deleting a file in the admin is permanent.
+
+**Restore drill:** at least once, restore a backup into a local Strapi and confirm it boots with content. Steps are in the runbook below.
 
 ## Runbook
 
@@ -223,3 +228,53 @@ Checks:
 If uploads fail with `AccessDenied` in the Strapi logs, check that `R2_BUCKET` in the compose file matches the bucket's name exactly. A token scoped to one bucket gets `AccessDenied`, not `NoSuchBucket`, for any other name.
 
 The provider sends no ACL (`params.ACL` is explicitly `undefined`): R2 has no object ACLs, and by default the provider adds `public-read`.
+
+### Backups and restore (#14)
+
+1. **Packages:** `sudo apt-get install -y sqlite3 rclone` (new servers get them from `cloud-init.yaml`).
+2. **Token:** R2 → Manage API tokens → Create **Account API token**. Name `vps-backups`, permission **Object Read & Write**, applied to `cms-backups` only, no expiry.
+3. **Keys to the VPS**, into their own file:
+
+   ```sh
+   ssh -t deploy@<vps> 'umask 077; for k in R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY; do read -rsp "$k: " v && echo && echo "$k=$v" >> /opt/cms/backup.env; done'
+   ```
+
+4. **Retention:** R2 → `cms-backups` → Settings → Object lifecycle rules. Add `nightly-30d` (prefix `nightly/`, delete objects after 30 days) and `weekly-90d` (prefix `weekly/`, 90 days).
+5. **Script and schedule:**
+
+   ```sh
+   scp cms/deploy/backup.sh deploy@<vps>:/opt/cms/backup.sh
+   scp cms/deploy/cms-backup.cron deploy@<vps>:/tmp/cms-backup
+   ssh deploy@<vps> 'sudo install -m 644 -o root -g root /tmp/cms-backup /etc/cron.d/cms-backup && rm /tmp/cms-backup'
+   ```
+
+6. **First run by hand:** `ssh deploy@<vps> '/opt/cms/backup.sh nightly && /opt/cms/backup.sh weekly && /opt/cms/backup.sh list'`.
+
+Checks:
+
+- `backup.sh list` shows new `nightly/` objects every day and a `weekly/` one every Sunday. `journalctl -t cms-backup` shows `… backup uploaded`.
+- Hetzner console → `cms-instance` → Backups is enabled.
+
+**Restore drill (local).** Keep the restored copy out of the repo. It holds the production admin users, so delete it afterwards.
+
+```sh
+ssh deploy@<vps> '/opt/cms/backup.sh fetch nightly/data-<stamp>.db.gz'
+scp deploy@<vps>:/opt/cms/restore/data-<stamp>.db.gz cms/.tmp/
+gunzip -c cms/.tmp/data-<stamp>.db.gz > cms/.tmp/restore.db
+cd cms && DATABASE_FILENAME=.tmp/restore.db npm run develop
+```
+
+Sign in with the production admin account and check posts, categories and media. Then delete `cms/.tmp/restore.db` and the `.gz`, and `/opt/cms/restore/` on the VPS.
+
+**Restore production** from a nightly copy:
+
+```sh
+cd /opt/cms
+./backup.sh fetch nightly/data-<stamp>.db.gz
+docker compose stop strapi
+mv data/data.db data/data.db.before-restore   # also move any data.db-wal / data.db-shm
+gunzip -c restore/data-<stamp>.db.gz > data/data.db
+docker compose start strapi
+```
+
+If the whole VPS is gone: provision a new one (#10), set up the compose file and `.env` (#11, #12) with the **same** `ENCRYPTION_KEY` if you still have it, then restore as above. Hetzner's server backups are the faster route when the project still exists.
