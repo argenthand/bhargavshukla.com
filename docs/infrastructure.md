@@ -103,7 +103,7 @@ Production secrets in `/opt/cms/.env`: `APP_KEYS`, `API_TOKEN_SALT`, `ADMIN_JWT_
 ### Deploying CMS changes
 
 - [`.github/workflows/cms-image.yml`](../.github/workflows/cms-image.yml): on changes under `cms/**` on `main`, buildx pushes `ghcr.io/argenthand/bhargavshukla-cms:{sha,latest}`. Pull requests only build.
-- Deploy (manual for now): `ssh deploy@<vps> 'cd /opt/cms && docker compose pull && docker compose up -d'`.
+- Deploy is automatic (#48): after the image is pushed, the `deploy` job SSHes to the VPS and runs [`cms/deploy/deploy.sh`](../cms/deploy/deploy.sh) for that commit. See Runbook → Automated CMS deploys.
 
 ## Media: Cloudflare R2
 
@@ -327,3 +327,22 @@ The post `cover` changes from a media field to the `shared.image` component, so 
 2. **Token:** production admin → Settings → API Tokens → `frontend-read` → add **Aside `find` + `findOne`** and **Tag `find` + `findOne`** → Save.
 3. **Content:** Content Manager → Tag (a few to start), then Aside → write and **Publish** at least one.
 4. **Show it:** set `live: true` for Asides in `src/lib/site.ts` (a one-line PR). Until then `/asides` works but isn't linked.
+
+### Automated CMS deploys (#48)
+
+Every push to `main` that touches `cms/**` (or the workflow) builds the image, then the `deploy` job in [`cms-image.yml`](../.github/workflows/cms-image.yml) runs [`cms/deploy/deploy.sh`](../cms/deploy/deploy.sh) on the VPS for that exact commit:
+
+1. Backup (`backup.sh nightly`), a restore point before any schema change.
+2. Copies `docker-compose.yml`, `backup.sh`, the cron file and `deploy.sh` itself from the repo at that commit (files that don't exist there are kept).
+3. Pins `CMS_TAG=<sha>` in `/opt/cms/.env`, pulls and restarts.
+4. Waits up to 4 minutes for Strapi to be healthy **on that revision**. If it isn't, it rolls back to the revision that was running and the job fails.
+
+Deploys run one at a time (`concurrency: cms-deploy`) and show up under the repo's **Environments → production**; an approval rule can be added there.
+
+**Access.** A dedicated ed25519 key, stored only as the GitHub secret `CMS_DEPLOY_KEY`. On the VPS its `~deploy/.ssh/authorized_keys` line starts with `restrict,command="/opt/cms/deploy.sh"`: it can't open a shell, forward ports or run anything else; the SHA reaches the script as `SSH_ORIGINAL_COMMAND`. `CMS_KNOWN_HOSTS` pins the VPS host key; `CMS_HOST` holds the address (kept out of the repo).
+
+**Roll back by hand** (with your own key): `ssh deploy@<vps> '/opt/cms/deploy.sh <previous sha>'`. Any commit with a pushed image works; `docker compose ps` and the image's `org.opencontainers.image.revision` label show what's running.
+
+**Rotate the deploy key:** generate a new key pair, replace the `restrict,command=…` line in `~deploy/.ssh/authorized_keys` with the new public key, `gh secret set CMS_DEPLOY_KEY < <private key>`, delete the local private key. Never test the key with a command that prints files: a mistyped `-i` falls back to your own unrestricted key (it happened once and leaked `.env`). Use `ssh -v -i <key> -o IdentitiesOnly=yes -o IdentityAgent=none deploy@<vps> 'echo probe'`: it must print the `deploy.sh` usage line.
+
+**Content-model changes still need manual steps** after the deploy: API token permissions for new types (Settings → API Tokens), and content.
