@@ -51,7 +51,7 @@ Dates show as month and year ("Mar 2026"); the day is ignored.
 
 ### Tag — `tag` (Draft & Publish off)
 
-Used by snippets only. Each tag links to `/snippets?tag=<slug>`.
+Used by asides only. Each tag links to `/asides?tag=<slug>`.
 
 | Field  | Type         | Notes            |
 | ------ | ------------ | ---------------- |
@@ -88,17 +88,23 @@ Ideas are short posts in the Ideas category. Book reviews are posts in the Books
 
 The post page shows "Updated …" from Strapi's `updatedAt` when it falls on a different calendar day from the shown publish date.
 
-### Snippet — `snippet`
+### Aside — `aside`
 
-| Field         | Type                         | Notes                                                                                                                                                                            |
-| ------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `title`       | string                       | required                                                                                                                                                                         |
-| `slug`        | uid ← `title`                | required                                                                                                                                                                         |
-| `description` | text                         | optional                                                                                                                                                                         |
-| `language`    | enumeration                  | `typescript`, `javascript`, `tsx`, `svelte`, `python`, `bash`, `sql`, `go`, `c`, `cpp`, `json`, `yaml`, `dockerfile`, `text` — must match the Shiki languages the frontend loads |
-| `code`        | long text                    | required                                                                                                                                                                         |
-| `notes`       | rich text (Markdown)         | optional                                                                                                                                                                         |
-| `tags`        | relation, many-to-many → Tag |                                                                                                                                                                                  |
+Short-form (#18): a code snippet, a quote, a practical tip or a thought, anything too small for a post. It replaces the code-only Snippet type, and is shown in full in the `/asides` stream with its own page at `/asides/<slug>`.
+
+| Field          | Type                         | Notes                                                                              |
+| -------------- | ---------------------------- | ---------------------------------------------------------------------------------- |
+| `kind`         | enumeration                  | required: `code`, `quote`, `tip`, `thought`; the label, the filter and the styling |
+| `title`        | string                       | optional; most quotes and thoughts don't need one                                  |
+| `slug`         | uid ← `title`                | required; type one yourself when there's no title                                  |
+| `body`         | rich text (Markdown)         | required; code goes in a fenced block (see below)                                  |
+| `sourceAuthor` | string                       | optional; for quotes: "— Author, _Title_"                                          |
+| `sourceTitle`  | string                       | optional; the book, talk or article                                                |
+| `sourceUrl`    | string                       | optional; links the title                                                          |
+| `tags`         | relation, many-to-many → Tag |                                                                                    |
+
+- **Quote:** write only the words; the page adds the curly quotes and the attribution.
+- **Untitled asides** get a name for links, page titles and screen readers: "Quote from _Title_", or the first words of the body.
 
 ## Not in the CMS
 
@@ -129,5 +135,5 @@ An image is either **your own upload** (`file`, served from R2, no credit) or **
 ## Working rules
 
 - The Content-Type Builder only works in `develop` mode. Schema changes are made locally in `cms/`, committed as `src/api/**/content-types/**/schema.json` and `src/components/**`, and shipped as a new image. Content is edited in the production admin.
-- The **Public** role gets no permissions. SvelteKit reads with a **read-only API token** (custom token: `find` and `findOne` on Post, Category, Snippet and Tag, and `find` on Profile and Resume).
+- The **Public** role gets no permissions. SvelteKit reads with a **read-only API token** (custom token: `find` and `findOne` on Post, Category, Aside and Tag, and `find` on Profile and Resume).
 - Strapi 5 REST responses are flattened (no `attributes` wrapper) and entries have a `documentId`. Only published entries are returned unless `status=draft` is asked for.

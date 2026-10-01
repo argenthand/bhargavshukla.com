@@ -13,7 +13,7 @@ Issues: https://github.com/argenthand/bhargavshukla.com/issues
 | **M2 · CMS locally**        | Posts written in a local Strapi render in local SvelteKit, with highlighted code                      |
 | **M3 · CMS in production**  | The first real post is published from production Strapi and shows on the live site (uncached)         |
 | **M4 · Edge cache + purge** | Pages come from the edge; publishing in Strapi updates the live site within seconds — **soft launch** |
-| **M5 · All sections**       | Snippets, with tag links and the tag filter, are live                                                 |
+| **M5 · All sections**       | Asides (short-form), with tag links and filters, are live                                             |
 | **Backlog**                 | Distribution and polish, in any order                                                                 |
 
 ## Tickets
@@ -72,9 +72,9 @@ Issues: https://github.com/argenthand/bhargavshukla.com/issues
 
 A vertical slice: schema in `cms/`, deploy the image, then routes. Projects, book reviews and tag pages were cut in #23 (see [design.md → Sections](design.md#sections)).
 
-| #                                                                | Ticket   | Blocked by   |
-| ---------------------------------------------------------------- | -------- | ------------ |
-| [#18](https://github.com/argenthand/bhargavshukla.com/issues/18) | Snippets | #1, #17, #23 |
+| #                                                                | Ticket                | Blocked by |
+| ---------------------------------------------------------------- | --------------------- | ---------- |
+| [#18](https://github.com/argenthand/bhargavshukla.com/issues/18) | Asides (was Snippets) | #1, #23    |
 
 ### Backlog
 

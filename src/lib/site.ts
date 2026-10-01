@@ -11,12 +11,12 @@ export const site = {
 
 /**
  * Primary nav: the header on md+ and the bottom tab bar below it.
- * `live` stays false until the section works in production (#18, #5), so visitors
+ * `live` stays false until the section works in production (#18 Asides, #5 Resume), so visitors
  * never hit a 404 or an error page.
  */
 const sections = [
 	{ href: '/blog', label: 'Writing', icon: 'pen', live: true },
-	{ href: '/snippets', label: 'Snippets', icon: 'code', live: false },
+	{ href: '/asides', label: 'Asides', icon: 'note', live: false },
 	{ href: '/resume', label: 'Resume', icon: 'file', live: false }
 ] as const;
 

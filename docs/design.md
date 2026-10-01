@@ -12,32 +12,33 @@ Source of truth: the "Final · Broadsheet" page of the [design canvas](https://c
 | Table of contents   | Below `lg`: sticky "On this page" pill that opens a bottom sheet. `lg+`: sticky right sidebar with scroll-spy. No progress bar or percentage: the highlighted heading is it. |
 | Recommended reading | "Next up" card for the first pick plus a compact "Also:" line for the second. 0 items → nothing rendered.                                                                    |
 | Dark mode           | Follows the system (`prefers-color-scheme`) through Tailwind's default `dark:` variant. No toggle in v1.                                                                     |
-| Scope               | Home, Writing, Post, Snippets (with tag links), Resume, error page, global nav. No projects, book or tag-page sections in v1: see [Sections](#sections).                     |
+| Scope               | Home, Writing, Post, Asides (with tag links), Resume, error page, global nav. No projects, book or tag-page sections in v1: see [Sections](#sections).                       |
 
 ## Sections
 
-Decided in #23: the site stays small so the nav stays at three items (Writing · Snippets · Resume) and the phone tab bar stays at three tabs.
+Decided in #23: the site stays small so the nav stays at three items (Writing · Asides · Resume; Asides replaced Snippets in #18) and the phone tab bar stays at three tabs.
 
 | Section      | Decision                                                                                                                  |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------- |
 | About        | No `/about` page. The home intro carries the bio (2–3 short paragraphs) and the Resume · Email · LinkedIn · GitHub links. |
 | Book reviews | Ordinary posts in the **Books** category. They get the Writing filter, Next up and the post layout for free.              |
-| Tags         | On snippets only. Each tag links to `/snippets?tag=<slug>`. Posts have no tags; their category does the grouping.         |
+| Tags         | On asides only. Each tag links to `/asides?tag=<slug>`. Posts have no tags; their category does the grouping.             |
 | Projects     | Not in v1. Parked in the backlog ([#22](https://github.com/argenthand/bhargavshukla.com/issues/22)).                      |
 
 ## Artboards
 
-| Artboard            | Shows                                                                                                                                                 |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `F-components`      | All states of the ToC pill, sheet and sidebar; Next up with 0/1/2 items; category label, meta, draft badge, focus ring; nav.                          |
-| `F-home-*`          | Home at phone (light, dark), tablet, desktop (light, dark).                                                                                           |
-| `F-writing-*`       | Writing list: phone in preview mode, phone no-results (dark), tablet, desktop, desktop no-results (dark).                                             |
-| `F-post-*`          | Post: phone with cover + pill, phone with sheet open, phone dark no cover, tablet (pill), desktop with sidebar, dark 1-rec variant.                   |
-| `F-snippet*`        | Snippets list and detail at every size; dark detail shows the "Copied" state.                                                                         |
-| `F-resume-*`        | Resume on screen at every size, and Letter print pages 1 and 2.                                                                                       |
-| `F-home-v2-*`       | Home with the about copy in the intro and an Email link; a Books post in Featured. Replaces `F-home-*` for the intro.                                 |
-| `F-error-*`         | Error page: 404 on phone (light, dark) and desktop (light), 500 on desktop (dark).                                                                    |
-| `F-snippets-tags-*` | Snippets list with tag links; filtered by `?tag=` (phone dark, desktop light); unknown tag (desktop dark). Supersedes the tag line in `F-snippets-*`. |
+| Artboard                  | Shows                                                                                                                                                                                                                                                      |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `F-components`            | All states of the ToC pill, sheet and sidebar; Next up with 0/1/2 items; category label, meta, draft badge, focus ring; nav.                                                                                                                               |
+| `F-home-*`                | Home at phone (light, dark), tablet, desktop (light, dark).                                                                                                                                                                                                |
+| `F-writing-*`             | Writing list: phone in preview mode, phone no-results (dark), tablet, desktop, desktop no-results (dark).                                                                                                                                                  |
+| `F-post-*`                | Post: phone with cover + pill, phone with sheet open, phone dark no cover, tablet (pill), desktop with sidebar, dark 1-rec variant.                                                                                                                        |
+| `F-snippet*`              | Snippets list and detail at every size; dark detail shows the "Copied" state.                                                                                                                                                                              |
+| `F-resume-*`              | Resume on screen at every size, and Letter print pages 1 and 2.                                                                                                                                                                                            |
+| `F-home-v2-*`             | Home with the about copy in the intro and an Email link; a Books post in Featured. Replaces `F-home-*` for the intro.                                                                                                                                      |
+| `F-error-*`               | Error page: 404 on phone (light, dark) and desktop (light), 500 on desktop (dark).                                                                                                                                                                         |
+| `F-asides-*`, `F-aside-*` | Asides (#18) replaced Snippets: the stream on phone and desktop with every kind, `?tag=` filtered (phone dark), no results (desktop dark), and an aside's page (code on desktop, untitled quote on phone dark). The `F-snippet*` artboards are superseded. |
+| `F-snippets-tags-*`       | Snippets list with tag links; filtered by `?tag=` (phone dark, desktop light); unknown tag (desktop dark). Supersedes the tag line in `F-snippets-*`.                                                                                                      |
 
 ## CSS entry
 
@@ -91,11 +92,11 @@ html {
 
 ## Breakpoints
 
-| Range        | Layout                                                                                         |
-| ------------ | ---------------------------------------------------------------------------------------------- |
-| < 768 (base) | Slim top bar with name + fixed bottom tab bar (Writing, Snippets, Resume). ToC = pill + sheet. |
-| `md` ≥ 768   | Header with name + nav; tab bar hidden. ToC still pill + sheet.                                |
-| `lg` ≥ 1024  | Post becomes 2 columns: 680px article + 220px sticky ToC sidebar with scroll-spy.              |
+| Range        | Layout                                                                                       |
+| ------------ | -------------------------------------------------------------------------------------------- |
+| < 768 (base) | Slim top bar with name + fixed bottom tab bar (Writing, Asides, Resume). ToC = pill + sheet. |
+| `md` ≥ 768   | Header with name + nav; tab bar hidden. ToC still pill + sheet.                              |
+| `lg` ≥ 1024  | Post becomes 2 columns: 680px article + 220px sticky ToC sidebar with scroll-spy.            |
 
 ## Colour roles
 
@@ -177,15 +178,15 @@ html {
 
 ## Routes
 
-| Route             | Notes                                                                                                                                                                                                                                                                                                                       |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`               | Intro (name, tagline, 2–3 paragraph bio, Resume · Email · LinkedIn · GitHub), the 3 newest featured posts, "View all writing →". Lead story large at `md+`, the other two in a 2-col grid.                                                                                                                                  |
-| `/blog`           | Newest first, no sort control. Grouped by year. Client-side title search (case-insensitive) + category filter, mirrored to `?q=&cat=`. Phone: native select; `md+`: underlined filter buttons with `aria-pressed`. Empty state with "Clear filters". Preview-mode banner + Draft badge.                                     |
-| `/blog/:slug`     | Category · title · published date · "Updated …" (only if a different calendar day). Optional cover (full-bleed on phone). ToC, prose body, Next up.                                                                                                                                                                         |
-| `/snippets`       | Rows: title (the only link to the snippet; the row itself is not a link, so tags can be links), language (mono, accent), description, tag links. `?tag=` filters client-side like `/blog` (not part of the cache key); the filter bar shows the count and Clear; no match → "Nothing here yet" with a link to all snippets. |
-| `/snippets/:slug` | Back link, title, language + tag links, description, Shiki code block with a Copy button (label → "Copied" for 2s, `aria-live`), notes in prose.                                                                                                                                                                            |
-| `+error`          | 404 and 5xx inside the site chrome, no active nav item. Static copy only (no data load). 404: Browse writing · Go home. 5xx: Try again (reload) · Go home.                                                                                                                                                                  |
-| `/resume`         | On screen inside the site chrome, with a "Save as PDF" button that calls `window.print()`. Print rules below.                                                                                                                                                                                                               |
+| Route           | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `/`             | Intro (name, tagline, 2–3 paragraph bio, Resume · Email · LinkedIn · GitHub), the 3 newest featured posts, "View all writing →". Lead story large at `md+`, the other two in a 2-col grid.                                                                                                                                                                                                                                                             |
+| `/blog`         | Newest first, no sort control. Grouped by year. Client-side title search (case-insensitive) + category filter, mirrored to `?q=&cat=`. Phone: native select; `md+`: underlined filter buttons with `aria-pressed`. Empty state with "Clear filters". Preview-mode banner + Draft badge.                                                                                                                                                                |
+| `/blog/:slug`   | Category · title · published date · "Updated …" (only if a different calendar day). Optional cover (full-bleed on phone). ToC, prose body, Next up.                                                                                                                                                                                                                                                                                                    |
+| `/asides`       | Every aside in full, newest first: kind · date (the date links to its page), optional title, the body by kind (quote = pull quote with “ ” and "— Author, _Title_"; code = the post code block; thought = larger text), tag links. Filter by kind (select on phone, underlined buttons md+) and `?tag=` (filter bar with count and Clear), both client-side from the URL; no match → "Nothing here yet" + See all asides. 20 per page, "Older asides". |
+| `/asides/:slug` | "All asides" back link, the aside (untitled ones get a visually hidden h1), tags, Newer / Older links.                                                                                                                                                                                                                                                                                                                                                 |
+| `+error`        | 404 and 5xx inside the site chrome, no active nav item. Static copy only (no data load). 404: Browse writing · Go home. 5xx: Try again (reload) · Go home.                                                                                                                                                                                                                                                                                             |
+| `/resume`       | On screen inside the site chrome, with a "Save as PDF" button that calls `window.print()`. Print rules below.                                                                                                                                                                                                                                                                                                                                          |
 
 ## Resume print
 
@@ -218,6 +219,6 @@ The handoff was written as if posts were Markdown files. Our posts come from Str
 | `related?: string[]` (slugs)  | `related` relation → Post.                                                                                                         |
 | `cover: { src, alt }`         | `cover` is a `shared.image`: an upload, or a linked photo with a "Photo by … on …" caption ([content-model.md](content-model.md)). |
 | `featured?: boolean`          | `featured`; home shows the 3 newest featured posts (the 3 newest posts, headed "Latest", while none are featured).                 |
-| Snippet frontmatter           | Snippet type as is (`title`, `language`, `description`, `tags`, `code`, `notes`).                                                  |
+| Snippet frontmatter           | Replaced by the Aside type (#18): `kind`, optional `title`, Markdown `body`, quote source fields, `tags`.                          |
 
-The handoff's "build it all at once" prompt is not used. The design is built ticket by ticket: #4 layout and typography, #5 resume, #6 SEO/error, #9 blog routes, #18 snippets — see [roadmap.md](roadmap.md).
+The handoff's "build it all at once" prompt is not used. The design is built ticket by ticket: #4 layout and typography, #5 resume, #6 SEO/error, #9 blog routes, #18 asides — see [roadmap.md](roadmap.md).
