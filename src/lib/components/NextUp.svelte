@@ -5,7 +5,6 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import PostMeta from '$lib/components/PostMeta.svelte';
 	import { formatDate, isoDay, shownDate } from '$lib/format';
-	import { titleTransition } from '$lib/motion';
 	import type { PostSummary } from '$lib/types/content';
 
 	let { posts }: { posts: PostSummary[] } = $props();
@@ -22,9 +21,7 @@
 			<span class="flex items-center justify-between label-accent">
 				Next up <Icon name="arrow-right" size={18} />
 			</span>
-			<span class="list-title" style:view-transition-name={titleTransition('post', first.slug)}>
-				{first.title}
-			</span>
+			<span class="list-title">{first.title}</span>
 			<span class="summary">{first.summary}</span>
 			<PostMeta post={first} />
 		</a>
