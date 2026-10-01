@@ -87,7 +87,7 @@
 	@apply underline decoration-neutral-200 underline-offset-4 hover:text-neutral-900 hover:decoration-current dark:decoration-neutral-800 dark:hover:text-neutral-100;
 }
 @utility filter-button {
-	@apply min-h-11 px-2.5 text-lg whitespace-nowrap text-neutral-600 aria-pressed:text-neutral-900 aria-pressed:underline aria-pressed:decoration-red-700 aria-pressed:decoration-2 aria-pressed:underline-offset-8 dark:text-neutral-400 dark:aria-pressed:text-neutral-100 dark:aria-pressed:decoration-red-400;
+	@apply tap-target px-2.5 text-lg whitespace-nowrap text-neutral-600 hover:text-neutral-900 aria-[current=true]:text-neutral-900 aria-[current=true]:underline aria-[current=true]:decoration-red-700 aria-[current=true]:decoration-2 aria-[current=true]:underline-offset-8 dark:text-neutral-400 dark:hover:text-neutral-100 dark:aria-[current=true]:text-neutral-100 dark:aria-[current=true]:decoration-red-400;
 }
 @utility select-underline {
 	@apply h-11 w-full appearance-none rounded-none border-0 border-b border-neutral-900 bg-transparent bg-none py-0 pr-8 pl-0 text-lg focus:border-b-2 focus:border-red-700 focus:ring-0 dark:border-neutral-100 dark:focus:border-red-400;
@@ -105,9 +105,10 @@
 	max-height: 80dvh; /* the ToC bottom sheet */
 }
 
-/* The default `transition` leaves out visibility, which a fade-out needs to hide the element too. */
+/* The default `transition` leaves out visibility, which a fade-out needs to hide the element too.
+   Colour too, so a link that fades (the header name) still eases its hover colour. */
 @utility transition-fade {
-	transition-property: opacity, visibility;
+	transition-property: opacity, visibility, color;
 	transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
 	transition-duration: var(--tw-duration, var(--default-transition-duration));
 }
@@ -185,6 +186,10 @@ html {
 ::view-transition-old(root),
 ::view-transition-new(root) {
 	animation-duration: var(--duration-motion);
+}
+/* Between two list pages (home → Writing) titles don't move; the layout sets this for that navigation. */
+:root[data-plain-transition] [data-title-transition] {
+	view-transition-name: none !important;
 }
 
 @layer base {

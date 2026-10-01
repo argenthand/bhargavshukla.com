@@ -39,18 +39,25 @@
 	});
 	const hideName = $derived(isHome && introInView);
 
-	// Page transitions (#60): a short cross-fade between pages, and titles that share a
-	// view-transition-name (a post's list entry and its heading) move between them. Skipped where the
-	// browser has no View Transitions, with reduced motion, and for query-only changes (filters).
+	// Page transitions (#60): a short cross-fade between pages. A title moves only between a list and
+	// its own page (Writing → post, Asides → aside, and back); between two lists it just fades.
+	// Skipped where the browser has no View Transitions, with reduced motion, and for query-only
+	// changes (filters).
+	const isDetail = (route?: string | null) =>
+		route === '/blog/[slug]' || route === '/asides/[slug]';
 	onNavigate((navigation) => {
 		if (!document.startViewTransition) return;
 		if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 		if (navigation.from?.url.pathname === navigation.to?.url.pathname) return;
+		const root = document.documentElement;
+		const moveTitles = isDetail(navigation.from?.route.id) !== isDetail(navigation.to?.route.id);
+		root.toggleAttribute('data-plain-transition', !moveTitles);
 		return new Promise((done) => {
-			document.startViewTransition(async () => {
+			const transition = document.startViewTransition(async () => {
 				done();
 				await navigation.complete;
 			});
+			transition.finished.finally(() => root.removeAttribute('data-plain-transition'));
 		});
 	});
 
@@ -85,7 +92,7 @@
 			<a
 				href={resolve('/')}
 				class={[
-					'tap-target text-xl font-semibold tracking-tight transition-fade duration-(--duration-motion) motion-reduce:transition-none md:text-2xl',
+					'tap-target text-xl font-semibold tracking-tight transition-fade duration-(--duration-motion) hover:text-red-700 motion-reduce:transition-none md:text-2xl dark:hover:text-red-400',
 					hideName && 'js:invisible js:opacity-0'
 				]}
 			>

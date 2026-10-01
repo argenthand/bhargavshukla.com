@@ -103,7 +103,11 @@
 			{#each data.home.posts as post (post.slug)}
 				<article class="list-entry border-b border-neutral-200 dark:border-neutral-800">
 					<PostMeta {post} />
-					<h3 class="list-title" style:view-transition-name={titleTransition('post', post.slug)}>
+					<h3
+						class="list-title"
+						data-title-transition
+						style:view-transition-name={titleTransition('post', post.slug)}
+					>
 						<a
 							href={resolve('/blog/[slug]', { slug: post.slug })}
 							class="hover:text-red-700 dark:hover:text-red-400"

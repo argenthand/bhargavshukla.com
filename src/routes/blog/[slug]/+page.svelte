@@ -48,7 +48,11 @@
 				{post.category.name}
 			</span>
 		{/if}
-		<h1 class="page-title" style:view-transition-name={titleTransition('post', post.slug)}>
+		<h1
+			class="page-title"
+			data-title-transition
+			style:view-transition-name={titleTransition('post', post.slug)}
+		>
 			{post.title}
 		</h1>
 		<p class="flex flex-wrap items-center gap-2 meta">

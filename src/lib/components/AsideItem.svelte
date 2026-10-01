@@ -42,11 +42,19 @@
 
 	{#if aside.title}
 		{#if standalone}
-			<h1 class="page-title" style:view-transition-name={titleTransition('aside', aside.slug)}>
+			<h1
+				class="page-title"
+				data-title-transition
+				style:view-transition-name={titleTransition('aside', aside.slug)}
+			>
 				{aside.title}
 			</h1>
 		{:else}
-			<h2 class="list-title" style:view-transition-name={titleTransition('aside', aside.slug)}>
+			<h2
+				class="list-title"
+				data-title-transition
+				style:view-transition-name={titleTransition('aside', aside.slug)}
+			>
 				<a
 					href={resolve('/asides/[slug]', { slug: aside.slug })}
 					class="hover:text-red-700 dark:hover:text-red-400">{aside.title}</a

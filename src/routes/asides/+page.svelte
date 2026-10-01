@@ -90,21 +90,23 @@
 			</div>
 		</div>
 
-		<!-- md+: underlined filter buttons. Without JavaScript they submit the form. -->
-		<div role="group" aria-label="Filter by kind" class="-ml-2.5 hidden flex-wrap gap-1 md:flex">
+		<!-- md+: underlined filter links; they replace the history entry and keep the scroll position. -->
+		<nav aria-label="Filter by kind" class="-ml-2.5 hidden flex-wrap gap-1 md:flex">
 			{#each [{ value: '', plural: 'All' }, ...KINDS] as k (k.value)}
-				<button
-					type="submit"
-					name="kind"
-					value={k.value}
-					aria-pressed={kind === k.value}
-					onclick={() => setKind(k.value)}
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- href() starts from resolve('/asides') -->
+				<a
+					href={href({ kind: k.value })}
+					aria-current={kind === k.value ? 'true' : undefined}
+					data-sveltekit-replacestate
+					data-sveltekit-noscroll
+					data-sveltekit-keepfocus
 					class="filter-button"
 				>
 					{k.plural}
-				</button>
+				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			{/each}
-		</div>
+		</nav>
 	</form>
 
 	{#if tag}
