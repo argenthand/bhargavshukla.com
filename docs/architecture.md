@@ -13,7 +13,7 @@ A personal tech blog documenting the move from senior engineer / tech lead to en
                └──────────── zone purge API ◄── /api/purge ◄──────┘
 ```
 
-- **Frontend:** SvelteKit with `@sveltejs/adapter-cloudflare`, deployed as a **Cloudflare Worker with Static Assets** on the free plan. Pages are server-rendered per request (SEO matters).
+- **Frontend:** SvelteKit with `@sveltejs/adapter-cloudflare`, deployed as a **Cloudflare Worker with Static Assets** (Workers Paid since #62, for share-card rendering; see infrastructure.md). Pages are server-rendered per request (SEO matters).
 - **CMS:** Strapi 5, self-hosted with Docker Compose on a small VPS, SQLite database. SvelteKit reads its REST API with a read-only token.
 - **Decoupling:** content changes go live without redeploying the frontend. Rendered pages are cached at the edge with a short TTL and tagged with the content types they read; a Strapi webhook purges those tags on publish. See [caching.md](caching.md).
 - **Media:** Cloudflare R2 through Strapi's S3 upload provider, served from `media.bhargavshukla.com`.

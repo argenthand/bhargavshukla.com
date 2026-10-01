@@ -54,6 +54,10 @@ Publishing any post purges `type:post`, which clears every page that shows posts
 
 The CMS and the site share `PREVIEW_SECRET`; the signed text is `link\n<path>\n<exp>` for links and `cookie\n<exp>` for the cookie, so one can't stand in for the other.
 
+### Share cards (#62)
+
+`/og/*.png` read Strapi through `strapi()` like pages, so they are stored and purged the same way: a post's card is tagged `type:post`, `type:category` and `type:profile` (for the headshot); an aside's `type:aside`, `type:tag` and `type:profile`; the default card `type:profile`. Pages link to them with `?v=<updatedAt>` so share sites that cache images by URL fetch a new card after an edit; `v` is not in the cache key, so it doesn't split the cache. A card rendered while the profile couldn't be loaded is `no-store`.
+
 ### 4. Purge endpoint — `src/routes/api/purge/+server.ts` + `src/lib/server/purge.ts`
 
 - **Auth:** `Authorization: Bearer ${PURGE_SECRET}`, compared with `crypto.subtle.timingSafeEqual`; otherwise 401.

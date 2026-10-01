@@ -20,6 +20,8 @@ src/
       purge.ts                    webhook payload → tags; Cloudflare purge API call
       feeds.ts                    RSS and sitemap XML builders (#56)
       preview.ts                  draft preview: signed links and cookies, mergeDrafts (#57)
+      og.ts                       share cards: satori (0.32) + resvg-wasm templates and renderer (#62)
+    share.ts                      share card size and URLs (cardUrl), for <Seo>
   routes/
     +layout.svelte                header nav (md+) and bottom tab bar (below md), footer; preview banner
     +layout.server.ts             { preview } for the banner (#57)
@@ -32,6 +34,9 @@ src/
     asides/[slug]/+page.server.ts /asides/:slug     one aside, Newer / Older
     rss.xml/+server.ts            /rss.xml          RSS 2.0, newest 20 posts; linked from the layout head and footer
     sitemap.xml/+server.ts        /sitemap.xml      home, /blog, posts; /asides + asides and /resume only while live (isLive)
+    og/blog/[slug].png/+server.ts   /og/blog/:slug.png    a post's share card (1200×630)
+    og/asides/[slug].png/+server.ts /og/asides/:slug.png  an aside's share card
+    og/default.png/+server.ts       /og/default.png       the site card: home and pages without their own
     api/purge/+server.ts          Strapi webhook target (POST)
     api/preview/+server.ts        Strapi "Open preview" → checks the signed link, sets the signed preview cookie (#57)
     api/preview/exit/+server.ts   preview banner "Exit" → clears the cookie

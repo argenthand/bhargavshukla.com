@@ -83,5 +83,12 @@ export async function getAside(
 		a.kind === 'quote' && (a.sourceAuthor || a.sourceTitle)
 			? `“${text}” — ${[a.sourceAuthor, a.sourceTitle].filter(Boolean).join(', ')}`
 			: text;
-	return { aside: render(a), description, newer: link(all[i - 1]), older: link(all[i + 1]) };
+	return {
+		aside: render(a),
+		description,
+		/** The body's first paragraph as plain text, for the share card (#62). */
+		text,
+		newer: link(all[i - 1]),
+		older: link(all[i + 1])
+	};
 }

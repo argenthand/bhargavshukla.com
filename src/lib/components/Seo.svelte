@@ -3,6 +3,7 @@
 	// Canonical and og:url always use the production origin and drop the query string, so
 	// /blog?q=… and preview hosts never compete with the real page.
 	import { page } from '$app/state';
+	import { CARD, cardUrl } from '$lib/share';
 	import { site } from '$lib/site';
 
 	interface Props {
@@ -22,7 +23,12 @@
 		noindex?: boolean;
 	}
 
-	let { title, description, canonical, image, article, noindex = false }: Props = $props();
+	let { title, description, canonical, image: own, article, noindex = false }: Props = $props();
+
+	// Without an image of its own, a page shares the site card (#62).
+	const image = $derived(
+		own ?? { url: cardUrl('/default'), alt: site.name, width: CARD.width, height: CARD.height }
+	);
 
 	const fullTitle = $derived(title ? `${title} · ${site.name}` : site.name);
 	const url = $derived(canonical || new URL(page.url.pathname, site.url).href);

@@ -6,6 +6,7 @@
 	import Toc from '$lib/components/Toc.svelte';
 	import { formatDate, isoDay, shownDate, updatedDate } from '$lib/format';
 	import { titleTransition } from '$lib/motion';
+	import { CARD, cardUrl } from '$lib/share';
 
 	let { data } = $props();
 
@@ -17,7 +18,9 @@
 		if (seo)
 			return { url: seo.url, alt: seo.alternativeText, width: seo.width, height: seo.height };
 		const cover = post.cover;
-		return cover && { url: cover.src, alt: cover.alt, width: cover.width, height: cover.height };
+		if (cover) return { url: cover.src, alt: cover.alt, width: cover.width, height: cover.height };
+		// No cover: the post's own share card (#62).
+		return { url: cardUrl(`/blog/${post.slug}`, post.updatedAt), alt: post.title, ...CARD };
 	});
 	// The ToC only earns its space with 2 or more sections.
 	const showToc = $derived(data.headings.filter((h) => h.level === 2).length >= 2);

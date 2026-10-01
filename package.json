@@ -47,5 +47,10 @@
 		"vitest": "^4.1.8",
 		"vitest-browser-svelte": "^2.1.1",
 		"wrangler": "^4.143.0"
+	},
+	"dependencies": {
+		"@fontsource/newsreader": "^5.3.0",
+		"@resvg/resvg-wasm": "^2.6.2",
+		"satori": "^0.32.0"
 	}
 }

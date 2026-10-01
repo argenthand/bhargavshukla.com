@@ -4,6 +4,7 @@
 	import AsideItem from '$lib/components/AsideItem.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import Seo from '$lib/components/Seo.svelte';
+	import { CARD, cardUrl } from '$lib/share';
 
 	let { data } = $props();
 </script>
@@ -12,6 +13,11 @@
 	title={data.aside.label}
 	description={data.description || data.aside.label}
 	article={{ publishedTime: data.aside.publishedAt }}
+	image={{
+		url: cardUrl(`/asides/${data.aside.slug}`, data.aside.updatedAt),
+		alt: data.aside.label,
+		...CARD
+	}}
 />
 
 <div class="page flex max-w-3xl flex-col gap-7">

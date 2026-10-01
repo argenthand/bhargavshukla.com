@@ -56,7 +56,8 @@ These must survive the move. `scripts/check-dns.sh` holds the same list.
 - **A merge that never builds:** each build shows up as a "Workers Builds: bs-blog" check on the merge commit, about a minute after the merge. If there's no check after a few minutes and no build in the dashboard, Cloudflare missed the push (seen once, on #44). Any new commit on `main` triggers a fresh build of the whole branch.
 
 - **`www` → apex:** a proxied placeholder record `www` AAAA `100::`, plus a Redirect Rule (Rules → Redirect Rules → "Redirect from WWW to root" template): 301, keep the path and query string. The rule only matches `https://www…`; Always Use HTTPS upgrades `http://www…` first (two hops), otherwise it reaches the `100::` placeholder and fails with a 523.
-- Free plan limits that matter: 100k requests/day, 3 MB compressed Worker size (watch the Shiki language count). The hello page is ~86 KiB gzipped.
+- **Workers Paid** ($5/month) since #62: share cards take ~20–70 ms of CPU to render, over the Free plan's 10 ms per request. Paid allows 30 s by default and a 10 MB compressed Worker. With satori, resvg-wasm and three Newsreader weights the Worker is ~1.6 MB compressed (`pnpm exec wrangler deploy --dry-run`); before #62 it was ~0.4 MB.
+- **WebAssembly on Workers:** Workers can't compile WebAssembly from bytes at runtime, so `vite.config.ts` leaves `.wasm` imports external and wrangler bundles them as modules; `src/lib/server/og.ts` imports them lazily (SvelteKit's build analysis runs in Node, which can't load them). satori stays on **0.32**: 0.33 added harfbuzzjs, which loads its WebAssembly in a way Workers refuse.
 
 ## Analytics: Cloudflare Web Analytics (#58)
 
