@@ -1,10 +1,13 @@
 <script lang="ts">
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
+	import { onMount } from 'svelte';
 	import { onNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Icon from '$lib/components/Icon.svelte';
+	import Shortcuts from '$lib/components/Shortcuts.svelte';
+	import { consoleNote } from '$lib/easter-eggs';
 	import { nav, site } from '$lib/site';
 
 	let { children } = $props();
@@ -60,6 +63,9 @@
 			transition.finished.finally(() => root.removeAttribute('data-plain-transition'));
 		});
 	});
+
+	// A note for whoever opens DevTools (#63).
+	onMount(consoleNote);
 
 	// The phone tab bar's marker slides to the current tab (#60).
 	const currentTab = $derived(nav.findIndex((item) => current(item.href)));
@@ -128,6 +134,8 @@
 		</div>
 	</footer>
 </div>
+
+<Shortcuts />
 
 <!-- The same Primary nav as a bottom tab bar below md; the header's copy is hidden there. -->
 {#if nav.length > 0}

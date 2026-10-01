@@ -39,6 +39,24 @@
 			}
 		].filter(Boolean) as IntroLink[]
 	);
+
+	// The headshot's easter egg (#63): five quick clicks swap in the profile's alternate photo (and
+	// back); without one, the photo winks instead (not with reduced motion).
+	const CLICKS = 5;
+	const CLICK_WINDOW_MS = 2000;
+	let clicks: number[] = [];
+	let showAlt = $state(false);
+	let winking = $state(false);
+	const shownPhoto = $derived((showAlt && profile?.photoAlt) || profile?.photo);
+
+	function onPhotoClick() {
+		const now = Date.now();
+		clicks = [...clicks.filter((t) => now - t < CLICK_WINDOW_MS), now];
+		if (clicks.length < CLICKS) return;
+		clicks = [];
+		if (profile?.photoAlt) showAlt = !showAlt;
+		else winking = true;
+	}
 </script>
 
 <Seo description={profile?.bioSummary || site.description} />
@@ -46,16 +64,23 @@
 <div class="page max-w-3xl">
 	<section aria-label="About" class="flex flex-col gap-4 pb-14">
 		<div class="flex items-center gap-4 md:gap-5">
-			{#if profile?.photo}
+			{#if shownPhoto}
+				<!-- A mouse-only easter egg: no button, so it adds no tab stop or announcement for anyone. -->
+				<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
 				<img
-					src={profile.photo.src}
-					srcset={profile.photo.srcset}
+					src={shownPhoto.src}
+					srcset={shownPhoto.srcset}
 					sizes="(min-width: 768px) 120px, 112px"
-					alt={profile.photo.alt}
-					width={profile.photo.width}
-					height={profile.photo.height}
+					alt={shownPhoto.alt}
+					width={shownPhoto.width}
+					height={shownPhoto.height}
 					decoding="async"
-					class="size-28 shrink-0 rounded-full bg-neutral-100 object-cover md:size-30 dark:bg-neutral-900"
+					onclick={onPhotoClick}
+					onanimationend={() => (winking = false)}
+					class={[
+						'size-28 shrink-0 rounded-full bg-neutral-100 object-cover select-none md:size-30 dark:bg-neutral-900',
+						winking && 'motion-safe:animate-wink'
+					]}
 				/>
 			{/if}
 			<div class="min-w-0">

@@ -21,14 +21,18 @@ export function firstParagraph(markdown: string, max = 160): string {
 export async function getProfile(locals: App.Locals) {
 	const profile = await strapi(locals).get<Profile>('profile', {
 		fields: ['name', 'tagline', 'bio', 'email', 'linkedin', 'github'],
-		populate: { photo: { fields: ['url', 'alternativeText', 'width', 'height', 'formats'] } }
+		populate: {
+			photo: { fields: ['url', 'alternativeText', 'width', 'height', 'formats'] },
+			photoAlt: { fields: ['url', 'alternativeText', 'width', 'height', 'formats'] }
+		}
 	});
 	if (!profile) return undefined;
-	const { bio, photo, ...rest } = profile;
+	const { bio, photo, photoAlt, ...rest } = profile;
 	return {
 		...rest,
 		// Alt text from the Media Library; empty by default, since the name sits right next to it.
 		photo: resolveUpload(photo),
+		photoAlt: resolveUpload(photoAlt),
 		bioHtml: renderMarkdown(bio ?? '').html,
 		bioSummary: firstParagraph(bio ?? '')
 	};

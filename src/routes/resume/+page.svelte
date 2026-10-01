@@ -164,4 +164,8 @@
 			</section>
 		{/if}
 	</div>
+	<!-- Only on paper (#63). Draft copy: edit freely. -->
+	<p class="hidden text-xs text-neutral-500 print:mt-4 print:block">
+		Printed from {new URL(site.url).host}/resume. Thanks for reading it on paper.
+	</p>
 </div>
