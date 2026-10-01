@@ -58,6 +58,13 @@ These must survive the move. `scripts/check-dns.sh` holds the same list.
 - **`www` → apex:** a proxied placeholder record `www` AAAA `100::`, plus a Redirect Rule (Rules → Redirect Rules → "Redirect from WWW to root" template): 301, keep the path and query string. The rule only matches `https://www…`; Always Use HTTPS upgrades `http://www…` first (two hops), otherwise it reaches the `100::` placeholder and fails with a 523.
 - Free plan limits that matter: 100k requests/day, 3 MB compressed Worker size (watch the Shiki language count). The hello page is ~86 KiB gzipped.
 
+## Analytics: Cloudflare Web Analytics (#58)
+
+- **Where:** dashboard → Analytics & Logs → Web Analytics → `bhargavshukla.com`. Page views, page paths, referrers, countries, browsers and devices, plus Core Web Vitals (LCP, INP, CLS) per page.
+- **Setup: automatic, no code.** Cloudflare injects the beacon (`static.cloudflareinsights.com/beacon.min.js`) into HTML responses as they leave the zone, after the Worker, so it is not in the repo, never in `vite dev` or `wrangler dev`, and never stored in our edge cache (pages are stored before injection; each response gets it once). SPA tracking is on (`"spa"` in `data-cf-beacon`), so client-side navigations count. The beacon reports to `bhargavshukla.com/cdn-cgi/rum`, which Cloudflare answers before the Worker.
+- **Privacy:** no cookies and no localStorage (checked on a fresh visit), so no consent banner. RUM is set to **exclude visitors in the EU**: their visits are not counted.
+- **Checking it:** requests without a browser `Accept: text/html` header get no beacon. Ad blockers and DNS blocklists (Pi-hole and the like) block `static.cloudflareinsights.com`, so those visits don't show up; on such a network, test with another resolver (for example Chromium's `--host-resolver-rules`).
+
 ## VPS: Hetzner Cloud CX23 (EU)
 
 Prices checked 2026-09-28 (Hetzner raised prices on 2026-06-15).
