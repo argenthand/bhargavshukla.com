@@ -15,6 +15,13 @@
 		var(--container-article) + var(--spacing-article-gap) + var(--spacing-toc)
 	); /* header and cover span text + ToC: max-w-article-wide */
 	--spacing-resume-label: calc(var(--spacing) * 36); /* the resume's skill-group label column */
+
+	/* Motion tokens (#60, docs/design.md → Motion): every animation uses these. */
+	--duration-motion: 200ms; /* fades, nudges, the tab marker, the page cross-fade */
+	--duration-title: 300ms; /* a title moving between a list and its page */
+	--duration-hover: 300ms; /* link and button colours, underlines */
+	--ease-motion: var(--ease-out);
+	--distance-nudge: calc(var(--spacing) * 0.5); /* how far an arrow moves on hover */
 }
 
 /*
@@ -59,6 +66,11 @@
 }
 @utility list-title {
 	@apply text-xl/snug font-semibold text-balance md:text-2xl/snug;
+	/* The Writing list colours the title itself on hover, not its link. */
+	transition: color var(--duration-hover) var(--ease-motion);
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
 }
 @utility summary {
 	@apply line-clamp-2 text-lg text-neutral-600 dark:text-neutral-400;
@@ -69,13 +81,13 @@
 	@apply inline-flex min-h-11 items-center;
 }
 @utility link-cta {
-	@apply tap-target gap-1.5 text-lg text-red-700 underline decoration-1 underline-offset-4 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300;
+	@apply tap-target gap-1.5 text-lg text-red-700 underline decoration-1 underline-offset-4 hover:text-red-800 hover:decoration-2 dark:text-red-400 dark:hover:text-red-300;
 }
 @utility link-quiet {
-	@apply underline decoration-neutral-200 underline-offset-4 hover:text-neutral-900 dark:decoration-neutral-800 dark:hover:text-neutral-100;
+	@apply underline decoration-neutral-200 underline-offset-4 hover:text-neutral-900 hover:decoration-current dark:decoration-neutral-800 dark:hover:text-neutral-100;
 }
 @utility filter-button {
-	@apply min-h-11 px-2.5 text-lg whitespace-nowrap text-neutral-600 aria-pressed:text-neutral-900 aria-pressed:underline aria-pressed:decoration-red-700 aria-pressed:decoration-2 aria-pressed:underline-offset-8 dark:text-neutral-400 dark:aria-pressed:text-neutral-100 dark:aria-pressed:decoration-red-400;
+	@apply tap-target px-2.5 text-lg whitespace-nowrap text-neutral-600 hover:text-neutral-900 aria-[current=true]:text-neutral-900 aria-[current=true]:underline aria-[current=true]:decoration-red-700 aria-[current=true]:decoration-2 aria-[current=true]:underline-offset-8 dark:text-neutral-400 dark:hover:text-neutral-100 dark:aria-[current=true]:text-neutral-100 dark:aria-[current=true]:decoration-red-400;
 }
 @utility select-underline {
 	@apply h-11 w-full appearance-none rounded-none border-0 border-b border-neutral-900 bg-transparent bg-none py-0 pr-8 pl-0 text-lg focus:border-b-2 focus:border-red-700 focus:ring-0 dark:border-neutral-100 dark:focus:border-red-400;
@@ -93,9 +105,10 @@
 	max-height: 80dvh; /* the ToC bottom sheet */
 }
 
-/* The default `transition` leaves out visibility, which a fade-out needs to hide the element too. */
+/* The default `transition` leaves out visibility, which a fade-out needs to hide the element too.
+   Colour too, so a link that fades (the header name) still eases its hover colour. */
 @utility transition-fade {
-	transition-property: opacity, visibility;
+	transition-property: opacity, visibility, color;
 	transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
 	transition-duration: var(--tw-duration, var(--default-transition-duration));
 }
@@ -154,4 +167,57 @@ html {
 	overflow-x: auto;
 	line-height: var(--leading-relaxed);
 	tab-size: 2;
+}
+
+/*
+ * Motion (#60, docs/design.md → Motion): short, transform/opacity or paint only, and none at all
+ * with reduced motion (the layout also skips view transitions then).
+ */
+
+/* Page transitions: a quick cross-fade of the page (root); titles that share a view-transition-name
+   move between pages a little more slowly, so the move reads. */
+::view-transition-group(*),
+::view-transition-old(*),
+::view-transition-new(*) {
+	animation-duration: var(--duration-title);
+	animation-timing-function: var(--ease-motion);
+}
+::view-transition-group(root),
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation-duration: var(--duration-motion);
+}
+/* Between two list pages (home → Writing) titles don't move; the layout sets this for that navigation. */
+:root[data-plain-transition] [data-title-transition] {
+	view-transition-name: none !important;
+}
+
+@layer base {
+	/* Every link and button eases its hover changes: colour, background, border, underline colour
+	   and thickness (Chrome doesn't interpolate thickness, so it steps there). */
+	:where(a, button) {
+		transition-property:
+			color, background-color, border-color, text-decoration-color, text-decoration-thickness;
+		transition-duration: var(--duration-hover);
+		transition-timing-function: var(--ease-motion);
+	}
+
+	/* Arrows in links and buttons nudge in their direction on hover and keyboard focus. */
+	svg[data-icon='arrow-right'],
+	svg[data-icon='arrow-left'] {
+		transition: translate var(--duration-motion) var(--ease-motion);
+	}
+	:is(a, button):is(:hover, :focus-visible) svg[data-icon='arrow-right'] {
+		translate: var(--distance-nudge) 0;
+	}
+	:is(a, button):is(:hover, :focus-visible) svg[data-icon='arrow-left'] {
+		translate: calc(var(--distance-nudge) * -1) 0;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		:where(a, button),
+		svg[data-icon='arrow-right'],
+		svg[data-icon='arrow-left'] {
+			transition: none;
+		}
+	}
 }

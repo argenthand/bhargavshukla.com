@@ -1,6 +1,7 @@
 <script lang="ts">
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
+	import { onNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Icon from '$lib/components/Icon.svelte';
@@ -37,6 +38,31 @@
 		};
 	});
 	const hideName = $derived(isHome && introInView);
+
+	// Page transitions (#60): a short cross-fade between pages. A title moves only between a list and
+	// its own page (Writing → post, Asides → aside, and back); between two lists it just fades.
+	// Skipped where the browser has no View Transitions, with reduced motion, and for query-only
+	// changes (filters).
+	const isDetail = (route?: string | null) =>
+		route === '/blog/[slug]' || route === '/asides/[slug]';
+	onNavigate((navigation) => {
+		if (!document.startViewTransition) return;
+		if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		if (navigation.from?.url.pathname === navigation.to?.url.pathname) return;
+		const root = document.documentElement;
+		const moveTitles = isDetail(navigation.from?.route.id) !== isDetail(navigation.to?.route.id);
+		root.toggleAttribute('data-plain-transition', !moveTitles);
+		return new Promise((done) => {
+			const transition = document.startViewTransition(async () => {
+				done();
+				await navigation.complete;
+			});
+			transition.finished.finally(() => root.removeAttribute('data-plain-transition'));
+		});
+	});
+
+	// The phone tab bar's marker slides to the current tab (#60).
+	const currentTab = $derived(nav.findIndex((item) => current(item.href)));
 </script>
 
 <svelte:head>
@@ -57,14 +83,16 @@
 	]}
 >
 	<!-- One header: the slim sticky top bar below md, the full header with nav from md. -->
+	<!-- Named, so page transitions keep the header still instead of fading it with the page. -->
 	<header
+		style:view-transition-name="site-header"
 		class="sticky top-0 z-10 border-b border-neutral-200 bg-white md:static dark:border-neutral-800 dark:bg-neutral-950 print:hidden"
 	>
 		<div class="mx-auto flex h-14 max-w-5xl items-center justify-between px-5 md:h-20 md:px-8">
 			<a
 				href={resolve('/')}
 				class={[
-					'tap-target text-xl font-semibold tracking-tight transition-fade duration-200 motion-reduce:transition-none md:text-2xl',
+					'tap-target text-xl font-semibold tracking-tight transition-fade duration-(--duration-motion) hover:text-red-700 motion-reduce:transition-none md:text-2xl dark:hover:text-red-400',
 					hideName && 'js:invisible js:opacity-0'
 				]}
 			>
@@ -105,14 +133,25 @@
 {#if nav.length > 0}
 	<nav
 		aria-label="Primary"
+		style:view-transition-name="site-tabs"
 		class="fixed inset-x-0 bottom-0 z-20 grid auto-cols-fr grid-flow-col border-t border-neutral-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden dark:border-neutral-800 dark:bg-neutral-950 print:hidden"
 	>
+		<!-- One marker for the current tab; it slides rather than jumping between tabs. -->
+		<span
+			aria-hidden="true"
+			style:width="{100 / nav.length}%"
+			style:translate="{Math.max(currentTab, 0) * 100}% 0"
+			class={[
+				'absolute -top-px left-0 h-0.5 bg-red-700 transition duration-(--duration-motion) ease-(--ease-motion) motion-reduce:transition-none dark:bg-red-400',
+				currentTab < 0 && 'opacity-0'
+			]}
+		></span>
 		{#each nav as item (item.href)}
 			<!-- eslint-disable svelte/no-navigation-without-resolve -- nav hrefs are plain strings from site.ts; resolve() needs route literals -->
 			<a
 				href={item.href}
 				aria-current={current(item.href)}
-				class="-mt-px flex min-h-14 flex-col items-center justify-center gap-1 border-t-2 border-transparent text-xs tracking-wide text-neutral-600 aria-[current=page]:border-red-700 aria-[current=page]:font-semibold aria-[current=page]:text-red-700 dark:text-neutral-400 dark:aria-[current=page]:border-red-400 dark:aria-[current=page]:text-red-400"
+				class="flex min-h-14 flex-col items-center justify-center gap-1 text-xs tracking-wide text-neutral-600 aria-[current=page]:font-semibold aria-[current=page]:text-red-700 dark:text-neutral-400 dark:aria-[current=page]:text-red-400"
 			>
 				<Icon name={item.icon} size={22} />
 				<span>{item.label}</span>

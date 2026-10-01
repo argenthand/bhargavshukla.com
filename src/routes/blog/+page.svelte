@@ -6,6 +6,7 @@
 	import PostMeta from '$lib/components/PostMeta.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import { shownDate, yearOf } from '$lib/format';
+	import { titleTransition } from '$lib/motion';
 	import { site } from '$lib/site';
 
 	let { data } = $props();
@@ -47,6 +48,14 @@
 			// eslint-disable-next-line svelte/no-navigation-without-resolve -- same resolved path, only the query changes
 			replaceState(`${resolve('/blog')}${url.search}`, page.state);
 	});
+
+	/** /blog with this category and the current search: the filter link's target without JavaScript. */
+	function catHref(slug: string) {
+		const params = [q.trim() && `q=${encodeURIComponent(q.trim())}`, slug && `cat=${slug}`]
+			.filter(Boolean)
+			.join('&');
+		return `${resolve('/blog')}${params ? `?${params}` : ''}`;
+	}
 
 	function clear() {
 		q = '';
@@ -103,25 +112,24 @@
 			</div>
 		</div>
 
-		<!-- md+: underlined filter buttons. Without JavaScript they submit the form. -->
-		<div
-			role="group"
-			aria-label="Filter by category"
-			class="-ml-2.5 hidden flex-wrap gap-1 md:flex"
-		>
+		<!-- md+: underlined filter links. With JavaScript they filter in place; without, they load the URL. -->
+		<nav aria-label="Filter by category" class="-ml-2.5 hidden flex-wrap gap-1 md:flex">
 			{#each [{ slug: '', name: 'All' }, ...data.categories] as category (category.slug)}
-				<button
-					type="submit"
-					name="cat"
-					value={category.slug}
-					aria-pressed={cat === category.slug}
-					onclick={() => (cat = category.slug)}
+				<!-- eslint-disable svelte/no-navigation-without-resolve -- catHref() starts from resolve('/blog') -->
+				<a
+					href={catHref(category.slug)}
+					aria-current={cat === category.slug ? 'true' : undefined}
+					onclick={(event) => {
+						event.preventDefault();
+						cat = category.slug;
+					}}
 					class="filter-button"
 				>
 					{category.name}
-				</button>
+				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			{/each}
-		</div>
+		</nav>
 	</form>
 
 	{#if filtered.length === 0}
@@ -143,7 +151,11 @@
 					{#each group.posts as post (post.slug)}
 						<li class="border-b border-neutral-200 dark:border-neutral-800">
 							<a href={resolve('/blog/[slug]', { slug: post.slug })} class="group list-entry">
-								<span class="list-title group-hover:text-red-700 dark:group-hover:text-red-400">
+								<span
+									class="list-title group-hover:text-red-700 dark:group-hover:text-red-400"
+									data-title-transition
+									style:view-transition-name={titleTransition('post', post.slug)}
+								>
 									{post.title}
 								</span>
 								<PostMeta {post} />

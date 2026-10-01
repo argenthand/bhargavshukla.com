@@ -4,6 +4,7 @@
 	import Seo from '$lib/components/Seo.svelte';
 	import Toc from '$lib/components/Toc.svelte';
 	import { formatDate, isoDay, shownDate, updatedDate } from '$lib/format';
+	import { titleTransition } from '$lib/motion';
 
 	let { data } = $props();
 
@@ -19,8 +20,8 @@
 	});
 	// The ToC only earns its space with 2 or more sections.
 	const showToc = $derived(data.headings.filter((h) => h.level === 2).length >= 2);
-	// On lg+, the title and cover span the article + ToC columns (964px). Without a ToC they match
-	// the article column (680px), so everything lines up.
+	// On lg+, the title and cover span the article + ToC columns (960px). Without a ToC they match
+	// the article column (672px), so everything lines up.
 </script>
 
 <Seo
@@ -47,7 +48,11 @@
 				{post.category.name}
 			</span>
 		{/if}
-		<h1 class="page-title">
+		<h1
+			class="page-title"
+			data-title-transition
+			style:view-transition-name={titleTransition('post', post.slug)}
+		>
 			{post.title}
 		</h1>
 		<p class="flex flex-wrap items-center gap-2 meta">

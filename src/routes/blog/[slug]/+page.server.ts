@@ -15,6 +15,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 	return {
 		post: {
+			slug: post.slug,
 			title: post.title,
 			summary: post.summary,
 			category: post.category,

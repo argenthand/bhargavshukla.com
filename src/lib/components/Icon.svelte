@@ -36,6 +36,7 @@
 	stroke-linecap="round"
 	stroke-linejoin="round"
 	aria-hidden="true"
+	data-icon={name}
 	class="shrink-0 {className}"
 >
 	{#if name === 'arrow-right'}

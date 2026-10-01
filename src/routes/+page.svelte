@@ -3,6 +3,7 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import PostMeta from '$lib/components/PostMeta.svelte';
 	import Seo from '$lib/components/Seo.svelte';
+	import { titleTransition } from '$lib/motion';
 	import { isLive, site } from '$lib/site';
 
 	let { data } = $props();
@@ -102,7 +103,11 @@
 			{#each data.home.posts as post (post.slug)}
 				<article class="list-entry border-b border-neutral-200 dark:border-neutral-800">
 					<PostMeta {post} />
-					<h3 class="list-title">
+					<h3
+						class="list-title"
+						data-title-transition
+						style:view-transition-name={titleTransition('post', post.slug)}
+					>
 						<a
 							href={resolve('/blog/[slug]', { slug: post.slug })}
 							class="hover:text-red-700 dark:hover:text-red-400"
