@@ -18,6 +18,7 @@ src/
       markdown.ts                 marked + Shiki (fine-grained bundle, JS regex engine); h2/h3 ids + ToC list
       edge-cache.ts               cache key, bypass rules, TTL constants
       purge.ts                    webhook payload → tags; Cloudflare purge API call
+      feeds.ts                    RSS and sitemap XML builders (#56)
   routes/
     +layout.svelte                header nav (md+) and bottom tab bar (below md), footer
     +page.svelte, +page.server.ts /                 intro + up to 3 featured posts (the newest posts while none are featured)
@@ -27,8 +28,8 @@ src/
     blog/[slug]/+page.server.ts   /blog/:slug       ToC + up to 2 recommended posts ("Next up")
     asides/+page.server.ts        /asides           every aside in full; ?kind= ?tag= ?page= from the URL, client-side
     asides/[slug]/+page.server.ts /asides/:slug     one aside, Newer / Older
-    rss.xml/+server.ts            posts feed
-    sitemap.xml/+server.ts        all published slugs + static pages
+    rss.xml/+server.ts            /rss.xml          RSS 2.0, newest 20 posts; linked from the layout head and footer
+    sitemap.xml/+server.ts        /sitemap.xml      home, /blog, posts; /asides + asides and /resume only while live (isLive)
     api/purge/+server.ts          Strapi webhook target (POST)
     api/preview/+server.ts        (later) Strapi Preview → draft-mode cookie
 ```
@@ -40,5 +41,6 @@ src/
 - Every page renders `<Seo>`: title (+ site name), description, canonical on the production origin without the query string, Open Graph and Twitter tags. Posts use `seo.metaTitle`, `seo.metaDescription`, `seo.canonicalUrl` and `seo.ogImage` when set, else title, summary and cover. Error pages are `noindex`.
 - Every `load` that reads content goes through `strapi(locals)`. The client fetches the data and records a `type:<model>` cache tag for the page (see [caching.md](caching.md)).
 - A missing slug throws `error(404)`. Error responses are never cached.
+- `+server.ts` routes that read Strapi (RSS, sitemap) are edge-cached and purged like pages: the cache keeps their `content-type`. `static/robots.txt` points to the sitemap.
 - Cacheable `load`s await everything — no streamed promises — so the cached body is complete.
 - Svelte code follows AGENTS.md: run the Svelte MCP `svelte-autofixer` on every `.svelte` file written.

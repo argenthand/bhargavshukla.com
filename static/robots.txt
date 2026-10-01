@@ -1,3 +1,5 @@
-# Everything is public. The sitemap line is added with sitemap.xml (backlog, #22).
+# Everything is public.
 User-agent: *
 Allow: /
+
+Sitemap: https://bhargavshukla.com/sitemap.xml

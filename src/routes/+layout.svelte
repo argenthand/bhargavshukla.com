@@ -73,6 +73,8 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
+	<!-- Feed autodiscovery (#56): absolute, like canonical URLs. -->
+	<link rel="alternate" type="application/rss+xml" title={site.name} href="{site.url}/rss.xml" />
 	<link rel="preconnect" href="https://fonts.googleapis.com" />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
 	<link
@@ -131,6 +133,10 @@
 			class="mx-auto flex min-h-19 max-w-5xl items-center justify-between px-5 py-4 meta md:px-8"
 		>
 			<span>© {year} {site.name}</span>
+			<!-- A server route, not a page: reload so the browser (or a feed reader) opens the XML. -->
+			<a href={resolve('/rss.xml')} data-sveltekit-reload class="tap-target gap-1.5 link-quiet">
+				<Icon name="rss" />RSS
+			</a>
 		</div>
 	</footer>
 </div>
