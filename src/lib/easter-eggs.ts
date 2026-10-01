@@ -40,8 +40,7 @@ export function konamiMatcher() {
 export const NOT_FOUND_LINES = [
 	'I looked under the couch. Nothing.',
 	'This link took a wrong turn somewhere.',
-	'Either the page moved, or I never wrote it. I’d bet on the second.',
-	'Somewhere a redirect is missing. That one’s on me.',
+	"Either the page moved, or I never wrote it. I bet it's the latter.",
 	'Even well-run systems have a 404 or two.'
 ];
 
@@ -57,8 +56,7 @@ export function notFoundLine(path: string): string {
 
 /** For engineers who open DevTools. Draft copy: edit freely. */
 export function consoleNote() {
-	console.log('%cHi, I’m Bhargav.', 'font: 600 20px Newsreader, Georgia, serif; color: #b91c1c');
 	console.log(
-		'If you’re reading this, we probably have things to talk about. My contact links are on the home page; say hi.\n\nPress ? on any page for keyboard shortcuts.'
+		"If you're reading this, we probably have things to talk about. My contact links are on the home page; say hi.\n\nPress ? on any page for keyboard shortcuts."
 	);
 }

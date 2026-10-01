@@ -2,8 +2,8 @@
 // dynamic import only when someone types the code, so it costs nothing otherwise. The caller skips
 // it under reduced motion. Transform and opacity only; everything is removed when it ends.
 
-const PIECES = 80;
-const DURATION_MS = 1600;
+const PIECES = 3200;
+const DURATION_MS = 2500;
 const COLORS = ['--color-red-700', '--color-red-500', '--color-red-300', '--color-neutral-500'];
 
 export function confetti() {
