@@ -7,6 +7,8 @@
 #   backup.sh list                 what's in the bucket
 #   backup.sh fetch <key>          download one object into /opt/cms/restore/
 # Retention is an R2 lifecycle rule per prefix, not this script.
+# Heartbeat (#64): with BACKUP_PING_URL set in backup.env (a Healthchecks.io check), a nightly run
+# pings it when the copy is uploaded, and pings <url>/fail if any step fails.
 set -euo pipefail
 
 cd /opt/cms
@@ -28,18 +30,26 @@ export RCLONE_CONFIG_R2_NO_HEAD=true
 # Everything is in the environment; no rclone.conf.
 export RCLONE_CONFIG=/dev/null
 
+# A failed ping is logged but never fails the backup itself.
+ping() {
+  [ -n "${BACKUP_PING_URL:-}" ] || return 0
+  curl -fsS -m 10 --retry 3 -o /dev/null "${BACKUP_PING_URL}${1:-}" || echo "heartbeat ping failed" >&2
+}
+
 stamp=$(date -u +%Y-%m-%dT%H%MZ)
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
 case "${1:-}" in
   nightly)
+    trap 'ping /fail' ERR
     # .backup is safe while Strapi is writing; a plain cp of the file is not.
     sqlite3 data/data.db ".backup '$tmp/data.db'"
     check=$(sqlite3 "$tmp/data.db" 'PRAGMA integrity_check')
-    [ "$check" = ok ] || { echo "integrity check failed: $check" >&2; exit 1; }
+    [ "$check" = ok ] || { echo "integrity check failed: $check" >&2; ping /fail; exit 1; }
     gzip "$tmp/data.db"
     rclone copyto "$tmp/data.db.gz" "r2:cms-backups/nightly/data-$stamp.db.gz"
+    ping
     ;;
   weekly)
     file="/tmp/export-$stamp"
