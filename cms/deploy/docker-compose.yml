@@ -1,10 +1,10 @@
 # Production CMS on the VPS, at /opt/cms/docker-compose.yml (#11).
 # Secrets live in /opt/cms/.env (see cms/.env.example, plus TUNNEL_TOKEN from #12).
-# Deploy: docker compose pull && docker compose up -d. See docs/infrastructure.md → Runbook.
+# Deployed by cms/deploy/deploy.sh on every merge (#48), which also copies this file here.
 
 services:
   strapi:
-    # Pin a commit with CMS_TAG=<sha> in .env to roll back.
+    # deploy.sh pins CMS_TAG=<sha> in .env; `latest` is only the fallback.
     image: ghcr.io/argenthand/bhargavshukla-cms:${CMS_TAG:-latest}
     restart: unless-stopped
     env_file: .env
