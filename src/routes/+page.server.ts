@@ -3,9 +3,8 @@ import { getProfile } from '$lib/server/profile';
 import type { PageServerLoad } from './$types';
 
 // The page must render even when Strapi is unreachable (or the profile isn't saved yet): the
-// intro then falls back to the name alone and the posts section is left out. #16 must not
-// edge-cache a degraded page.
-export const load: PageServerLoad = async ({ locals }) => {
+// intro then falls back to the name alone and the posts section is left out.
+export const load: PageServerLoad = async ({ locals, setHeaders }) => {
 	let degraded = false;
 	const fallback =
 		<T>(value: T) =>
@@ -20,5 +19,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 		homePosts(locals).catch(fallback({ heading: 'Featured', posts: [] }))
 	]);
 
-	return { profile, home, degraded: degraded || !profile };
+	degraded ||= !profile;
+	// Never edge-cache the degraded page (#16): it would hide the posts for the whole TTL.
+	if (degraded) setHeaders({ 'cache-control': 'no-store' });
+	return { profile, home, degraded };
 };
