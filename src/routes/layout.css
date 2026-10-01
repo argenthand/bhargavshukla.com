@@ -22,6 +22,15 @@
 	--duration-hover: 300ms; /* link and button colours, underlines */
 	--ease-motion: var(--ease-out);
 	--distance-nudge: calc(var(--spacing) * 0.5); /* how far an arrow moves on hover */
+	/* A confirmation appearing (#61): the Copy button's check, "Link copied". */
+	--animate-confirm: confirm-in var(--duration-motion) var(--ease-motion);
+
+	@keyframes confirm-in {
+		from {
+			opacity: 0;
+			scale: 0.5;
+		}
+	}
 }
 
 /*
@@ -93,6 +102,30 @@
 	@apply h-11 w-full appearance-none rounded-none border-0 border-b border-neutral-900 bg-transparent bg-none py-0 pr-8 pl-0 text-lg focus:border-b-2 focus:border-red-700 focus:ring-0 dark:border-neutral-100 dark:focus:border-red-400;
 }
 
+/* Post headings' "#" link (#61): after the text, shown on hover and keyboard focus, always shown
+   (faintly) on touch screens, which can't hover. Clicking copies the section URL (Prose.svelte). */
+@utility heading-link {
+	@apply relative ml-2 font-normal text-neutral-500 no-underline opacity-0 hover:text-red-700 dark:hover:text-red-400;
+	transition:
+		opacity var(--duration-motion) var(--ease-motion),
+		color var(--duration-hover) var(--ease-motion);
+	@media (hover: none) {
+		@apply opacity-50;
+	}
+	:is(h2, h3):hover > &,
+	&:focus-visible,
+	&:has([data-heading-toast]) {
+		@apply opacity-100;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+/* "Link copied", above the "#" that was clicked; anchored at its right edge so it never widens the page. */
+@utility heading-toast {
+	@apply pointer-events-none absolute right-0 bottom-full mb-1 animate-confirm meta font-normal tracking-normal whitespace-nowrap motion-reduce:animate-none;
+}
+
 /* Layout */
 @utility article-grid {
 	grid-template-columns: minmax(0, var(--container-article)) var(--spacing-toc);
@@ -157,6 +190,14 @@ html {
 /* `js:` applies once JavaScript runs (app.html adds .js to <html>): progressive enhancement
    for the ToC pill and the code Copy button. */
 @custom-variant js (&:where(.js, .js *));
+
+/* The Copy button's check shows while it says "Copied" (#61). */
+[data-copy-icon] {
+	display: none;
+}
+[data-copied] [data-copy-icon] {
+	@apply block animate-confirm motion-reduce:animate-none;
+}
 
 /* Code blocks: the wrapper paints the background, not Shiki's <pre>. */
 .code-block .shiki {

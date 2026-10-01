@@ -11,7 +11,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 	// Only fetch the other posts when the author hasn't picked "Next up" by hand.
 	const nextUp = pickNextUp(post, post.related?.length ? [] : await listPosts(locals));
-	const { html, headings } = renderMarkdown(post.body ?? '');
+	const { html, headings } = renderMarkdown(post.body ?? '', { headingLinks: true });
 
 	return {
 		post: {

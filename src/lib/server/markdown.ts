@@ -96,7 +96,7 @@ function highlight(code: string, lang: string): string {
 /**
  * A fenced block's info string is `lang` or `lang filename`, e.g. ```ts rotation.ts
  * The header shows the filename (if any) and the language; the Copy button is wired up in
- * Prose.svelte and hidden without JavaScript.
+ * Prose.svelte and hidden without JavaScript. Its check icon shows while "Copied" does (#61).
  */
 function codeBlock({ text, lang }: Tokens.Code): string {
 	const [language = '', ...rest] = (lang ?? '').trim().split(/\s+/);
@@ -106,13 +106,21 @@ function codeBlock({ text, lang }: Tokens.Code): string {
 	return `<div class="code-block not-prose -mx-5 my-6 border-y border-neutral-200 bg-neutral-50 font-mono text-sm md:mx-0 dark:border-neutral-800 dark:bg-neutral-900">
 <div class="flex min-h-11 items-center justify-between border-b border-neutral-200 px-4 text-sm text-neutral-600 dark:border-neutral-800 dark:text-neutral-400">
 <span class="flex items-center gap-2.5">${meta.join('<span aria-hidden="true">·</span>')}</span>
-<button type="button" data-copy class="-mr-2 hidden min-h-11 min-w-11 items-center justify-center gap-1.5 px-3 font-sans text-sm js:inline-flex" aria-label="Copy code to clipboard"><span data-copy-label aria-live="polite">Copy</span></button>
+<button type="button" data-copy class="-mr-2 hidden min-h-11 min-w-11 items-center justify-center gap-1.5 px-3 font-sans text-sm js:inline-flex" aria-label="Copy code to clipboard"><svg data-copy-icon width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span data-copy-label>Copy</span></button>
 </div>
 ${highlight(text, language)}
 </div>`;
 }
 
-export function renderMarkdown(markdown: string): { html: string; headings: Heading[] } {
+/**
+ * `headingLinks`: posts give each h2/h3 a trailing "#" link to its section, which Prose.svelte
+ * turns into "copy the section URL" (#61). Off elsewhere: the Asides stream shows many bodies on
+ * one page, so their ids could repeat.
+ */
+export function renderMarkdown(
+	markdown: string,
+	{ headingLinks = false }: { headingLinks?: boolean } = {}
+): { html: string; headings: Heading[] } {
 	const headings: Heading[] = [];
 	const used = new Map<string, number>();
 
@@ -129,7 +137,10 @@ export function renderMarkdown(markdown: string): { html: string; headings: Head
 				// Plain text for the ToC: the inline HTML without its tags.
 				headings.push({ id, text: html.replace(/<[^>]+>/g, ''), level: depth });
 				// tabindex lets the ToC move focus to the heading after scrolling to it.
-				return `<h${depth} id="${id}" tabindex="-1">${html}</h${depth}>\n`;
+				const link = headingLinks
+					? `<a href="#${id}" data-heading-link class="heading-link not-prose" aria-label="Copy link to this section">#</a>`
+					: '';
+				return `<h${depth} id="${id}" tabindex="-1">${html}${link}</h${depth}>\n`;
 			},
 			code: codeBlock,
 			table(token) {

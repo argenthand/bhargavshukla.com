@@ -6,7 +6,10 @@
 	import PostMeta from '$lib/components/PostMeta.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import { shownDate, yearOf } from '$lib/format';
-	import { titleTransition } from '$lib/motion';
+	import { motionMs, titleTransition } from '$lib/motion';
+	import { cubicOut } from 'svelte/easing';
+	import { flip } from 'svelte/animate';
+	import { fade } from 'svelte/transition';
 	import { site } from '$lib/site';
 
 	let { data } = $props();
@@ -143,26 +146,34 @@
 		</div>
 	{:else}
 		<div>
+			<!-- When the filters change, rows that stay slide into place and new ones fade in (#61). Rows
+			     that go leave at once, so the rest can move straight away. -->
 			{#each years as group (group.year)}
-				<h2 class="mt-7 section-heading first:mt-0">
-					{group.year}
-				</h2>
-				<ul>
-					{#each group.posts as post (post.slug)}
-						<li class="border-b border-neutral-200 dark:border-neutral-800">
-							<a href={resolve('/blog/[slug]', { slug: post.slug })} class="group list-entry">
-								<span
-									class="list-title group-hover:text-red-700 dark:group-hover:text-red-400"
-									data-title-transition
-									style:view-transition-name={titleTransition('post', post.slug)}
-								>
-									{post.title}
-								</span>
-								<PostMeta {post} />
-							</a>
-						</li>
-					{/each}
-				</ul>
+				<div class="mt-7 first:mt-0" in:fade={{ duration: motionMs(), easing: cubicOut }}>
+					<h2 class="section-heading">
+						{group.year}
+					</h2>
+					<ul>
+						{#each group.posts as post (post.slug)}
+							<li
+								class="border-b border-neutral-200 dark:border-neutral-800"
+								animate:flip={{ duration: motionMs(), easing: cubicOut }}
+								in:fade={{ duration: motionMs(), easing: cubicOut }}
+							>
+								<a href={resolve('/blog/[slug]', { slug: post.slug })} class="group list-entry">
+									<span
+										class="list-title group-hover:text-red-700 dark:group-hover:text-red-400"
+										data-title-transition
+										style:view-transition-name={titleTransition('post', post.slug)}
+									>
+										{post.title}
+									</span>
+									<PostMeta {post} />
+								</a>
+							</li>
+						{/each}
+					</ul>
+				</div>
 			{/each}
 		</div>
 	{/if}
