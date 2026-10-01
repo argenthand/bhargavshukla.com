@@ -136,6 +136,18 @@ Production secrets in `/opt/cms/.env`: `APP_KEYS`, `API_TOKEN_SALT`, `ADMIN_JWT_
 
 **Restore drill:** at least once, restore a backup into a local Strapi and confirm it boots with content. Steps are in the runbook below. Done on 2026-09-30 with the nightly copy: a draft post, its category and its image all came back, and the production admin login worked.
 
+## Monitoring (#64)
+
+| What                                                                                | Watched by                   | Alert                                                     |
+| ----------------------------------------------------------------------------------- | ---------------------------- | --------------------------------------------------------- |
+| `https://bhargavshukla.com/`                                                        | UptimeRobot, every 5 minutes | email when it's down, and again when it's back            |
+| `https://cms.bhargavshukla.com/_health` (204, public; Access covers only `/admin*`) | UptimeRobot, every 5 minutes | email when it's down, and again when it's back            |
+| Nightly backup                                                                      | Healthchecks.io heartbeat    | email if no ping by 04:15 UTC, or right away on a failure |
+
+- **UptimeRobot** (free): two **HTTP(s)** monitors, 5-minute interval, alert contact hello@bhargavshukla.com. A monitor counts any 2xx/3xx as up; the CMS one also proves the tunnel and Strapi are healthy.
+- **Backup heartbeat:** `backup.sh nightly` pings `BACKUP_PING_URL` (in `/opt/cms/backup.env`) after the copy is uploaded, and `<url>/fail` if a step fails (an integrity-check or upload failure alerts at once). Unset, nothing is pinged. A failed ping is logged (`journalctl -t cms-backup`) but never fails the backup. `deploy.sh` also runs a nightly backup before every CMS deploy, so deploy days ping twice; that's fine.
+- **Healthchecks.io** check: schedule **Cron** `15 3 * * *`, time zone UTC, grace **1 hour**. Its ping URL is private: anyone with it could fake a good night, so it lives only in `backup.env`.
+
 ## Runbook
 
 Step-by-step ops notes (exact commands, IPs, gotchas) are added here as tickets #10–#15 are done.
@@ -376,6 +388,14 @@ Strapi's **Open preview** opens drafts on the real site ([caching.md → Draft p
 5. **Check:** create a post, save it without publishing, and click **Open preview**. The draft opens with the "Preview mode" banner. **Exit** goes back to the published view (a 404 for a post that was never published).
 
 To rotate the secret, change it on the Worker and in `/opt/cms/.env` together, then restart Strapi (`docker compose up -d` in `/opt/cms`). Changing it also ends every open preview session.
+
+### Monitoring (#64)
+
+1. **UptimeRobot:** sign up (free) → **Add New Monitor** → type **HTTP(s)**, name `bhargavshukla.com`, URL `https://bhargavshukla.com/`, interval 5 minutes, alert contact your email. Again for `cms.bhargavshukla.com` with URL `https://cms.bhargavshukla.com/_health`.
+2. **Healthchecks.io:** sign up (free) → **Add Check** → name `cms nightly backup`, schedule **Cron** `15 3 * * *`, time zone UTC, grace 1 hour. Copy its ping URL (`https://hc-ping.com/<uuid>`).
+3. **VPS:** add `BACKUP_PING_URL=<that URL>` to `/opt/cms/backup.env` (edit the file; it's read by `backup.sh` at each run, no restart needed). The `backup.sh` with the ping arrives with the next CMS deploy.
+4. **Test the heartbeat:** `sudo -u deploy /opt/cms/backup.sh nightly` on the VPS; Healthchecks shows a ping within seconds.
+5. **Test the uptime alert** (planned, a minute of CMS downtime): `cd /opt/cms && docker compose stop strapi`; the CMS monitor goes down and emails within ~5 minutes; `docker compose start strapi` clears it. The site keeps serving cached pages meanwhile; uncached ones fail until Strapi is back.
 
 ### Automated CMS deploys (#48)
 
