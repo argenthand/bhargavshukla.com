@@ -12,6 +12,27 @@ export interface Link {
 	url: string;
 }
 
+/** shared.image (#40): an upload (`file`) or a linked, credited photo (`url`). */
+export interface ImageField {
+	file: Media | null;
+	url: string | null;
+	alt: string;
+	creditName: string | null;
+	creditUrl: string | null;
+	source: 'unsplash' | 'pexels' | 'other' | null;
+	sourceUrl: string | null;
+}
+
+/** An image ready to render: sizes resolved, credit links built. */
+export interface ResolvedImage {
+	src: string;
+	srcset?: string;
+	alt: string;
+	width: number | null;
+	height: number | null;
+	credit?: { name: string; href: string | null; source: string; sourceHref: string | null };
+}
+
 export interface Seo {
 	metaTitle: string | null;
 	metaDescription: string | null;
@@ -41,7 +62,7 @@ export interface PostSummary {
 
 export interface Post extends PostSummary {
 	body: string;
-	cover: Media | null;
+	cover: ImageField | null;
 	related: PostSummary[];
 	seo: Seo | null;
 }

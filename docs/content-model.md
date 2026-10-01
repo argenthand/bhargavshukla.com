@@ -4,10 +4,11 @@ Draft & Publish is **on** for every collection type except Tag and Category. Lon
 
 ## Shared components
 
-| Component     | Fields                                                                                                                    |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `shared.seo`  | `metaTitle` string (≤60), `metaDescription` text (≤160), `ogImage` media (image), `canonicalUrl` string (for cross-posts) |
-| `shared.link` | `label` string (required), `url` string (required)                                                                        |
+| Component      | Fields                                                                                                                                                           |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `shared.seo`   | `metaTitle` string (≤60), `metaDescription` text (≤160), `ogImage` media (image), `canonicalUrl` string (for cross-posts)                                        |
+| `shared.link`  | `label` string (required), `url` string (required)                                                                                                               |
+| `shared.image` | `file` media (image) **or** `url` string (https), `alt` string (required), `creditName`, `creditUrl`, `source` enum (`unsplash`, `pexels`, `other`), `sourceUrl` |
 
 ## Single types
 
@@ -70,18 +71,18 @@ Initial categories: Leadership, Engineering, Tools, Ideas, Books.
 
 ### Post — `post`
 
-| Field         | Type                             | Notes                                                   |
-| ------------- | -------------------------------- | ------------------------------------------------------- |
-| `title`       | string                           | required                                                |
-| `slug`        | uid ← `title`                    | required                                                |
-| `summary`     | text (≤280)                      | required; used in lists, RSS, meta description fallback |
-| `body`        | rich text (Markdown)             | required                                                |
-| `cover`       | media (image)                    | optional; alt text from the media's `alternativeText`   |
-| `category`    | relation, many-to-one → Category | required                                                |
-| `related`     | relation, one-way → Post (many)  | optional; overrides "Next up" picks, frontend uses ≤ 2  |
-| `featured`    | boolean                          | default `false`; home shows the 3 newest featured       |
-| `displayDate` | date                             | optional backdate override; falls back to `publishedAt` |
-| `seo`         | `shared.seo`                     | optional                                                |
+| Field         | Type                             | Notes                                                      |
+| ------------- | -------------------------------- | ---------------------------------------------------------- |
+| `title`       | string                           | required                                                   |
+| `slug`        | uid ← `title`                    | required                                                   |
+| `summary`     | text (≤280)                      | required; used in lists, RSS, meta description fallback    |
+| `body`        | rich text (Markdown)             | required                                                   |
+| `cover`       | `shared.image`                   | optional; an upload (no credit) or a credited linked photo |
+| `category`    | relation, many-to-one → Category | required                                                   |
+| `related`     | relation, one-way → Post (many)  | optional; overrides "Next up" picks, frontend uses ≤ 2     |
+| `featured`    | boolean                          | default `false`; home shows the 3 newest featured          |
+| `displayDate` | date                             | optional backdate override; falls back to `publishedAt`    |
+| `seo`         | `shared.seo`                     | optional                                                   |
 
 Ideas are short posts in the Ideas category. Book reviews are posts in the Books category: put the author in the title or summary, and the takeaway in the summary.
 
@@ -108,6 +109,22 @@ The post page shows "Updated …" from Strapi's `updatedAt` when it falls on a d
 - Code fences take the language and an optional filename: ` ```ts rotation.ts `. The block header shows both, with a Copy button.
 - Highlighted languages: TypeScript (`ts`), JavaScript (`js`), TSX, Svelte, Python (`py`), Bash (`sh`), SQL, Go, C, C++, C# (`cs`), JSON, YAML, Dockerfile. Anything else renders as plain text. The list lives in `src/lib/server/markdown.ts`, and each language adds to the Worker size.
 - `##` and `###` headings feed the table of contents, which appears once a post has two or more `##` sections.
+
+## Images (#40)
+
+An image is either **your own upload** (`file`, served from R2, no credit) or **a linked photo** (`url` on `images.unsplash.com` or `images.pexels.com`, never re-hosted). A save-time check in `cms/src/index.ts` rejects both or neither, a non-https URL, and a linked photo without `creditName` and `source`.
+
+- The cover's caption reads "Photo by [creditName](creditUrl) on [Unsplash](sourceUrl)". Unsplash links get `utm_source=bhargavshukla.com&utm_medium=referral`, as Unsplash asks.
+- Linked Unsplash/Pexels photos are served in four widths (640–1920) through the CDN's `w` parameter.
+- In a post body, put the credit as an italic line **directly under** the image (no blank line) to get a captioned figure:
+
+  ```md
+  ![Alt text](https://images.unsplash.com/photo-…)
+  _Photo by [Jane Doe](https://unsplash.com/@jane) on [Unsplash](https://unsplash.com/photos/…)_
+  ```
+
+- Terms (checked 2026-10-01): neither the Unsplash nor the Pexels license requires credit for use on a blog; both appreciate it. Unsplash's API guidelines require linking to its image URLs and the referral parameters, but only for apps using its API; picking photos by hand isn't API use. Pexels allows linking to `images.pexels.com`.
+- Trade-offs: a linked photo breaks if the photographer removes it, and backups can't restore it; readers' browsers load it from Unsplash or Pexels.
 
 ## Working rules
 

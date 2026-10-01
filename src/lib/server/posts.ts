@@ -34,7 +34,7 @@ export async function getPost(locals: App.Locals, slug: string): Promise<Post | 
 		filters: { slug: { $eq: slug } },
 		populate: {
 			category: CATEGORY,
-			cover: { fields: ['url', 'alternativeText', 'width', 'height'] },
+			cover: { populate: { file: { fields: ['url', 'alternativeText', 'width', 'height'] } } },
 			related: { fields: SUMMARY_FIELDS, populate: { category: CATEGORY } },
 			seo: { populate: { ogImage: { fields: ['url', 'alternativeText', 'width', 'height'] } } }
 		},

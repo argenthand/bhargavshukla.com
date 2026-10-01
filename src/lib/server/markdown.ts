@@ -21,6 +21,7 @@ import typescript from 'shiki/langs/typescript.mjs';
 import yaml from 'shiki/langs/yaml.mjs';
 import githubDark from 'shiki/themes/github-dark.mjs';
 import githubLight from 'shiki/themes/github-light.mjs';
+import { responsive } from '$lib/images';
 import type { Heading } from '$lib/types/content';
 
 const highlighter = createHighlighterCoreSync({
@@ -138,7 +139,26 @@ export function renderMarkdown(markdown: string): { html: string; headings: Head
 			},
 			image({ href, title, text }) {
 				const t = title ? ` title="${escapeHtml(title)}"` : '';
-				return `<img src="${escapeHtml(href)}" alt="${escapeHtml(text)}"${t} loading="lazy" decoding="async">`;
+				// Unsplash/Pexels links get responsive sizes from the CDN (#40).
+				const { src, srcset } = responsive(href);
+				const set = srcset
+					? ` srcset="${escapeHtml(srcset)}" sizes="(min-width: 768px) 680px, 100vw"`
+					: '';
+				return `<img src="${escapeHtml(src)}"${set} alt="${escapeHtml(text)}"${t} loading="lazy" decoding="async">`;
+			},
+			paragraph(token) {
+				// An image with an italic line directly under it is a captioned figure (#40):
+				//   ![Alt](https://images.unsplash.com/…)
+				//   *Photo by [Name](…) on [Unsplash](…)*
+				const parts = token.tokens.filter(
+					(t) => !(t.type === 'text' && !t.raw.trim()) && t.type !== 'br'
+				);
+				if (parts.length === 2 && parts[0].type === 'image' && parts[1].type === 'em') {
+					const img = this.parser.parseInline([parts[0]]);
+					const caption = this.parser.parseInline((parts[1] as Tokens.Em).tokens);
+					return `<figure>${img}<figcaption>${caption}</figcaption></figure>\n`;
+				}
+				return Renderer.prototype.paragraph.call(this, token);
 			}
 		}
 	});
