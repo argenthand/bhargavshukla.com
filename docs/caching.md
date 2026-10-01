@@ -13,25 +13,13 @@ Goal: near-static speed, with content changes live within seconds and no fronten
 
 Each page is tagged with the **content types it read**: `type:post`, `type:category`, `type:aside`, `type:tag`, `type:profile`, `type:resume`.
 
-Publishing any post purges `type:post`, which clears every page that shows posts: the post itself, `/blog`, `/`, RSS, sitemap, and SvelteKit's `__data.json` for client-side navigation. A renamed slug can't leave a stale page behind. Per-document tags would add bookkeeping for no benefit at this scale.
+Publishing any post purges `type:post`, which clears every page that shows posts: the post itself, `/blog`, `/`, RSS and sitemap. SvelteKit's `__data.json` (client-side navigation) is never cached: SvelteKit marks it `private, no-store`, so it always reads Strapi. A renamed slug can't leave a stale page behind. Per-document tags would add bookkeeping for no benefit at this scale.
 
 ## Implementation
 
 ### 1. Types — `src/app.d.ts`
 
-Run `pnpm wrangler types` to generate `Env`, then:
-
-```ts
-interface Locals {
-	cacheTags: Set<string>;
-}
-interface Platform {
-	env: Env;
-	ctx: ExecutionContext;
-	caches: CacheStorage & { default: Cache };
-	cf?: IncomingRequestCfProperties;
-}
-```
+`App.Locals { cacheTags: Set<string> }`. `App.Platform` (`ctx`, `caches`, `cf`) comes from `@sveltejs/adapter-cloudflare`. `wrangler types` is not used: its 600 KB of runtime types clash with the DOM types the Svelte code needs, and string config comes through `$env/dynamic/private` anyway.
 
 ### 2. Strapi client — `src/lib/server/strapi.ts`
 
@@ -42,13 +30,17 @@ interface Platform {
 
 ### 3. Hook — `src/hooks.server.ts` + `src/lib/server/edge-cache.ts`
 
-1. Set `event.locals.cacheTags = new Set()`.
-2. **Bypass** (plain `resolve`) when: no `platform` (local dev), method isn't `GET`, path starts with `/api/`, or a preview cookie is present.
-3. **Cache key** = origin + pathname + allowlisted query params (only `page`), sorted. Everything else is dropped.
-4. `hit = await platform.caches.default.match(key)`. On a hit, return it with `x-edge-cache: HIT` and browser `Cache-Control: public, max-age=0, must-revalidate`.
+`handle = sequence(cacheTags, edgeCache)`:
+
+1. `cacheTags` sets `event.locals.cacheTags = new Set()`.
+2. **Bypass** (plain `resolve`, `x-edge-cache: BYPASS`) when there's no `platform.caches` (`vite dev`), the method isn't `GET`/`HEAD`, the path starts with `/api/`, or the `__preview` cookie is present.
+3. **Cache key** = `origin + /__edge + pathname` + only these params, in this order: `cat`, `kind`, `page`, `q`, `tag`, `x-sveltekit-invalidated`, `x-sveltekit-trailing-slash`. Tracking params (`utm_*`, `fbclid`, …) are dropped, so they share the page.
+   - The filters are in the key because `/blog` and `/asides` render their filtered results on the server (no-JS and shareable links).
+   - The `/__edge/` prefix matters: the adapter's own worker looks up the **raw request URL** in `caches.default` before SvelteKit runs, and must never find one of our entries (it would serve it as-is, `Cache-Tag` and 10-minute `Cache-Control` included).
+4. `hit = await caches.default.match(key)`. A hit is returned with `x-edge-cache: HIT` (a `HEAD` gets the headers without the body).
 5. On a miss, `response = await resolve(event)`.
-6. Cache only if `status === 200 && locals.cacheTags.size > 0`. Store a clone with `Cache-Control: public, max-age=${EDGE_TTL}` and `Cache-Tag: <tags joined by commas>` via `platform.ctx.waitUntil(cache.put(key, stored))`.
-7. Return to the browser with `x-edge-cache: MISS`, `Cache-Tag` removed, and the browser `Cache-Control` from step 4.
+6. Stored only for a `GET` whose response is `200`, has ≥ 1 tag, has no `Set-Cookie`, and whose `Cache-Control` isn't `no-store`/`private`. A load opts out with `setHeaders({ 'cache-control': 'no-store' })`; the home page does this when Strapi is unreachable, so the page without posts isn't kept for the TTL. The stored copy gets `Cache-Control: public, max-age=${EDGE_TTL}` and `Cache-Tag: <tags>`, written with `ctx.waitUntil(cache.put(key, …))`.
+7. Browsers always get `x-edge-cache: MISS|HIT`, no `Cache-Tag`, and `Cache-Control: no-cache`. `no-cache` (rather than `max-age=0, must-revalidate`) also stops the adapter's worker from storing the response itself.
 
 `EDGE_TTL = 600` (10 minutes). It only bounds staleness if a purge fails; raise it once purging has proven reliable.
 
@@ -92,7 +84,7 @@ Read string config through `$env/dynamic/private` (populated from bindings by `a
 
 ## Verifying in production
 
-1. `curl -sI https://bhargavshukla.com/blog/<slug>` twice → `x-edge-cache: MISS`, then `HIT`.
+1. `curl -s -D - -o /dev/null https://bhargavshukla.com/blog/<slug>` twice → `x-edge-cache: MISS`, then `HIT`. Use a GET: `curl -I` sends `HEAD`, which is answered from the cache but never stored.
 2. Edit and publish the post in Strapi; `pnpm wrangler tail` shows the purge of `type:post`.
 3. Next `curl` → `MISS` with the new content; `/`, `/blog` and `/rss.xml` also reflect it.
 4. A wrong bearer token on `/api/purge` → 401. `{ "all": true }` with the right token purges everything.
