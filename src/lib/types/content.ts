@@ -81,6 +81,8 @@ export interface Profile {
 	tagline: string;
 	/** Optional headshot (#59); the intro lays out the same without it. */
 	photo: Media | null;
+	/** Swapped in after a few clicks on the headshot (#63); without it, the photo winks. */
+	photoAlt: Media | null;
 	bio: string;
 	email: string | null;
 	linkedin: string | null;

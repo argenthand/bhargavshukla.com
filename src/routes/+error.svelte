@@ -5,6 +5,7 @@
 	import { page } from '$app/state';
 	import Icon from '$lib/components/Icon.svelte';
 	import Seo from '$lib/components/Seo.svelte';
+	import { notFoundLine } from '$lib/easter-eggs';
 	import { isLive } from '$lib/site';
 
 	const notFound = $derived(page.status === 404);
@@ -25,6 +26,10 @@
 		<h1 id="error-title" class="page-title">
 			{notFound ? "This page isn't here" : 'Something broke on my end'}
 		</h1>
+		{#if notFound}
+			<!-- A different line per broken link (#63). -->
+			<p class="standfirst">{notFoundLine(page.url.pathname)}</p>
+		{/if}
 		<p class="body-copy">
 			{#if notFound}
 				The link may be old, or the page may have moved.

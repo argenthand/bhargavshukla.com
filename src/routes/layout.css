@@ -31,6 +31,18 @@
 			scale: 0.5;
 		}
 	}
+	/* The headshot's wink (#63): a quick tilt and back. */
+	--animate-wink: wink calc(var(--duration-motion) * 3) var(--ease-motion);
+
+	@keyframes wink {
+		30% {
+			rotate: -8deg;
+			scale: 1.04;
+		}
+		65% {
+			rotate: 5deg;
+		}
+	}
 }
 
 /*
@@ -124,6 +136,11 @@
 /* "Link copied", above the "#" that was clicked; anchored at its right edge so it never widens the page. */
 @utility heading-toast {
 	@apply pointer-events-none absolute right-0 bottom-full mb-1 animate-confirm meta font-normal tracking-normal whitespace-nowrap motion-reduce:animate-none;
+}
+
+/* A key in the shortcuts panel (#63). */
+@utility key-cap {
+	@apply inline-flex h-6.5 min-w-6.5 items-center justify-center border border-b-2 border-neutral-300 bg-neutral-50 px-1.5 font-mono text-sm leading-none text-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100;
 }
 
 /* Layout */
