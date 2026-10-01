@@ -320,3 +320,10 @@ The post `cover` changes from a media field to the `shared.image` component, so 
 
 1. Deploy the CMS once the `CMS image` workflow for the merge commit has finished: `docker compose pull && docker compose up -d`.
 2. Re-add any covers you want to keep: Content Manager → the post → Cover → add an entry with either the uploaded file or the photo URL plus credit → Save and Publish. Files already uploaded stay in the Media Library.
+
+### Asides (#18)
+
+1. Deploy the CMS once the `CMS image` workflow for the merge commit has finished: `docker compose pull && docker compose up -d`.
+2. **Token:** production admin → Settings → API Tokens → `frontend-read` → add **Aside `find` + `findOne`** and **Tag `find` + `findOne`** → Save.
+3. **Content:** Content Manager → Tag (a few to start), then Aside → write and **Publish** at least one.
+4. **Show it:** set `live: true` for Asides in `src/lib/site.ts` (a one-line PR). Until then `/asides` works but isn't linked.

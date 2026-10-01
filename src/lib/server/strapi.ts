@@ -10,7 +10,9 @@ export const MODELS = {
 	post: 'posts',
 	category: 'categories',
 	profile: 'profile',
-	resume: 'resume'
+	resume: 'resume',
+	aside: 'asides',
+	tag: 'tags'
 } as const;
 
 /** Single types: GET returns one entry, not a page. */
@@ -19,7 +21,11 @@ type SingleModel = 'profile' | 'resume';
 export type Model = keyof typeof MODELS;
 
 /** Relations whose content ends up on the page, so editing them must purge it too. */
-const RELATION_MODELS: Record<string, Model> = { category: 'category', related: 'post' };
+const RELATION_MODELS: Record<string, Model> = {
+	category: 'category',
+	related: 'post',
+	tags: 'tag'
+};
 
 export type Query = Record<string, unknown>;
 

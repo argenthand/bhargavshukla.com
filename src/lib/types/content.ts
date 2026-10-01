@@ -94,6 +94,33 @@ export interface Resume {
 	education: { credential: string; school: string; year: string | null }[];
 }
 
+export interface Tag {
+	name: string;
+	slug: string;
+}
+
+export type AsideKind = 'code' | 'quote' | 'tip' | 'thought';
+
+/** Short-form (#18), as Strapi returns it. */
+export interface Aside {
+	documentId: string;
+	kind: AsideKind;
+	title: string | null;
+	slug: string;
+	body: string;
+	sourceAuthor: string | null;
+	sourceTitle: string | null;
+	sourceUrl: string | null;
+	publishedAt: string;
+	tags: Tag[];
+}
+
+/** An aside ready to render: body as HTML, plus a plain-text label for links and titles. */
+export interface RenderedAside extends Omit<Aside, 'body'> {
+	html: string;
+	label: string;
+}
+
 export interface Page<T> {
 	data: T[];
 	meta: { pagination: { page: number; pageSize: number; pageCount: number; total: number } };

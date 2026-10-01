@@ -1,7 +1,7 @@
 'use strict';
 
 // Local development seed (#8): categories, a few sample posts with code blocks, the profile (#42),
-// a sample resume (#5)
+// a sample resume (#5), sample asides and tags (#18)
 // and a read-only API token for the SvelteKit frontend. Safe to re-run; existing data is kept, and an
 // existing token gets any new permissions.
 // Usage: npm run seed
@@ -18,6 +18,10 @@ const TOKEN_PERMISSIONS = [
   'api::category.category.findOne',
   'api::profile.profile.find',
   'api::resume.resume.find',
+  'api::aside.aside.find',
+  'api::aside.aside.findOne',
+  'api::tag.tag.find',
+  'api::tag.tag.findOne',
 ];
 
 // Placeholder roles from the design mockups, clearly marked; the real resume is written in production.
@@ -49,6 +53,40 @@ const RESUME = {
   ],
   education: [{ credential: 'Sample degree', school: 'Sample University', year: '2018' }],
 };
+
+// The mockups' examples (F-asides-*), one per kind. Local test data.
+const TAGS = ['books', 'tech-debt', 'leadership', 'one-on-ones', 'git'];
+const ASIDES = [
+  {
+    kind: 'quote',
+    slug: 'sample-larson-migrations',
+    body: 'Migrations are the sole scalable fix to tech debt.',
+    sourceAuthor: 'Will Larson',
+    sourceTitle: 'An Elegant Puzzle',
+    sourceUrl: 'https://lethain.com/elegant-puzzle/',
+    tags: ['books', 'tech-debt'],
+  },
+  {
+    kind: 'tip',
+    title: 'Sample: Let the report own the 1:1 doc',
+    slug: 'sample-let-the-report-own-the-1-1-doc',
+    body: 'One shared doc per person, newest meeting at the top. They add topics first; I add mine after. If it’s still empty the day before, that’s worth a gentle question too.',
+    tags: ['leadership', 'one-on-ones'],
+  },
+  {
+    kind: 'code',
+    title: 'Sample: Find the commit that deleted a file',
+    slug: 'sample-find-the-commit-that-deleted-a-file',
+    body: ['```bash', 'git log --diff-filter=D --oneline -- path/to/file', '# then restore it from the parent of that commit', 'git checkout <sha>^ -- path/to/file', '```'].join('\n'),
+    tags: ['git'],
+  },
+  {
+    kind: 'thought',
+    slug: 'sample-surprised-in-public',
+    body: 'The fastest way to lose a team’s trust: be surprised in public by something they told you in private.',
+    tags: ['leadership'],
+  },
+];
 
 const PROFILE = {
   name: 'Bhargav Shukla',
@@ -188,6 +226,21 @@ async function seed(strapi) {
     });
     console.log('Sample cover: added');
   }
+
+  const tagDocs = strapi.documents('api::tag.tag');
+  const tagIds = {};
+  for (const name of TAGS) {
+    const existing = await tagDocs.findFirst({ filters: { slug: name } });
+    tagIds[name] = (existing ?? (await tagDocs.create({ data: { name, slug: name } }))).documentId;
+  }
+  const asides = strapi.documents('api::aside.aside');
+  let newAsides = 0;
+  for (const { tags, ...aside } of ASIDES) {
+    if (await asides.findFirst({ filters: { slug: aside.slug } })) continue;
+    await asides.create({ data: { ...aside, tags: tags.map((t) => tagIds[t]) }, status: 'published' });
+    newAsides++;
+  }
+  console.log(`Asides: ${newAsides} created, ${ASIDES.length - newAsides} already there`);
 
   const profile = strapi.documents('api::profile.profile');
   if (await profile.findFirst()) {
