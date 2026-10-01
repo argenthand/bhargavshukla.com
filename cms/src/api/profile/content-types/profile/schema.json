@@ -28,6 +28,14 @@
         "images"
       ]
     },
+    "photoAlt": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
     "bio": {
       "type": "richtext",
       "required": true
