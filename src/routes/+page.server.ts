@@ -16,7 +16,9 @@ export const load: PageServerLoad = async ({ locals, setHeaders }) => {
 
 	const [profile, home] = await Promise.all([
 		getProfile(locals).catch(fallback(undefined)),
-		homePosts(locals).catch(fallback({ heading: 'Featured', posts: [] }))
+		homePosts(locals, { drafts: locals.preview }).catch(
+			fallback({ heading: 'Featured', posts: [] })
+		)
 	]);
 
 	degraded ||= !profile;

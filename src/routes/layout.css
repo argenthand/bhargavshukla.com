@@ -138,6 +138,11 @@
 	@apply pointer-events-none absolute right-0 bottom-full mb-1 animate-confirm meta font-normal tracking-normal whitespace-nowrap motion-reduce:animate-none;
 }
 
+/* An unpublished entry in draft preview (#57; docs/design.md → Components). */
+@utility draft-badge {
+	@apply inline-flex items-center rounded-xs border border-dashed border-neutral-600 px-1.5 text-xs tracking-wide text-neutral-600 uppercase dark:border-neutral-400 dark:text-neutral-400;
+}
+
 /* A key in the shortcuts panel (#63). */
 @utility key-cap {
 	@apply inline-flex h-6.5 min-w-6.5 items-center justify-center border border-b-2 border-neutral-300 bg-neutral-50 px-1.5 font-mono text-sm leading-none text-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100;

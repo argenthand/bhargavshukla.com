@@ -44,6 +44,16 @@ Publishing any post purges `type:post`, which clears every page that shows posts
 
 `EDGE_TTL = 600` (10 minutes). It only bounds staleness if a purge fails; raise it once purging has proven reliable.
 
+### Draft preview (#57) — `src/lib/server/preview.ts`
+
+1. **Link.** Strapi's **Open preview** (draft tab) calls `preview.config.handler` in [`cms/config/admin.ts`](../cms/config/admin.ts), which mints `https://bhargavshukla.com/api/preview?path=/blog/<slug>&exp=<now+5 min>&sig=<HMAC>` for posts, asides and the resume (other types get no button). The secret itself never appears in a URL. The published tab opens the live page.
+2. **Cookie.** `/api/preview` checks the signature (`crypto.subtle.verify`, constant time), that `path` is a site path (`/x`, never `//host`), and that `exp` is in the future but at most 10 minutes away. It then sets `__preview=<exp>.<HMAC>` (HttpOnly, Secure, SameSite=Lax, 2 hours) and redirects (303) to the page. A bad link gets 401.
+3. **Loads.** The `preview` hook verifies the cookie into `locals.preview`. A cookie made by hand, tampered with or expired is ignored. Page loads pass `{ drafts: locals.preview }`: lists merge each document's draft with the published list (`mergeDrafts`: published ones keep their publish date, the rest get `draft: true` and sort by last edit), and a post, aside or the resume is read with `status=draft`. **RSS and the sitemap never ask for drafts.**
+4. **Caching.** Any `__preview` cookie bypasses the edge cache (step 2 above). A preview response also gets `Cache-Control: private, no-store` and `X-Robots-Tag: noindex`.
+5. **UI.** The layout shows "Preview mode: drafts are visible to you only" with **Exit** (`/api/preview/exit?path=…`, which clears the cookie and goes back to the page). Unpublished entries show "Not published" and the Draft badge.
+
+The CMS and the site share `PREVIEW_SECRET`; the signed text is `link\n<path>\n<exp>` for links and `cookie\n<exp>` for the cookie, so one can't stand in for the other.
+
 ### 4. Purge endpoint — `src/routes/api/purge/+server.ts` + `src/lib/server/purge.ts`
 
 - **Auth:** `Authorization: Bearer ${PURGE_SECRET}`, compared with `crypto.subtle.timingSafeEqual`; otherwise 401.

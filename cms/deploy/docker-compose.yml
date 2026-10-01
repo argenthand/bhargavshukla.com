@@ -13,6 +13,8 @@ services:
       PORT: '1337'
       DATABASE_FILENAME: /opt/app/data/data.db
       PUBLIC_URL: https://cms.bhargavshukla.com
+      # Draft preview (#57); PREVIEW_SECRET comes from .env.
+      CLIENT_URL: https://bhargavshukla.com
       IS_PROXIED: 'true'
       # Uploads go to R2 (#13); R2_ACCOUNT_ID and the R2 keys come from .env.
       R2_BUCKET: cms-media

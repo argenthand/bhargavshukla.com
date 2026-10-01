@@ -28,16 +28,23 @@
 			{kindLabel(aside.kind)}
 		</span>
 		<span aria-hidden="true" class="text-neutral-600 dark:text-neutral-400">·</span>
+		{#snippet date()}
+			<!-- In draft preview (#57) an unpublished aside says so instead of showing a date. -->
+			{#if aside.draft}
+				Not published
+			{:else}
+				<time datetime={isoDay(aside.publishedAt)}>{formatDate(aside.publishedAt)}</time>
+			{/if}
+		{/snippet}
 		{#if standalone}
-			<time datetime={isoDay(aside.publishedAt)} class="meta">
-				{formatDate(aside.publishedAt)}
-			</time>
+			<span class="meta">{@render date()}</span>
 		{:else}
 			<a href={resolve('/asides/[slug]', { slug: aside.slug })} class="meta link-quiet">
-				<time datetime={isoDay(aside.publishedAt)}>{formatDate(aside.publishedAt)}</time>
+				{@render date()}
 				{#if !aside.title}<span class="sr-only">: {aside.label}</span>{/if}
 			</a>
 		{/if}
+		{#if aside.draft}<span class="draft-badge">Draft</span>{/if}
 	</p>
 
 	{#if aside.title}

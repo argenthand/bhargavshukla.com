@@ -59,7 +59,7 @@ describe('strapi(locals)', () => {
 		);
 
 	it('sends the token and records cache tags', async () => {
-		const locals = { cacheTags: new Set<string>() };
+		const locals = { cacheTags: new Set<string>(), preview: false };
 		const fetcher = vi.fn(async () => page([{ slug: 'a' }]));
 		const res = await strapi(locals, fetcher).find('post', {
 			populate: { category: { fields: ['name'] } }
@@ -73,7 +73,7 @@ describe('strapi(locals)', () => {
 	});
 
 	it('reads every page in findAll', async () => {
-		const locals = { cacheTags: new Set<string>() };
+		const locals = { cacheTags: new Set<string>(), preview: false };
 		const fetcher = vi
 			.fn()
 			.mockResolvedValueOnce(page([1, 2], 2, 1))
@@ -83,13 +83,13 @@ describe('strapi(locals)', () => {
 	});
 
 	it('turns a Strapi error into a 502', async () => {
-		const locals = { cacheTags: new Set<string>() };
+		const locals = { cacheTags: new Set<string>(), preview: false };
 		const fetcher = vi.fn(async () => new Response('nope', { status: 403 }));
 		await expect(strapi(locals, fetcher).find('post')).rejects.toMatchObject({ status: 502 });
 	});
 
 	it('reads a single type, and returns undefined before it is saved', async () => {
-		const locals = { cacheTags: new Set<string>() };
+		const locals = { cacheTags: new Set<string>(), preview: false };
 		const found = vi.fn(async () => new Response(JSON.stringify({ data: { name: 'B' } })));
 		expect(await strapi(locals, found).get('profile')).toEqual({ name: 'B' });
 		expect(found).toHaveBeenCalledWith('http://cms.test/api/profile', expect.anything());

@@ -66,6 +66,8 @@ export interface PostSummary {
 	updatedAt: string;
 	// Strapi can't make relations required, so a post may have no category.
 	category: Category | null;
+	/** Preview only (#57): never published; `publishedAt` then holds the last edit. */
+	draft?: boolean;
 }
 
 export interface Post extends PostSummary {
@@ -125,6 +127,9 @@ export interface Aside {
 	sourceUrl: string | null;
 	publishedAt: string;
 	tags: Tag[];
+	/** Preview only (#57): never published; `publishedAt` then holds the last edit. */
+	draft?: boolean;
+	updatedAt?: string;
 }
 
 /** An aside ready to render: body as HTML, plus a plain-text label for links and titles. */

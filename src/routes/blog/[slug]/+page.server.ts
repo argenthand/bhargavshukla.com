@@ -6,11 +6,15 @@ import { mediaUrl } from '$lib/server/strapi';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-	const post = await getPost(locals, params.slug);
+	const drafts = locals.preview;
+	const post = await getPost(locals, params.slug, { drafts });
 	if (!post) error(404, 'Not found');
 
 	// Only fetch the other posts when the author hasn't picked "Next up" by hand.
-	const nextUp = pickNextUp(post, post.related?.length ? [] : await listPosts(locals));
+	const nextUp = pickNextUp(
+		post,
+		post.related?.length ? [] : await listPosts(locals, {}, { drafts })
+	);
 	const { html, headings } = renderMarkdown(post.body ?? '', { headingLinks: true });
 
 	return {
@@ -22,6 +26,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			displayDate: post.displayDate,
 			publishedAt: post.publishedAt,
 			updatedAt: post.updatedAt,
+			draft: post.draft,
 			cover: resolveImage(post.cover),
 			seo: {
 				title: post.seo?.metaTitle || post.title,
