@@ -152,29 +152,30 @@ In `@theme`, built from the default scale:
 
 One `@utility` per role in `layout.css`. Change it there and every use follows.
 
-| Class                | Role                                                                         | Definition                                                                                       |
-| -------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `page`               | Every page's shell (width set per page: `max-w-3xl`, `max-w-200`, …)         | `mx-auto px-5 pt-8 pb-14 md:px-8 md:pt-12`                                                       |
-| `page-title`         | Every h1                                                                     | `text-4xl font-medium tracking-tight text-balance`                                               |
-| `standfirst`         | The italic line under an h1 (home tagline, Writing, Asides, resume)          | `text-xl italic text-neutral-600 dark:text-neutral-400`                                          |
-| `body-copy`          | Running text outside articles: home bio, error copy, resume, statuses        | `text-lg/relaxed text-neutral-700 dark:text-neutral-300`                                         |
-| `meta`               | Dates, captions, attributions, tag links, footer, "Also:"                    | `text-sm text-neutral-600 dark:text-neutral-400`                                                 |
-| `label`              | Small uppercase heading (ToC "Contents")                                     | `text-xs font-semibold uppercase tracking-widest`                                                |
-| `label-accent`       | Category and kind labels, "Next up", error status                            | `label` + `text-red-700 dark:text-red-400`                                                       |
-| `label-muted`        | Form field labels (Search titles, Category, Kind)                            | `label` + `text-neutral-600 dark:text-neutral-400`                                               |
-| `section-heading`    | Featured, Writing's years, resume sections: rule **below**                   | `label` + `border-b-2 border-neutral-900 pb-1.5 dark:border-neutral-100`                         |
-| `list-entry`         | A row in a list of posts (Featured, Writing)                                 | `flex flex-col gap-2 py-5`                                                                       |
-| `list-title`         | A post or aside title in any list, and the Next up card                      | `text-xl/snug md:text-2xl/snug font-semibold text-balance`                                       |
-| `summary`            | A post summary in any list                                                   | `line-clamp-2 text-lg text-neutral-600 dark:text-neutral-400`                                    |
-| `tap-target`         | Anything tappable: 44px tall                                                 | `inline-flex min-h-11 items-center`                                                              |
-| `link-cta`           | Accent links and actions: intro links, View all, Clear, Newer/Older, Go home | `tap-target gap-1.5 text-lg text-red-700 underline decoration-1 underline-offset-4` + hover/dark |
-| `link-quiet`         | Secondary links: dates in the stream, sources, tags, credits, "Also:"        | `underline decoration-neutral-200 underline-offset-4 hover:text-neutral-900` + dark              |
-| `filter-button`      | Writing and Asides filter buttons (`md+`)                                    | `min-h-11 px-2.5 text-lg text-neutral-600` + `aria-pressed:` underline in red, offset 8          |
-| `select-underline`   | The phone filter `<select>`                                                  | `h-11 w-full appearance-none border-b border-neutral-900 text-lg` + focus/dark                   |
-| `article-grid`       | Post text + ToC at `lg`                                                      | `minmax(0, --container-article)` and `--spacing-toc` columns, `--spacing-article-gap` gap        |
-| `resume-skills-grid` | Skill group label + skills (`sm+` and print)                                 | `--spacing-resume-label` and `minmax(0, 1fr)` columns                                            |
-| `max-h-sheet`        | The ToC bottom sheet                                                         | `max-height: 80dvh`                                                                              |
-| `transition-fade`    | Fades that also hide (the home header name)                                  | `transition-property: opacity, visibility` with the default timing                               |
+| Class                  | Role                                                                         | Definition                                                                                                                                             |
+| ---------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `page`                 | Every page's shell (width set per page: `max-w-3xl`, `max-w-200`, …)         | `mx-auto px-5 pt-8 pb-14 md:px-8 md:pt-12`                                                                                                             |
+| `page-title`           | Every h1                                                                     | `text-4xl font-medium tracking-tight text-balance`                                                                                                     |
+| `standfirst`           | The italic line under an h1 (home tagline, Writing, Asides, resume)          | `text-xl italic text-neutral-600 dark:text-neutral-400`                                                                                                |
+| `body-copy`            | Running text outside articles: home bio, error copy, resume, statuses        | `text-lg/relaxed text-neutral-700 dark:text-neutral-300`                                                                                               |
+| `meta`                 | Dates, captions, attributions, tag links, footer, "Also:"                    | `text-sm text-neutral-600 dark:text-neutral-400`                                                                                                       |
+| `label`                | Small uppercase heading (ToC "Contents")                                     | `text-xs font-semibold uppercase tracking-widest`                                                                                                      |
+| `label-accent`         | Category and kind labels, "Next up", error status                            | `label` + `text-red-700 dark:text-red-400`                                                                                                             |
+| `label-muted`          | Form field labels (Search titles, Category, Kind)                            | `label` + `text-neutral-600 dark:text-neutral-400`                                                                                                     |
+| `section-heading`      | Featured, Writing's years, resume sections: rule **below**                   | `label` + `border-b-2 border-neutral-900 pb-1.5 dark:border-neutral-100`                                                                               |
+| `list-entry`           | A row in a list of posts (Featured, Writing)                                 | `flex flex-col gap-2 py-5`                                                                                                                             |
+| `list-title`           | A post or aside title in any list, and the Next up card                      | `text-xl/snug md:text-2xl/snug font-semibold text-balance`                                                                                             |
+| `summary`              | A post summary in any list                                                   | `line-clamp-2 text-lg text-neutral-600 dark:text-neutral-400`                                                                                          |
+| `tap-target`           | Anything tappable: 44px tall                                                 | `inline-flex min-h-11 items-center`                                                                                                                    |
+| `link-cta`             | Accent links and actions: intro links, View all, Clear, Newer/Older, Go home | `tap-target gap-1.5 text-lg text-red-700 underline decoration-1 underline-offset-4` + hover (`decoration-2`, darker red), dark, `transition-underline` |
+| `link-quiet`           | Secondary links: dates in the stream, sources, tags, credits, "Also:"        | `underline decoration-neutral-200 underline-offset-4 hover:text-neutral-900 hover:decoration-current` + dark, `transition-underline`                   |
+| `filter-button`        | Writing and Asides filter buttons (`md+`)                                    | `min-h-11 px-2.5 text-lg text-neutral-600` + `aria-pressed:` underline in red, offset 8                                                                |
+| `select-underline`     | The phone filter `<select>`                                                  | `h-11 w-full appearance-none border-b border-neutral-900 text-lg` + focus/dark                                                                         |
+| `article-grid`         | Post text + ToC at `lg`                                                      | `minmax(0, --container-article)` and `--spacing-toc` columns, `--spacing-article-gap` gap                                                              |
+| `resume-skills-grid`   | Skill group label + skills (`sm+` and print)                                 | `--spacing-resume-label` and `minmax(0, 1fr)` columns                                                                                                  |
+| `max-h-sheet`          | The ToC bottom sheet                                                         | `max-height: 80dvh`                                                                                                                                    |
+| `transition-fade`      | Fades that also hide (the home header name)                                  | `transition-property: opacity, visibility` with the default timing                                                                                     |
+| `transition-underline` | Link underlines (inside `link-cta`, `link-quiet`)                            | colour, `text-decoration-color` and `-thickness` over `--duration-motion`; none with reduced motion                                                    |
 
 ## Components
 
@@ -186,7 +187,7 @@ One `@utility` per role in `layout.css`. Change it there and every use follows.
 | Header             | `sticky top-0 z-10 border-b border-neutral-200 bg-white md:static` › `mx-auto flex h-14 max-w-5xl items-center justify-between px-5 md:h-20 md:px-8` › name: `tap-target text-xl md:text-2xl font-semibold tracking-tight`            |
 | Nav link (md+)     | `tap-target px-3 text-lg text-neutral-600 hover:text-neutral-900` + `aria-[current=page]:` underline in red, `decoration-2`, `underline-offset-8`                                                                                     |
 | Bottom tab bar     | `fixed inset-x-0 bottom-0 z-20 grid auto-cols-fr grid-flow-col border-t border-neutral-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden`                                                                                       |
-| Tab                | `-mt-px flex min-h-14 flex-col items-center justify-center gap-1 border-t-2 border-transparent text-xs text-neutral-600` + `aria-[current=page]:` red border, text and `font-semibold`                                                |
+| Tab                | `flex min-h-14 flex-col items-center justify-center gap-1 text-xs text-neutral-600` + `aria-[current=page]:` red text and `font-semibold`; the red marker above slides between tabs ([Motion](#motion))                               |
 | Post row (Writing) | `li.border-b` › `a.group.list-entry` › `list-title` + `PostMeta`                                                                                                                                                                      |
 | Featured (home)    | `section-heading` › each post: `article.list-entry.border-b` › `PostMeta`, `h3.list-title`, `p.summary` (all three alike) › `link-cta` "View all writing"                                                                             |
 | Draft badge        | `rounded-xs border border-dashed border-neutral-600 px-1.5 text-xs uppercase tracking-wide text-neutral-600 dark:border-neutral-400 dark:text-neutral-400`                                                                            |
@@ -206,6 +207,27 @@ One `@utility` per role in `layout.css`. Change it there and every use follows.
 | Tag link           | `meta tap-target link-quiet italic` + `aria-[current=true]:` red `decoration-2`                                                                                                                                                       |
 | Tag filter bar     | `flex min-h-13 items-center justify-between gap-3 border border-neutral-200 bg-neutral-50 pl-4 pr-2` (`role="status"`) › `body-copy` text, `link-cta` Clear                                                                           |
 | Error page         | `page max-w-3xl` › `max-w-140 flex flex-col gap-4` › `label-accent` status (`404 · Not found`), `page-title`, `body-copy`, `link-cta` links in a row with `border-t border-neutral-200 pt-2`                                          |
+
+## Motion
+
+Small, quick and optional (#60; part 2 is #61).
+
+**Rules**
+
+- Tokens in `@theme`: `--duration-motion` (200 ms), `--ease-motion` (`--ease-out`), `--distance-nudge` (2 px). Every animation uses them.
+- Only `transform`/`translate`, `opacity`, or paint-only properties (colour, underline thickness): nothing that moves layout.
+- Nothing animates with `prefers-reduced-motion: reduce`, and everything works without JavaScript.
+
+**Interactions**
+
+| Interaction      | Where                                                                     | How                                                                                                                                                                                                                                          |
+| ---------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Page transitions | Every navigation to another page                                          | View Transitions via `onNavigate` in the layout: a cross-fade. The header and tab bar have their own `view-transition-name`, so they stay still. Skipped without browser support, with reduced motion, and for query-only changes (filters). |
+| Title moves      | Writing and Featured entries, Next up, titled asides ↔ their page heading | One `view-transition-name` per title from `titleTransition(kind, slug)` in `src/lib/motion.ts`, so the title moves and resizes between the list and the page. Names must be unique on a page.                                                |
+| Arrow nudge      | Any → or ← icon inside a link or button                                   | On hover and keyboard focus the arrow moves `--distance-nudge` in its direction (`translate`). Driven by the icon's `data-icon` in `layout.css`.                                                                                             |
+| Underlines       | `link-cta`, `link-quiet`                                                  | `transition-underline`: `link-cta` thickens from 1 to 2 px, `link-quiet` darkens to the text colour.                                                                                                                                         |
+| Tab marker       | Phone tab bar                                                             | One red marker (`h-0.5`, `-top-px`) whose `translate` moves to the current tab; hidden when no tab is current. Replaces the per-tab top border.                                                                                              |
+| Header name      | Home page header (#59)                                                    | `transition-fade` over `--duration-motion`.                                                                                                                                                                                                  |
 
 ## Table of contents: behaviour
 

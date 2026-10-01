@@ -5,6 +5,7 @@
 	import Prose from '$lib/components/Prose.svelte';
 	import { kindLabel } from '$lib/asides';
 	import { formatDate, isoDay } from '$lib/format';
+	import { titleTransition } from '$lib/motion';
 	import type { RenderedAside } from '$lib/types/content';
 
 	let {
@@ -41,9 +42,11 @@
 
 	{#if aside.title}
 		{#if standalone}
-			<h1 class="page-title">{aside.title}</h1>
+			<h1 class="page-title" style:view-transition-name={titleTransition('aside', aside.slug)}>
+				{aside.title}
+			</h1>
 		{:else}
-			<h2 class="list-title">
+			<h2 class="list-title" style:view-transition-name={titleTransition('aside', aside.slug)}>
 				<a
 					href={resolve('/asides/[slug]', { slug: aside.slug })}
 					class="hover:text-red-700 dark:hover:text-red-400">{aside.title}</a

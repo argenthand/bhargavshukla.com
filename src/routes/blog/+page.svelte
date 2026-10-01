@@ -6,6 +6,7 @@
 	import PostMeta from '$lib/components/PostMeta.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import { shownDate, yearOf } from '$lib/format';
+	import { titleTransition } from '$lib/motion';
 	import { site } from '$lib/site';
 
 	let { data } = $props();
@@ -143,7 +144,10 @@
 					{#each group.posts as post (post.slug)}
 						<li class="border-b border-neutral-200 dark:border-neutral-800">
 							<a href={resolve('/blog/[slug]', { slug: post.slug })} class="group list-entry">
-								<span class="list-title group-hover:text-red-700 dark:group-hover:text-red-400">
+								<span
+									class="list-title group-hover:text-red-700 dark:group-hover:text-red-400"
+									style:view-transition-name={titleTransition('post', post.slug)}
+								>
 									{post.title}
 								</span>
 								<PostMeta {post} />

@@ -15,6 +15,11 @@
 		var(--container-article) + var(--spacing-article-gap) + var(--spacing-toc)
 	); /* header and cover span text + ToC: max-w-article-wide */
 	--spacing-resume-label: calc(var(--spacing) * 36); /* the resume's skill-group label column */
+
+	/* Motion tokens (#60, docs/design.md → Motion): every animation uses these. */
+	--duration-motion: 200ms;
+	--ease-motion: var(--ease-out);
+	--distance-nudge: calc(var(--spacing) * 0.5); /* how far an arrow moves on hover */
 }
 
 /*
@@ -69,10 +74,10 @@
 	@apply inline-flex min-h-11 items-center;
 }
 @utility link-cta {
-	@apply tap-target gap-1.5 text-lg text-red-700 underline decoration-1 underline-offset-4 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300;
+	@apply tap-target gap-1.5 text-lg text-red-700 underline decoration-1 underline-offset-4 transition-underline hover:text-red-800 hover:decoration-2 dark:text-red-400 dark:hover:text-red-300;
 }
 @utility link-quiet {
-	@apply underline decoration-neutral-200 underline-offset-4 hover:text-neutral-900 dark:decoration-neutral-800 dark:hover:text-neutral-100;
+	@apply underline decoration-neutral-200 underline-offset-4 transition-underline hover:text-neutral-900 hover:decoration-current dark:decoration-neutral-800 dark:hover:text-neutral-100;
 }
 @utility filter-button {
 	@apply min-h-11 px-2.5 text-lg whitespace-nowrap text-neutral-600 aria-pressed:text-neutral-900 aria-pressed:underline aria-pressed:decoration-red-700 aria-pressed:decoration-2 aria-pressed:underline-offset-8 dark:text-neutral-400 dark:aria-pressed:text-neutral-100 dark:aria-pressed:decoration-red-400;
@@ -91,6 +96,16 @@
 }
 @utility max-h-sheet {
 	max-height: 80dvh; /* the ToC bottom sheet */
+}
+
+/* Underlines thicken and darken on hover instead of snapping (#60). Paint only: no layout shift. */
+@utility transition-underline {
+	transition-property: color, text-decoration-color, text-decoration-thickness;
+	transition-timing-function: var(--tw-ease, var(--ease-motion));
+	transition-duration: var(--tw-duration, var(--duration-motion));
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
 }
 
 /* The default `transition` leaves out visibility, which a fade-out needs to hide the element too. */
@@ -154,4 +169,37 @@ html {
 	overflow-x: auto;
 	line-height: var(--leading-relaxed);
 	tab-size: 2;
+}
+
+/*
+ * Motion (#60, docs/design.md → Motion): short, transform/opacity or paint only, and none at all
+ * with reduced motion (the layout also skips view transitions then).
+ */
+
+/* Page transitions: a quick cross-fade; titles that share a view-transition-name move between pages. */
+::view-transition-group(*),
+::view-transition-old(*),
+::view-transition-new(*) {
+	animation-duration: var(--duration-motion);
+	animation-timing-function: var(--ease-motion);
+}
+
+/* Arrows in links and buttons nudge in their direction on hover and keyboard focus. */
+@layer base {
+	svg[data-icon='arrow-right'],
+	svg[data-icon='arrow-left'] {
+		transition: translate var(--duration-motion) var(--ease-motion);
+	}
+	:is(a, button):is(:hover, :focus-visible) svg[data-icon='arrow-right'] {
+		translate: var(--distance-nudge) 0;
+	}
+	:is(a, button):is(:hover, :focus-visible) svg[data-icon='arrow-left'] {
+		translate: calc(var(--distance-nudge) * -1) 0;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		svg[data-icon='arrow-right'],
+		svg[data-icon='arrow-left'] {
+			transition: none;
+		}
+	}
 }
