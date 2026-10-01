@@ -11,8 +11,11 @@
 	const updated = $derived(updatedDate(post));
 	// Share image: the SEO override, else the cover.
 	const ogImage = $derived.by(() => {
-		const img = post.seo.ogImage ?? post.cover;
-		return img && { url: img.url, alt: img.alternativeText, width: img.width, height: img.height };
+		const seo = post.seo.ogImage;
+		if (seo)
+			return { url: seo.url, alt: seo.alternativeText, width: seo.width, height: seo.height };
+		const cover = post.cover;
+		return cover && { url: cover.src, alt: cover.alt, width: cover.width, height: cover.height };
 	});
 	// The ToC only earns its space with 2 or more sections.
 	const showToc = $derived(data.headings.filter((h) => h.level === 2).length >= 2);
@@ -58,20 +61,36 @@
 
 	{#if post.cover}
 		<!-- Full-bleed on phones. -->
-		<div
+		<figure
 			class={[
 				'-mx-5 mb-7 md:mx-auto md:max-w-[42.5rem] lg:mb-12',
 				showToc && 'lg:max-w-[60.25rem]'
 			]}
 		>
 			<img
-				src={post.cover.url}
-				alt={post.cover.alternativeText ?? ''}
+				src={post.cover.src}
+				srcset={post.cover.srcset}
+				sizes={showToc ? '(min-width: 1024px) 964px, 100vw' : '(min-width: 768px) 680px, 100vw'}
+				alt={post.cover.alt}
 				width={post.cover.width}
 				height={post.cover.height}
 				class="h-auto w-full"
 			/>
-		</div>
+			{#if post.cover.credit}
+				{@const credit = post.cover.credit}
+				<!-- eslint-disable svelte/no-navigation-without-resolve, svelte/no-useless-mustaches -- external credit links; explicit spaces, which Svelte trims at the start of an {#if} block -->
+				<figcaption
+					class="mt-2.5 px-5 text-sm text-neutral-600 md:px-0 dark:text-neutral-400 [&_a]:underline [&_a]:decoration-neutral-300 [&_a]:underline-offset-4 dark:[&_a]:decoration-neutral-700 [&_a:hover]:text-neutral-900 dark:[&_a:hover]:text-neutral-100"
+				>
+					{'Photo by '}{#if credit.href}<a href={credit.href} rel="noopener">{credit.name}</a
+						>{:else}{credit.name}{/if}{#if credit.source}{' on '}{#if credit.sourceHref}<a
+								href={credit.sourceHref}
+								rel="noopener">{credit.source}</a
+							>{:else}{credit.source}{/if}{/if}
+				</figcaption>
+				<!-- eslint-enable svelte/no-navigation-without-resolve, svelte/no-useless-mustaches -->
+			{/if}
+		</figure>
 	{/if}
 
 	<div

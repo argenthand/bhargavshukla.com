@@ -1,20 +1,20 @@
-// import type { Core } from '@strapi/strapi';
+import type { Core } from '@strapi/strapi';
+import { assertImage, type ImageData } from './lib/validate-image';
 
 export default {
-  /**
-   * An asynchronous register function that runs before
-   * your application is initialized.
-   *
-   * This gives you an opportunity to extend code.
-   */
-  register(/* { strapi }: { strapi: Core.Strapi } */) {},
+  register({ strapi }: { strapi: Core.Strapi }) {
+    // Post cover (#40): either an upload or a credited link. Runs for the admin and the API alike.
+    strapi.documents.use(async (context, next) => {
+      if (
+        context.uid === 'api::post.post' &&
+        (context.action === 'create' || context.action === 'update')
+      ) {
+        const data = (context.params as { data?: { cover?: ImageData | null } }).data;
+        if (data && 'cover' in data) assertImage('Cover', data.cover);
+      }
+      return next();
+    });
+  },
 
-  /**
-   * An asynchronous bootstrap function that runs before
-   * your application gets started.
-   *
-   * This gives you an opportunity to set up your data model,
-   * run jobs, or perform some special logic.
-   */
-  bootstrap(/* { strapi }: { strapi: Core.Strapi } */) {},
+  bootstrap() {},
 };

@@ -31,9 +31,9 @@
       "required": true
     },
     "cover": {
-      "type": "media",
-      "multiple": false,
-      "allowedTypes": ["images"]
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.image"
     },
     "category": {
       "type": "relation",

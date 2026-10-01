@@ -313,3 +313,10 @@ Check: the home page shows the bio and links again, and `https://cms.bhargavshuk
 2. **Token:** production admin → Settings → API Tokens → `frontend-read` → add **Resume `find`** → Save.
 3. **Content, in your own time:** Content Manager → Single Types → Resume. Save drafts as often as you like; nothing shows until **Publish**. Until then `/resume` is a 404 and the Resume nav link stays hidden.
 4. **Show it:** once published, set `live: true` for Resume in `src/lib/site.ts` (a one-line PR). That adds it to the nav, the phone tab bar and the home intro's links.
+
+### Credited images (#40)
+
+The post `cover` changes from a media field to the `shared.image` component, so **existing covers are dropped** when the new CMS image starts.
+
+1. Deploy the CMS once the `CMS image` workflow for the merge commit has finished: `docker compose pull && docker compose up -d`.
+2. Re-add any covers you want to keep: Content Manager → the post → Cover → add an entry with either the uploaded file or the photo URL plus credit → Save and Publish. Files already uploaded stay in the Media Library.

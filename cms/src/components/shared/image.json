@@ -1,0 +1,36 @@
+{
+  "collectionName": "components_shared_images",
+  "info": {
+    "displayName": "Image",
+    "icon": "picture",
+    "description": "Either your own upload (no credit) or a linked Unsplash/Pexels photo with credit."
+  },
+  "options": {},
+  "attributes": {
+    "file": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "url": {
+      "type": "string"
+    },
+    "alt": {
+      "type": "string",
+      "required": true
+    },
+    "creditName": {
+      "type": "string"
+    },
+    "creditUrl": {
+      "type": "string"
+    },
+    "source": {
+      "type": "enumeration",
+      "enum": ["unsplash", "pexels", "other"]
+    },
+    "sourceUrl": {
+      "type": "string"
+    }
+  }
+}

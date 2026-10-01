@@ -208,16 +208,16 @@ html {
 
 The handoff was written as if posts were Markdown files. Our posts come from Strapi and render through `marked` + Shiki, so:
 
-| Handoff says                  | We do                                                                                                                             |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Heading ids via `rehype-slug` | `src/lib/server/markdown.ts` gives h2/h3 slug ids in a custom `marked` heading renderer and returns the heading list for the ToC. |
-| `draft?: boolean`             | Strapi Draft & Publish status. Drafts are only fetched in preview mode (`status=draft`).                                          |
-| `publishedAt: Date`           | `displayDate ?? publishedAt`.                                                                                                     |
-| `updatedAt?: Date`            | Strapi `updatedAt`; show "Updated …" only on a different calendar day from the shown publish date.                                |
-| `category` enum               | `category` relation → Category collection type ([content-model.md](content-model.md)), so a new category needs no redeploy.       |
-| `related?: string[]` (slugs)  | `related` relation → Post.                                                                                                        |
-| `cover: { src, alt }`         | `cover` media; `alt` from its `alternativeText`.                                                                                  |
-| `featured?: boolean`          | `featured`; home shows the 3 newest featured posts (the 3 newest posts, headed "Latest", while none are featured).                |
-| Snippet frontmatter           | Snippet type as is (`title`, `language`, `description`, `tags`, `code`, `notes`).                                                 |
+| Handoff says                  | We do                                                                                                                              |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Heading ids via `rehype-slug` | `src/lib/server/markdown.ts` gives h2/h3 slug ids in a custom `marked` heading renderer and returns the heading list for the ToC.  |
+| `draft?: boolean`             | Strapi Draft & Publish status. Drafts are only fetched in preview mode (`status=draft`).                                           |
+| `publishedAt: Date`           | `displayDate ?? publishedAt`.                                                                                                      |
+| `updatedAt?: Date`            | Strapi `updatedAt`; show "Updated …" only on a different calendar day from the shown publish date.                                 |
+| `category` enum               | `category` relation → Category collection type ([content-model.md](content-model.md)), so a new category needs no redeploy.        |
+| `related?: string[]` (slugs)  | `related` relation → Post.                                                                                                         |
+| `cover: { src, alt }`         | `cover` is a `shared.image`: an upload, or a linked photo with a "Photo by … on …" caption ([content-model.md](content-model.md)). |
+| `featured?: boolean`          | `featured`; home shows the 3 newest featured posts (the 3 newest posts, headed "Latest", while none are featured).                 |
+| Snippet frontmatter           | Snippet type as is (`title`, `language`, `description`, `tags`, `code`, `notes`).                                                  |
 
 The handoff's "build it all at once" prompt is not used. The design is built ticket by ticket: #4 layout and typography, #5 resume, #6 SEO/error, #9 blog routes, #18 snippets — see [roadmap.md](roadmap.md).

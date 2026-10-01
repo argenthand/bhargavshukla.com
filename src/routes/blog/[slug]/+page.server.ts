@@ -1,4 +1,5 @@
 import { error } from '@sveltejs/kit';
+import { resolveImage } from '$lib/server/image';
 import { renderMarkdown } from '$lib/server/markdown';
 import { getPost, listPosts, pickNextUp } from '$lib/server/posts';
 import { mediaUrl } from '$lib/server/strapi';
@@ -20,7 +21,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			displayDate: post.displayDate,
 			publishedAt: post.publishedAt,
 			updatedAt: post.updatedAt,
-			cover: post.cover && { ...post.cover, url: mediaUrl(post.cover.url) },
+			cover: resolveImage(post.cover),
 			seo: {
 				title: post.seo?.metaTitle || post.title,
 				description: post.seo?.metaDescription || post.summary,

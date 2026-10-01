@@ -65,6 +65,15 @@ const PROFILE = {
   github: 'https://github.com/argenthand',
 };
 
+const SAMPLE_COVER = {
+  url: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085',
+  alt: 'A laptop with code on screen on a desk',
+  creditName: 'Sample credit',
+  creditUrl: 'https://unsplash.com',
+  source: 'unsplash',
+  sourceUrl: 'https://unsplash.com',
+};
+
 const POSTS = [
   {
     title: 'Sample: Code review as a leadership tool',
@@ -165,6 +174,20 @@ async function seed(strapi) {
     });
   }
   console.log(`Posts: ${created.length} created, ${POSTS.length - created.length} already there`);
+
+  // A linked, credited cover (#40) on one sample post. Local test data: the credit is a placeholder.
+  const withCover = await posts.findFirst({
+    filters: { slug: 'sample-typed-fetch-helpers-in-sveltekit' },
+    populate: ['cover'],
+  });
+  if (withCover && !withCover.cover) {
+    await posts.update({
+      documentId: withCover.documentId,
+      data: { cover: SAMPLE_COVER },
+      status: 'published',
+    });
+    console.log('Sample cover: added');
+  }
 
   const profile = strapi.documents('api::profile.profile');
   if (await profile.findFirst()) {

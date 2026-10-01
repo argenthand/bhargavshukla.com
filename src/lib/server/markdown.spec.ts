@@ -47,4 +47,21 @@ describe('renderMarkdown', () => {
 		expect(html).toMatch(/<div class="overflow-x-auto"><table>/);
 		expect(html).toContain('<img src="/x.png" alt="Alt" loading="lazy" decoding="async">');
 	});
+
+	it('turns an image with a credit line under it into a captioned figure', () => {
+		const { html } = renderMarkdown(
+			'![Desk](https://images.unsplash.com/photo-1)\n*Photo by [Jane](https://unsplash.com/@jane) on [Unsplash](https://unsplash.com)*'
+		);
+		expect(html).toMatch(/^<figure><img src="https:\/\/images\.unsplash\.com\/photo-1\?w=1280/);
+		expect(html).toContain('srcset="https://images.unsplash.com/photo-1?w=640');
+		expect(html).toContain(
+			'<figcaption>Photo by <a href="https://unsplash.com/@jane">Jane</a> on <a href="https://unsplash.com">Unsplash</a></figcaption></figure>'
+		);
+	});
+
+	it('leaves other images and paragraphs alone', () => {
+		const { html } = renderMarkdown('![A](/a.png)\n\nJust *text* here.');
+		expect(html).toContain('<p><img src="/a.png" alt="A" loading="lazy" decoding="async"></p>');
+		expect(html).toContain('<p>Just <em>text</em> here.</p>');
+	});
 });
