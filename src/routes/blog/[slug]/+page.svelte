@@ -35,22 +35,22 @@
 	}}
 />
 
-<div class="px-5 pt-8 pb-14 md:px-8 lg:pt-14 lg:pb-16">
+<div class="page">
 	<header
 		class={[
-			'mx-auto mb-7 flex max-w-[42.5rem] flex-col gap-3.5 lg:mb-10 lg:items-center lg:text-center',
-			showToc && 'lg:max-w-[60.25rem]'
+			'mx-auto mb-7 flex max-w-article flex-col gap-3.5 lg:mb-10 lg:items-center lg:text-center',
+			showToc && 'lg:max-w-article-wide'
 		]}
 	>
 		{#if post.category}
-			<span class="text-xs font-semibold tracking-widest text-red-700 uppercase dark:text-red-400">
+			<span class="label-accent">
 				{post.category.name}
 			</span>
 		{/if}
-		<h1 class="text-3xl/tight font-medium tracking-tight text-balance lg:text-4xl/tight">
+		<h1 class="page-title">
 			{post.title}
 		</h1>
-		<p class="flex flex-wrap items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
+		<p class="flex flex-wrap items-center gap-2 meta">
 			<time datetime={isoDay(shownDate(post))}>{formatDate(shownDate(post))}</time>
 			{#if updated}
 				<span aria-hidden="true">·</span>
@@ -63,14 +63,14 @@
 		<!-- Full-bleed on phones. -->
 		<figure
 			class={[
-				'-mx-5 mb-7 md:mx-auto md:max-w-[42.5rem] lg:mb-12',
-				showToc && 'lg:max-w-[60.25rem]'
+				'-mx-5 mb-7 md:mx-auto md:max-w-article lg:mb-12',
+				showToc && 'lg:max-w-article-wide'
 			]}
 		>
 			<img
 				src={post.cover.src}
 				srcset={post.cover.srcset}
-				sizes={showToc ? '(min-width: 1024px) 964px, 100vw' : '(min-width: 768px) 680px, 100vw'}
+				sizes={showToc ? '(min-width: 1024px) 960px, 100vw' : '(min-width: 768px) 672px, 100vw'}
 				alt={post.cover.alt}
 				width={post.cover.width}
 				height={post.cover.height}
@@ -79,9 +79,7 @@
 			{#if post.cover.credit}
 				{@const credit = post.cover.credit}
 				<!-- eslint-disable svelte/no-navigation-without-resolve, svelte/no-useless-mustaches -- external credit links; explicit spaces, which Svelte trims at the start of an {#if} block -->
-				<figcaption
-					class="mt-2.5 px-5 text-sm text-neutral-600 md:px-0 dark:text-neutral-400 [&_a]:underline [&_a]:decoration-neutral-300 [&_a]:underline-offset-4 dark:[&_a]:decoration-neutral-700 [&_a:hover]:text-neutral-900 dark:[&_a:hover]:text-neutral-100"
-				>
+				<figcaption class="mt-2.5 px-5 meta md:px-0 [&_a]:link-quiet">
 					{'Photo by '}{#if credit.href}<a href={credit.href} rel="noopener">{credit.name}</a
 						>{:else}{credit.name}{/if}{#if credit.source}{' on '}{#if credit.sourceHref}<a
 								href={credit.sourceHref}
@@ -95,9 +93,8 @@
 
 	<div
 		class={[
-			'mx-auto max-w-[42.5rem]',
-			showToc &&
-				'lg:grid lg:max-w-none lg:grid-cols-[minmax(0,42.5rem)_13.75rem] lg:justify-center lg:gap-16'
+			'mx-auto max-w-article',
+			showToc && 'lg:grid lg:max-w-none lg:article-grid lg:justify-center'
 		]}
 	>
 		<article class="min-w-0">

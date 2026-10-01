@@ -64,7 +64,7 @@
 					data-level={heading.level}
 					aria-current={active === heading.id ? 'location' : undefined}
 					onclick={onchoose && ((event) => onchoose(event, heading.id))}
-					class="flex min-h-10 items-center border-l-2 border-neutral-200 py-1.5 pl-3 text-[15px]/snug text-neutral-900 aria-[current=location]:border-red-700 aria-[current=location]:font-semibold aria-[current=location]:text-red-700 data-[level=3]:pl-7 data-[level=3]:text-sm data-[level=3]:text-neutral-600 dark:border-neutral-800 dark:text-neutral-100 dark:aria-[current=location]:border-red-400 dark:aria-[current=location]:text-red-400 dark:data-[level=3]:text-neutral-400"
+					class="flex min-h-10 items-center border-l-2 border-neutral-200 py-1.5 pl-3 text-base/snug text-neutral-900 aria-[current=location]:border-red-700 aria-[current=location]:font-semibold aria-[current=location]:text-red-700 data-[level=3]:pl-7 data-[level=3]:text-sm data-[level=3]:text-neutral-600 dark:border-neutral-800 dark:text-neutral-100 dark:aria-[current=location]:border-red-400 dark:aria-[current=location]:text-red-400 dark:data-[level=3]:text-neutral-400"
 				>
 					{heading.text}
 				</a>
@@ -76,11 +76,7 @@
 {#if variant === 'pill'}
 	<!-- Without JavaScript: the same list, collapsed. -->
 	<details class="mb-7 border border-neutral-200 px-4 lg:hidden dark:border-neutral-800 js:hidden">
-		<summary
-			class="flex min-h-11 cursor-pointer items-center text-sm text-neutral-600 dark:text-neutral-400"
-		>
-			On this page
-		</summary>
+		<summary class="flex min-h-11 cursor-pointer items-center meta"> On this page </summary>
 		<div class="pb-3">{@render list()}</div>
 	</details>
 
@@ -102,16 +98,14 @@
 		bind:this={dialog}
 		onclick={closeOnBackdrop}
 		aria-labelledby="toc-sheet-title"
-		class="fixed inset-x-0 top-auto bottom-0 m-0 max-h-[80dvh] w-full max-w-none border-t border-neutral-200 bg-white px-5 pt-2 pb-[calc(1.5rem+env(safe-area-inset-bottom))] text-neutral-900 shadow-2xl backdrop:bg-black/45 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
+		class="fixed inset-x-0 top-auto bottom-0 m-0 max-h-sheet w-full max-w-none border-t border-neutral-200 bg-white px-5 pt-2 pb-[calc(1.5rem+env(safe-area-inset-bottom))] text-neutral-900 shadow-2xl backdrop:bg-black/45 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
 	>
 		<div
 			aria-hidden="true"
 			class="mx-auto h-1 w-9 rounded-full bg-neutral-900/30 dark:bg-neutral-100/30"
 		></div>
 		<div class="flex items-center justify-between py-2">
-			<h2 id="toc-sheet-title" class="text-xs font-semibold tracking-widest uppercase">
-				On this page
-			</h2>
+			<h2 id="toc-sheet-title" class="label">On this page</h2>
 			<button
 				type="button"
 				aria-label="Close"
@@ -125,7 +119,7 @@
 	</dialog>
 {:else}
 	<nav aria-label="Table of contents">
-		<h2 class="mb-3 text-xs font-semibold tracking-widest uppercase">Contents</h2>
+		<h2 class="mb-3 label">Contents</h2>
 		{@render list()}
 	</nav>
 {/if}

@@ -104,7 +104,7 @@ function codeBlock({ text, lang }: Tokens.Code): string {
 	const label = LANGUAGE_NAMES[language] ?? language;
 	const meta = [filename, label].filter(Boolean).map(escapeHtml);
 	return `<div class="code-block not-prose -mx-5 my-6 border-y border-neutral-200 bg-neutral-50 font-mono text-sm md:mx-0 dark:border-neutral-800 dark:bg-neutral-900">
-<div class="flex min-h-11 items-center justify-between border-b border-neutral-200 px-4 text-[13px] text-neutral-600 dark:border-neutral-800 dark:text-neutral-400">
+<div class="flex min-h-11 items-center justify-between border-b border-neutral-200 px-4 text-sm text-neutral-600 dark:border-neutral-800 dark:text-neutral-400">
 <span class="flex items-center gap-2.5">${meta.join('<span aria-hidden="true">·</span>')}</span>
 <button type="button" data-copy class="-mr-2 hidden min-h-11 min-w-11 items-center justify-center gap-1.5 px-3 font-sans text-sm js:inline-flex" aria-label="Copy code to clipboard"><span data-copy-label aria-live="polite">Copy</span></button>
 </div>

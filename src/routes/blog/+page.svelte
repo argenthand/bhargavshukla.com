@@ -56,12 +56,10 @@
 
 <Seo title="Writing" description={site.description} />
 
-<div class="mx-auto flex max-w-3xl flex-col gap-7 px-5 pt-8 pb-12 md:px-8 md:pt-12">
+<div class="page flex max-w-3xl flex-col gap-7">
 	<div>
-		<h1 class="text-4xl/[1.1] font-medium tracking-tight">Writing</h1>
-		<p class="mt-2 text-lg text-neutral-600 italic dark:text-neutral-400">
-			{site.description}
-		</p>
+		<h1 class="page-title">Writing</h1>
+		<p class="mt-2 standfirst">{site.description}</p>
 	</div>
 
 	<!-- Without JavaScript this is a plain GET form; with it, filtering is instant. -->
@@ -71,12 +69,7 @@
 		onsubmit={(event) => event.preventDefault()}
 	>
 		<div class="flex flex-col gap-1">
-			<label
-				for="q"
-				class="text-xs font-semibold tracking-widest text-neutral-600 uppercase dark:text-neutral-400"
-			>
-				Search titles
-			</label>
+			<label for="q" class="label-muted"> Search titles </label>
 			<div
 				class="flex items-center gap-2 border-b border-neutral-900 focus-within:border-b-2 focus-within:border-red-700 dark:border-neutral-100 dark:focus-within:border-red-400"
 			>
@@ -94,19 +87,9 @@
 
 		<!-- Phone: a native select. -->
 		<div class="flex flex-col gap-1 md:hidden">
-			<label
-				for="cat"
-				class="text-xs font-semibold tracking-widest text-neutral-600 uppercase dark:text-neutral-400"
-			>
-				Category
-			</label>
+			<label for="cat" class="label-muted"> Category </label>
 			<div class="relative flex items-center">
-				<select
-					id="cat"
-					name="cat"
-					bind:value={cat}
-					class="h-11 w-full appearance-none rounded-none border-0 border-b border-neutral-900 bg-transparent bg-none py-0 pr-8 pl-0 text-lg focus:border-b-2 focus:border-red-700 focus:ring-0 dark:border-neutral-100 dark:focus:border-red-400"
-				>
+				<select id="cat" name="cat" bind:value={cat} class="select-underline">
 					<option value="">All</option>
 					{#each data.categories as category (category.slug)}
 						<option value={category.slug}>{category.name}</option>
@@ -133,7 +116,7 @@
 					value={category.slug}
 					aria-pressed={cat === category.slug}
 					onclick={() => (cat = category.slug)}
-					class="min-h-11 px-2.5 text-lg whitespace-nowrap text-neutral-600 aria-pressed:text-neutral-900 aria-pressed:underline aria-pressed:decoration-red-700 aria-pressed:decoration-2 aria-pressed:underline-offset-8 dark:text-neutral-400 dark:aria-pressed:text-neutral-100 dark:aria-pressed:decoration-red-400"
+					class="filter-button"
 				>
 					{category.name}
 				</button>
@@ -143,37 +126,24 @@
 
 	{#if filtered.length === 0}
 		<div class="border-t-2 border-neutral-900 pt-6 dark:border-neutral-100" role="status">
-			<p class="text-lg text-neutral-700 dark:text-neutral-300">
+			<p class="body-copy">
 				{data.posts.length === 0 ? 'Nothing published yet.' : 'No posts match those filters.'}
 			</p>
 			{#if data.posts.length > 0}
-				<button
-					type="button"
-					onclick={clear}
-					class="mt-2 inline-flex min-h-11 items-center font-semibold text-red-700 dark:text-red-400"
-				>
-					Clear filters
-				</button>
+				<button type="button" onclick={clear} class="mt-2 link-cta"> Clear filters </button>
 			{/if}
 		</div>
 	{:else}
 		<div>
 			{#each years as group (group.year)}
-				<h2
-					class="mt-7 border-b-2 border-neutral-900 pb-1.5 text-xs font-semibold tracking-widest first:mt-0 dark:border-neutral-100"
-				>
+				<h2 class="mt-7 section-heading first:mt-0">
 					{group.year}
 				</h2>
 				<ul>
 					{#each group.posts as post (post.slug)}
 						<li class="border-b border-neutral-200 dark:border-neutral-800">
-							<a
-								href={resolve('/blog/[slug]', { slug: post.slug })}
-								class="group flex flex-col gap-1.5 py-4.5"
-							>
-								<span
-									class="text-xl/snug font-semibold text-balance group-hover:text-red-700 md:text-[22px]/snug dark:group-hover:text-red-400"
-								>
+							<a href={resolve('/blog/[slug]', { slug: post.slug })} class="group list-entry">
+								<span class="list-title group-hover:text-red-700 dark:group-hover:text-red-400">
 									{post.title}
 								</span>
 								<PostMeta {post} />

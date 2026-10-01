@@ -56,10 +56,10 @@
 
 <Seo title="Asides" description={STANDFIRST} />
 
-<div class="mx-auto flex max-w-3xl flex-col gap-7 px-5 pt-8 pb-14 md:px-8 md:pt-12">
+<div class="page flex max-w-3xl flex-col gap-7">
 	<div>
-		<h1 class="text-4xl/[1.1] font-medium tracking-tight">Asides</h1>
-		<p class="mt-2 text-lg text-neutral-600 italic dark:text-neutral-400">{STANDFIRST}</p>
+		<h1 class="page-title">Asides</h1>
+		<p class="mt-2 standfirst">{STANDFIRST}</p>
 	</div>
 
 	<!-- Without JavaScript this is a plain GET form; with it, filtering is instant. -->
@@ -68,19 +68,14 @@
 
 		<!-- Phone: a native select. -->
 		<div class="flex flex-col gap-1 md:hidden">
-			<label
-				for="kind"
-				class="text-xs font-semibold tracking-widest text-neutral-600 uppercase dark:text-neutral-400"
-			>
-				Kind
-			</label>
+			<label for="kind" class="label-muted"> Kind </label>
 			<div class="relative flex items-center">
 				<select
 					id="kind"
 					name="kind"
 					value={kind}
 					onchange={(event) => setKind(event.currentTarget.value)}
-					class="h-11 w-full appearance-none rounded-none border-0 border-b border-neutral-900 bg-transparent bg-none py-0 pr-8 pl-0 text-lg focus:border-b-2 focus:border-red-700 focus:ring-0 dark:border-neutral-100 dark:focus:border-red-400"
+					class="select-underline"
 				>
 					<option value="">All</option>
 					{#each KINDS as k (k.value)}
@@ -104,7 +99,7 @@
 					value={k.value}
 					aria-pressed={kind === k.value}
 					onclick={() => setKind(k.value)}
-					class="min-h-11 px-2.5 text-lg whitespace-nowrap text-neutral-600 aria-pressed:text-neutral-900 aria-pressed:underline aria-pressed:decoration-red-700 aria-pressed:decoration-2 aria-pressed:underline-offset-8 dark:text-neutral-400 dark:aria-pressed:text-neutral-100 dark:aria-pressed:decoration-red-400"
+					class="filter-button"
 				>
 					{k.plural}
 				</button>
@@ -117,7 +112,7 @@
 			role="status"
 			class="flex min-h-13 items-center justify-between gap-3 border border-neutral-200 bg-neutral-50 pr-2 pl-4 dark:border-neutral-800 dark:bg-neutral-900"
 		>
-			<span class="text-[17px] text-neutral-700 dark:text-neutral-300">
+			<span class="body-copy">
 				{#if filtered.length > 0}
 					{filtered.length}
 					{kindPlural?.toLowerCase() ?? (filtered.length === 1 ? 'aside' : 'asides')}
@@ -128,10 +123,7 @@
 				<em class="font-semibold text-neutral-900 not-italic dark:text-neutral-100">{tagName}</em>
 			</span>
 			<!-- eslint-disable svelte/no-navigation-without-resolve -- href() starts from resolve('/asides') -->
-			<a
-				href={href({ tag: '' })}
-				class="inline-flex min-h-11 items-center gap-1.5 px-2 text-red-700 dark:text-red-400"
-			>
+			<a href={href({ tag: '' })} class="link-cta px-2">
 				<Icon name="close" />Clear<span class="sr-only"> tag filter</span>
 			</a>
 			<!-- eslint-enable svelte/no-navigation-without-resolve -->
@@ -143,14 +135,9 @@
 			class="flex flex-col gap-2 border-t-2 border-neutral-900 pt-6 dark:border-neutral-100"
 			role="status"
 		>
-			<p class="text-lg text-neutral-700 dark:text-neutral-300">Nothing here yet.</p>
+			<p class="body-copy">Nothing here yet.</p>
 			{#if data.asides.length > 0}
-				<a
-					href={resolve('/asides')}
-					class="inline-flex min-h-11 items-center self-start font-semibold text-red-700 dark:text-red-400"
-				>
-					See all asides
-				</a>
+				<a href={resolve('/asides')} class="link-cta self-start"> See all asides </a>
 			{/if}
 		</div>
 	{:else}
@@ -169,10 +156,7 @@
 			>
 				{#if pageNo > 1}
 					<!-- eslint-disable svelte/no-navigation-without-resolve -- href() starts from resolve('/asides') -->
-					<a
-						href={href({ page: pageNo - 1 })}
-						class="inline-flex min-h-11 items-center gap-2 font-semibold text-red-700 dark:text-red-400"
-					>
+					<a href={href({ page: pageNo - 1 })} class="link-cta">
 						<Icon name="arrow-left" />Newer asides
 					</a>
 					<!-- eslint-enable svelte/no-navigation-without-resolve -->
@@ -181,10 +165,7 @@
 				{/if}
 				{#if pageNo < pageCount}
 					<!-- eslint-disable svelte/no-navigation-without-resolve -- href() starts from resolve('/asides') -->
-					<a
-						href={href({ page: pageNo + 1 })}
-						class="inline-flex min-h-11 items-center gap-2 font-semibold text-red-700 dark:text-red-400"
-					>
+					<a href={href({ page: pageNo + 1 })} class="link-cta">
 						Older asides<Icon name="arrow-right" />
 					</a>
 					<!-- eslint-enable svelte/no-navigation-without-resolve -->
