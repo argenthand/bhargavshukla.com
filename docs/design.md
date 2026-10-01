@@ -235,7 +235,14 @@ Small, quick and optional (#60; part 2 is #61).
 | Reading progress | Posts (#61)                                                      | A red hairline (`h-0.5`) that fills with `scale` as the article scrolls past: along the bottom of the sticky top bar on phones, at the top of the window from md. It follows the scroll, so reduced motion doesn't change it. JavaScript only; hidden in print.                                                                                                                                                                                                                     |
 | Filtering        | Writing and Asides lists (#61)                                   | When filters or the search change, rows that stay slide into place (`animate:flip`) and new rows and year headings fade in. Rows that go leave at once, so the rest can move straight away.                                                                                                                                                                                                                                                                                         |
 
-## Easter eggs
+## Share cards
+
+1200×630 PNGs for link previews (#62, F-og-*), rendered on the Worker (`src/lib/server/og.ts`). Light theme only. One line: a 12 px red rule along the top; no other borders.
+
+- **Post** (`/og/blog/<slug>.png`): category label (red, 22 px, tracked caps), title in Newsreader 600 (72 px, 60 px past 70 characters, at most 3 lines), then the headshot (64 px, round), name, and "date · bhargavshukla.com".
+- **Aside** (`/og/asides/<slug>.png`): kind label; a quote's text in italics with "— author, source", otherwise its title (or opening line); "Asides · bhargavshukla.com".
+- **Default** (`/og/default.png`): name (96 px), tagline in italics, headshot (96 px) and the domain. Home and every page without its own image.
+- A post's SEO image or cover still wins. Without a headshot in the Profile, cards leave it out.
 
 For people who go looking (#63). Each one stays invisible otherwise and never gets in the way of reading. Change them on purpose, not by accident. Copy lives in `src/lib/easter-eggs.ts` unless noted.
 

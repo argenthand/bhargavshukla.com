@@ -18,6 +18,9 @@ export default defineConfig({
 			adapter: adapter()
 		})
 	],
+	// Share cards (#62): leave .wasm imports to wrangler, which bundles them as WebAssembly modules
+	// (Workers can't compile WebAssembly from bytes at runtime). See src/lib/server/og.ts.
+	build: { rollupOptions: { external: (id) => id.endsWith('.wasm') } },
 	test: {
 		expect: { requireAssertions: true },
 		projects: [
