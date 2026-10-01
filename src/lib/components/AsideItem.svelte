@@ -23,22 +23,16 @@
 
 <div class="flex flex-col gap-3">
 	<p class="flex flex-wrap items-center gap-2">
-		<span class="text-xs font-semibold tracking-widest text-red-700 uppercase dark:text-red-400">
+		<span class="label-accent">
 			{kindLabel(aside.kind)}
 		</span>
 		<span aria-hidden="true" class="text-neutral-600 dark:text-neutral-400">·</span>
 		{#if standalone}
-			<time
-				datetime={isoDay(aside.publishedAt)}
-				class="text-sm text-neutral-600 dark:text-neutral-400"
-			>
+			<time datetime={isoDay(aside.publishedAt)} class="meta">
 				{formatDate(aside.publishedAt)}
 			</time>
 		{:else}
-			<a
-				href={resolve('/asides/[slug]', { slug: aside.slug })}
-				class="text-sm text-neutral-600 underline decoration-neutral-200 underline-offset-4 hover:text-neutral-900 dark:text-neutral-400 dark:decoration-neutral-800 dark:hover:text-neutral-100"
-			>
+			<a href={resolve('/asides/[slug]', { slug: aside.slug })} class="meta link-quiet">
 				<time datetime={isoDay(aside.publishedAt)}>{formatDate(aside.publishedAt)}</time>
 				{#if !aside.title}<span class="sr-only">: {aside.label}</span>{/if}
 			</a>
@@ -47,9 +41,9 @@
 
 	{#if aside.title}
 		{#if standalone}
-			<h1 class="text-3xl/tight font-semibold text-balance">{aside.title}</h1>
+			<h1 class="page-title">{aside.title}</h1>
 		{:else}
-			<h2 class="text-xl/snug font-semibold text-balance md:text-[22px]/snug">
+			<h2 class="list-title">
 				<a
 					href={resolve('/asides/[slug]', { slug: aside.slug })}
 					class="hover:text-red-700 dark:hover:text-red-400">{aside.title}</a
@@ -64,34 +58,28 @@
 		<figure class="flex flex-col gap-2.5">
 			<blockquote
 				class={[
-					'border-y border-neutral-200 py-4.5 italic dark:border-neutral-800 [&_p]:my-0 [&_p+p]:mt-3',
+					// Same size as every other kind, here and on its own page (#66); italic sets it apart.
+					'border-y border-neutral-200 py-5 body-copy italic dark:border-neutral-800 [&_p]:my-0 [&_p+p]:mt-3',
 					// Curly quotes around the whole quote, as in the mockups; the author writes only the words.
-					"[&>p:first-child]:before:content-['“'] [&>p:last-child]:after:content-['”']",
-					standalone ? 'text-[26px]/[1.45]' : 'text-[22px]/[1.45]'
+					"[&>p:first-child]:before:content-['“'] [&>p:last-child]:after:content-['”']"
 				]}
 			>
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -- the author's own Markdown from Strapi, rendered on the server -->
 				{@html aside.html}
 			</blockquote>
 			{#if aside.sourceAuthor || aside.sourceTitle}
-				<figcaption class="text-[15px] text-neutral-600 dark:text-neutral-400">
+				<figcaption class="meta">
 					— {byAuthor}{#if aside.sourceTitle}{#if aside.sourceUrl}<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- external source --><a
 								href={aside.sourceUrl}
 								rel="noopener"
-								class="underline decoration-neutral-200 underline-offset-4 hover:text-neutral-900 dark:decoration-neutral-800 dark:hover:text-neutral-100"
-								><cite>{aside.sourceTitle}</cite></a
+								class="link-quiet"><cite>{aside.sourceTitle}</cite></a
 							>{:else}<cite>{aside.sourceTitle}</cite>{/if}{/if}
 				</figcaption>
 			{/if}
 		</figure>
 	{:else}
 		<!-- No extra margin around a code block that opens or closes the aside. -->
-		<div
-			class={[
-				'[&_.code-block:first-child]:mt-0 [&_.code-block:last-child]:mb-0',
-				aside.kind === 'thought' && '[&_p]:text-xl/[1.7]'
-			]}
-		>
+		<div class="[&_.code-block:first-child]:mt-0 [&_.code-block:last-child]:mb-0">
 			<Prose html={aside.html} />
 		</div>
 	{/if}
@@ -105,7 +93,7 @@
 					<a
 						href={tagHref(tag.slug)}
 						aria-current={currentTag === tag.slug ? 'true' : undefined}
-						class="inline-flex min-h-11 items-center text-[15px] text-neutral-600 italic underline decoration-neutral-200 underline-offset-[5px] hover:text-neutral-900 aria-[current=true]:text-neutral-900 aria-[current=true]:decoration-red-700 aria-[current=true]:decoration-2 dark:text-neutral-400 dark:decoration-neutral-800 dark:hover:text-neutral-100 dark:aria-[current=true]:text-neutral-100 dark:aria-[current=true]:decoration-red-400"
+						class="tap-target meta link-quiet italic aria-[current=true]:text-neutral-900 aria-[current=true]:decoration-red-700 aria-[current=true]:decoration-2 dark:aria-[current=true]:text-neutral-100 dark:aria-[current=true]:decoration-red-400"
 					>
 						{tag.name}
 					</a>

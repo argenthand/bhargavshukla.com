@@ -64,7 +64,7 @@
 			<a
 				href={resolve('/')}
 				class={[
-					'inline-flex min-h-11 items-center text-xl font-semibold tracking-tight transition-[opacity,visibility] duration-200 motion-reduce:transition-none md:text-2xl',
+					'tap-target text-xl font-semibold tracking-tight transition-fade duration-200 motion-reduce:transition-none md:text-2xl',
 					hideName && 'js:invisible js:opacity-0'
 				]}
 			>
@@ -77,7 +77,7 @@
 						<a
 							href={item.href}
 							aria-current={current(item.href)}
-							class="inline-flex min-h-11 items-center px-3 text-lg text-neutral-600 hover:text-neutral-900 aria-[current=page]:text-neutral-900 aria-[current=page]:underline aria-[current=page]:decoration-red-700 aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-8 dark:text-neutral-400 dark:hover:text-neutral-100 dark:aria-[current=page]:text-neutral-100 dark:aria-[current=page]:decoration-red-400"
+							class="tap-target px-3 text-lg text-neutral-600 hover:text-neutral-900 aria-[current=page]:text-neutral-900 aria-[current=page]:underline aria-[current=page]:decoration-red-700 aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-8 dark:text-neutral-400 dark:hover:text-neutral-100 dark:aria-[current=page]:text-neutral-100 dark:aria-[current=page]:decoration-red-400"
 						>
 							{item.label}
 						</a>
@@ -94,7 +94,7 @@
 
 	<footer class="border-t border-neutral-200 dark:border-neutral-800 print:hidden">
 		<div
-			class="mx-auto flex min-h-19 max-w-5xl items-center justify-between px-5 py-4 text-sm text-neutral-600 md:px-8 dark:text-neutral-400"
+			class="mx-auto flex min-h-19 max-w-5xl items-center justify-between px-5 py-4 meta md:px-8"
 		>
 			<span>© {year} {site.name}</span>
 		</div>

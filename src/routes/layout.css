@@ -6,6 +6,98 @@
 @theme {
 	--font-sans: 'Newsreader', ui-serif, Georgia, serif;
 	--font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+	/* Layout tokens (#66): named sizes built from the default scale, never raw values in markup. */
+	--container-article: var(--container-2xl); /* a post's text column: max-w-article */
+	--spacing-toc: calc(var(--spacing) * 56); /* the ToC sidebar at lg: w-toc */
+	--spacing-article-gap: calc(var(--spacing) * 16); /* between the text column and the ToC */
+	--container-article-wide: calc(
+		var(--container-article) + var(--spacing-article-gap) + var(--spacing-toc)
+	); /* header and cover span text + ToC: max-w-article-wide */
+	--spacing-resume-label: calc(var(--spacing) * 36); /* the resume's skill-group label column */
+}
+
+/*
+ * One utility per role (#66, docs/design.md → Component classes). Elements that do the same job
+ * use the same class, so a change lands everywhere; every item in a list is styled alike.
+ */
+
+/* Page shell: horizontal gutters and the space above and below every page's content. */
+@utility page {
+	@apply mx-auto px-5 pt-8 pb-14 md:px-8 md:pt-12;
+}
+
+/* Text */
+@utility page-title {
+	@apply text-4xl font-medium tracking-tight text-balance;
+}
+@utility standfirst {
+	@apply text-xl text-neutral-600 italic dark:text-neutral-400;
+}
+@utility body-copy {
+	@apply text-lg/relaxed text-neutral-700 dark:text-neutral-300;
+}
+@utility meta {
+	@apply text-sm text-neutral-600 dark:text-neutral-400;
+}
+@utility label {
+	@apply text-xs font-semibold tracking-widest uppercase;
+}
+@utility label-accent {
+	@apply label text-red-700 dark:text-red-400;
+}
+@utility label-muted {
+	@apply label text-neutral-600 dark:text-neutral-400;
+}
+@utility section-heading {
+	@apply border-b-2 border-neutral-900 pb-1.5 label dark:border-neutral-100;
+}
+
+/* Lists of posts and asides: every item alike. */
+@utility list-entry {
+	@apply flex flex-col gap-2 py-5;
+}
+@utility list-title {
+	@apply text-xl/snug font-semibold text-balance md:text-2xl/snug;
+}
+@utility summary {
+	@apply line-clamp-2 text-lg text-neutral-600 dark:text-neutral-400;
+}
+
+/* Links and controls */
+@utility tap-target {
+	@apply inline-flex min-h-11 items-center;
+}
+@utility link-cta {
+	@apply tap-target gap-1.5 text-lg text-red-700 underline decoration-1 underline-offset-4 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300;
+}
+@utility link-quiet {
+	@apply underline decoration-neutral-200 underline-offset-4 hover:text-neutral-900 dark:decoration-neutral-800 dark:hover:text-neutral-100;
+}
+@utility filter-button {
+	@apply min-h-11 px-2.5 text-lg whitespace-nowrap text-neutral-600 aria-pressed:text-neutral-900 aria-pressed:underline aria-pressed:decoration-red-700 aria-pressed:decoration-2 aria-pressed:underline-offset-8 dark:text-neutral-400 dark:aria-pressed:text-neutral-100 dark:aria-pressed:decoration-red-400;
+}
+@utility select-underline {
+	@apply h-11 w-full appearance-none rounded-none border-0 border-b border-neutral-900 bg-transparent bg-none py-0 pr-8 pl-0 text-lg focus:border-b-2 focus:border-red-700 focus:ring-0 dark:border-neutral-100 dark:focus:border-red-400;
+}
+
+/* Layout */
+@utility article-grid {
+	grid-template-columns: minmax(0, var(--container-article)) var(--spacing-toc);
+	column-gap: var(--spacing-article-gap);
+}
+@utility resume-skills-grid {
+	grid-template-columns: var(--spacing-resume-label) minmax(0, 1fr);
+}
+@utility max-h-sheet {
+	max-height: 80dvh; /* the ToC bottom sheet */
+}
+
+/* The default `transition` leaves out visibility, which a fade-out needs to hide the element too. */
+@utility transition-fade {
+	transition-property: opacity, visibility;
+	transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+	transition-duration: var(--tw-duration, var(--default-transition-duration));
 }
 
 @page {
@@ -60,6 +152,6 @@ html {
 	margin: 0;
 	padding: 1rem;
 	overflow-x: auto;
-	line-height: 1.7;
+	line-height: var(--leading-relaxed);
 	tab-size: 2;
 }

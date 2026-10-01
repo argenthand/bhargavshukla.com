@@ -8,12 +8,12 @@
 
 <span class="flex flex-wrap items-center gap-2">
 	{#if post.category}
-		<span class="text-xs font-semibold tracking-widest text-red-700 uppercase dark:text-red-400">
+		<span class="label-accent">
 			{post.category.name}
 		</span>
 		<span aria-hidden="true" class="text-neutral-600 dark:text-neutral-400">·</span>
 	{/if}
-	<time datetime={isoDay(shownDate(post))} class="text-sm text-neutral-600 dark:text-neutral-400">
+	<time datetime={isoDay(shownDate(post))} class="meta">
 		{formatDate(shownDate(post))}
 	</time>
 </span>

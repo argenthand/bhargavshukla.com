@@ -33,16 +33,14 @@
 		`${formatMonth(start)} - ${end ? formatMonth(end) : 'Present'}`;
 
 	const sectionHeading =
-		'mb-2.5 border-b-2 border-neutral-900 pb-1.5 text-xs font-semibold tracking-widest uppercase break-after-avoid dark:border-neutral-100 print:border-b print:border-black';
+		'section-heading mb-2.5 break-after-avoid print:border-b print:border-black';
 </script>
 
 <Seo title="Resume" description={resume.summary} />
 
-<div
-	class="mx-auto flex max-w-200 flex-col gap-6 px-5 pt-6 pb-14 md:px-8 md:pt-10 print:max-w-none print:p-0 print:text-black"
->
+<div class="page flex max-w-200 flex-col gap-6 print:max-w-none print:p-0 print:text-black">
 	<div class="flex items-center justify-between gap-3 print:hidden">
-		<p class="text-sm text-neutral-600 dark:text-neutral-400">
+		<p class="meta">
 			Last updated <time datetime={resume.updatedAt}>{formatMonth(resume.updatedAt)}</time>
 		</p>
 		<!-- Needs JavaScript; without it, the browser's own Print works just as well. -->
@@ -59,27 +57,23 @@
 		<header
 			class="flex flex-col gap-2 print:gap-1.5 print:border-b print:border-black print:pb-3.5"
 		>
-			<h1 class="text-3xl/[1.1] font-medium tracking-tight md:text-4xl/[1.1] print:text-3xl/[1.1]">
+			<h1 class="page-title print:text-3xl">
 				{profile?.name ?? site.name}
 			</h1>
 			{#if profile?.tagline}
-				<p
-					class="text-lg text-neutral-600 italic dark:text-neutral-400 print:text-base print:text-black"
-				>
+				<p class="standfirst print:text-base print:text-black">
 					{profile.tagline}
 				</p>
 			{/if}
-			<ul
-				class="flex flex-wrap gap-x-4 text-[15px] print:gap-x-3.5 print:gap-y-1 print:text-[13px]"
-			>
+			<ul class="flex flex-wrap gap-x-4 text-sm print:gap-x-3.5 print:gap-y-1">
 				{#each contacts as contact (contact.href)}
 					<li>
 						<!-- eslint-disable svelte/no-navigation-without-resolve -- mailto:, the site's origin and external profiles -->
 						<a
 							href={contact.href}
-							class="inline-flex min-h-11 items-center gap-1.5 text-red-700 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 print:min-h-0 print:text-black"
+							class="tap-target gap-1.5 text-red-700 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 print:min-h-0 print:text-black"
 						>
-							<Icon name={contact.icon} size={15} class="print:hidden" />{contact.text}
+							<Icon name={contact.icon} size={14} class="print:hidden" />{contact.text}
 						</a>
 						<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					</li>
@@ -92,9 +86,7 @@
 
 		<section>
 			<h2 class={sectionHeading}>Summary</h2>
-			<p
-				class="text-[17px]/relaxed text-neutral-700 dark:text-neutral-300 print:text-sm/relaxed print:text-black"
-			>
+			<p class="body-copy print:text-sm/relaxed print:text-black">
 				{resume.summary}
 			</p>
 		</section>
@@ -105,28 +97,24 @@
 				{#each resume.experience as job, i (i)}
 					<article class="mb-5.5 break-inside-avoid print:mb-3.5">
 						<div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
-							<h3 class="text-lg font-bold print:text-[15px]">
+							<h3 class="text-lg font-bold print:text-base">
 								{job.role}<span
 									class="font-normal text-neutral-600 dark:text-neutral-400 print:text-black"
 									>{` · ${job.company}`}</span
 								>
 							</h3>
-							<span
-								class="text-sm text-neutral-600 tabular-nums dark:text-neutral-400 print:text-[13px] print:text-black"
-							>
+							<span class="meta tabular-nums print:text-black">
 								{dates(job.startDate, job.endDate)}
 							</span>
 						</div>
 						{#if job.location}
-							<div
-								class="mt-0.5 text-sm text-neutral-600 dark:text-neutral-400 print:text-[13px] print:text-black"
-							>
+							<div class="mt-0.5 meta print:text-black">
 								{job.location}
 							</div>
 						{/if}
 						{#if job.highlightsHtml}
 							<div
-								class="mt-1.5 text-[17px]/[1.55] text-neutral-700 dark:text-neutral-300 print:text-sm/[1.55] print:text-black [&_li]:mb-0.5 [&_ul]:list-disc [&_ul]:pl-5"
+								class="mt-1.5 body-copy print:text-sm/relaxed print:text-black [&_li]:mb-0.5 [&_ul]:list-disc [&_ul]:pl-5"
 							>
 								<!-- eslint-disable-next-line svelte/no-at-html-tags -- the author's own Markdown from Strapi, rendered on the server -->
 								{@html job.highlightsHtml}
@@ -143,12 +131,10 @@
 				<dl>
 					{#each resume.skillGroups as group, i (i)}
 						<div
-							class="grid grid-cols-2 gap-x-4 gap-y-0.5 border-t border-neutral-200 py-1.5 sm:grid-cols-[8.75rem_minmax(0,1fr)] dark:border-neutral-800 print:grid-cols-[8.75rem_minmax(0,1fr)] print:border-0"
+							class="grid grid-cols-2 gap-x-4 gap-y-0.5 border-t border-neutral-200 py-1.5 sm:resume-skills-grid dark:border-neutral-800 print:resume-skills-grid print:border-0"
 						>
-							<dt class="text-[15px] font-bold print:text-[13px]">{group.label}</dt>
-							<dd
-								class="text-[17px] text-neutral-700 dark:text-neutral-300 print:text-sm print:text-black"
-							>
+							<dt class="text-base font-bold print:text-sm">{group.label}</dt>
+							<dd class="body-copy print:text-sm print:text-black">
 								{group.skills}
 							</dd>
 						</div>
@@ -162,7 +148,7 @@
 				<h2 class={sectionHeading}>Education</h2>
 				{#each resume.education as item, i (i)}
 					<div
-						class="flex flex-wrap justify-between gap-x-4 gap-y-1 text-[17px] text-neutral-700 dark:text-neutral-300 print:text-sm print:text-black"
+						class="flex flex-wrap justify-between gap-x-4 gap-y-1 body-copy print:text-sm print:text-black"
 					>
 						<span
 							><strong class="text-neutral-900 dark:text-neutral-100 print:text-black"

@@ -14,11 +14,8 @@
 	article={{ publishedTime: data.aside.publishedAt }}
 />
 
-<div class="mx-auto flex max-w-3xl flex-col gap-7 px-5 pt-8 pb-14 md:px-8 md:pt-10">
-	<a
-		href={resolve('/asides')}
-		class="inline-flex min-h-11 items-center gap-1.5 self-start text-red-700 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
-	>
+<div class="page flex max-w-3xl flex-col gap-7">
+	<a href={resolve('/asides')} class="link-cta self-start">
 		<Icon name="arrow-left" />All asides
 	</a>
 
@@ -36,9 +33,7 @@
 					href={resolve('/asides/[slug]', { slug: data.newer.slug })}
 					class="group flex min-h-11 flex-col gap-0.5"
 				>
-					<span
-						class="inline-flex items-center gap-1.5 text-sm text-neutral-600 dark:text-neutral-400"
-					>
+					<span class="inline-flex items-center gap-1.5 meta">
 						<Icon name="arrow-left" size={14} />Newer
 					</span>
 					<span class="font-medium group-hover:text-red-700 dark:group-hover:text-red-400">
@@ -53,9 +48,7 @@
 					href={resolve('/asides/[slug]', { slug: data.older.slug })}
 					class="group flex min-h-11 flex-col items-end gap-0.5 text-right"
 				>
-					<span
-						class="inline-flex items-center gap-1.5 text-sm text-neutral-600 dark:text-neutral-400"
-					>
+					<span class="inline-flex items-center gap-1.5 meta">
 						Older<Icon name="arrow-right" size={14} />
 					</span>
 					<span class="font-medium group-hover:text-red-700 dark:group-hover:text-red-400">
