@@ -238,7 +238,7 @@ Small, quick and optional (#60; part 2 is #61).
 
 - Build the list from the rendered post's h2 and h3 (ids from our `marked` pipeline — see [Adaptations](#adaptations)). Render the ToC only when there are **2 or more h2s**.
 - One list component, rendered twice: inside the sheet (< `lg`) and the sidebar (`lg+`); only one is visible via `lg:hidden` / `hidden lg:block`.
-- Scroll-spy: `IntersectionObserver` on every heading with `rootMargin: "-72px 0px -65% 0px"`; the active item is the last heading that has crossed that line. Before the first heading, the first item is active.
+- Scroll-spy: on every scroll and resize (once per animation frame), the active item is the last heading whose top has crossed the line 72 px from the top (under the sticky bars). Not an `IntersectionObserver` band: a jump or fast fling could land with no heading in the band and leave the old item active (#61). Before the first heading, the first item is active.
 - The active item gets `aria-current="location"`; a red marker slides to it (see [Motion](#motion)). Posts also have a reading progress hairline (#61); no percentage.
 - Pill: sits directly after the post header (and cover), then sticks under the top bar (`top-16`, 8px gap). Its text is the active heading, truncated with an ellipsis. It is a `<button aria-haspopup="dialog">`.
 - Sheet: native `<dialog>` opened with `showModal()` (focus trap and Esc for free). Closes on Esc, backdrop tap, the ✕ button, or choosing an item. Choosing an item closes first, then scrolls to the heading and moves focus to it (`tabindex="-1"`).

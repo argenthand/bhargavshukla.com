@@ -26,7 +26,9 @@
 			.map((h) => document.getElementById(h.id))
 			.filter((el): el is HTMLElement => el !== null);
 
+		let frame = 0;
 		const update = () => {
+			frame = 0;
 			let current = headings[0]?.id;
 			for (const el of elements) {
 				if (el.getBoundingClientRect().top > LINE + 1) break;
@@ -35,10 +37,17 @@
 			reached = current;
 		};
 
-		const observer = new IntersectionObserver(update, { rootMargin: `-${LINE}px 0px -65% 0px` });
-		for (const el of elements) observer.observe(el);
+		// Checked on every scroll (once per frame), not only when a heading crosses a band: a jump or
+		// a fast fling can land with no heading near the line and would leave the old entry current.
+		const schedule = () => (frame ||= requestAnimationFrame(update));
 		update();
-		return () => observer.disconnect();
+		addEventListener('scroll', schedule, { passive: true });
+		addEventListener('resize', schedule, { passive: true });
+		return () => {
+			cancelAnimationFrame(frame);
+			removeEventListener('scroll', schedule);
+			removeEventListener('resize', schedule);
+		};
 	});
 
 	/** From the sheet: close first, then scroll to the heading and move focus to it. */
