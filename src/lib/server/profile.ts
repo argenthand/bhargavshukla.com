@@ -1,6 +1,7 @@
 // The Profile single type (#42): home intro and contact links; the resume header reuses them.
 
 import type { Profile } from '$lib/types/content';
+import { resolveUpload } from './image';
 import { renderMarkdown } from './markdown';
 import { strapi } from './strapi';
 
@@ -19,12 +20,15 @@ export function firstParagraph(markdown: string, max = 160): string {
 
 export async function getProfile(locals: App.Locals) {
 	const profile = await strapi(locals).get<Profile>('profile', {
-		fields: ['name', 'tagline', 'bio', 'email', 'linkedin', 'github']
+		fields: ['name', 'tagline', 'bio', 'email', 'linkedin', 'github'],
+		populate: { photo: { fields: ['url', 'alternativeText', 'width', 'height', 'formats'] } }
 	});
 	if (!profile) return undefined;
-	const { bio, ...rest } = profile;
+	const { bio, photo, ...rest } = profile;
 	return {
 		...rest,
+		// Alt text from the Media Library; empty by default, since the name sits right next to it.
+		photo: resolveUpload(photo),
 		bioHtml: renderMarkdown(bio ?? '').html,
 		bioSummary: firstParagraph(bio ?? '')
 	};

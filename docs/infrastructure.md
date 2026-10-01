@@ -328,6 +328,14 @@ The post `cover` changes from a media field to the `shared.image` component, so 
 3. **Content:** Content Manager → Tag (a few to start), then Aside → write and **Publish** at least one.
 4. **Show it:** set `live: true` for Asides in `src/lib/site.ts` (a one-line PR). Until then `/asides` works but isn't linked.
 
+### Home headshot (#59)
+
+Merging deploys both halves on their own: the Worker in about a minute, the CMS (new `photo` field on Profile) a few minutes later through the automated deploy (#48). In between, Strapi rejects the home page's request for `photo`, so the home page shows only the name, uncached, until the CMS deploy finishes.
+
+1. Wait for the `CMS image` workflow's `deploy` job to go green.
+2. **Content:** Content Manager → Single Types → Profile → Photo → upload a roughly square photo with your face centred (it's cropped to a circle) → Save. Saving purges the home page (#17). No token change: the photo comes with the Profile.
+3. To remove it, clear the field and Save; the intro falls back to the name and tagline alone.
+
 ### Edge cache and purge (#16, #17)
 
 Pages are cached at the edge for up to 10 minutes and purged by content type when Strapi changes them ([caching.md](caching.md)). Set up the purge in this order:

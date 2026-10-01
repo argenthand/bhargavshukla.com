@@ -1,7 +1,7 @@
 // Turns a shared.image component (#40) into what the page renders.
 
 import { creditHref, responsive, SOURCE_NAMES } from '$lib/images';
-import type { ImageField, ResolvedImage } from '$lib/types/content';
+import type { ImageField, Media, ResolvedImage } from '$lib/types/content';
 import { mediaUrl } from './strapi';
 
 export function resolveImage(image: ImageField | null | undefined): ResolvedImage | null {
@@ -29,5 +29,27 @@ export function resolveImage(image: ImageField | null | undefined): ResolvedImag
 					sourceHref: image.sourceUrl ? creditHref(image.sourceUrl, source) : null
 				}
 			: undefined
+	};
+}
+
+/**
+ * An upload with Strapi's resized copies as a srcset, so a small slot (the headshot) doesn't load
+ * the original. R2 serves files as-is, so these copies are the only sizes there are.
+ */
+export function resolveUpload(media: Media | null | undefined): ResolvedImage | null {
+	if (!media) return null;
+	const sizes = [
+		...Object.values(media.formats ?? {}),
+		...(media.width && media.height ? [{ url: media.url, width: media.width }] : [])
+	]
+		.filter((size, i, all) => all.findIndex((s) => s.width === size.width) === i)
+		.sort((a, b) => a.width - b.width);
+	return {
+		src: mediaUrl(media.url),
+		srcset:
+			sizes.length > 1 ? sizes.map((s) => `${mediaUrl(s.url)} ${s.width}w`).join(', ') : undefined,
+		alt: media.alternativeText ?? '',
+		width: media.width,
+		height: media.height
 	};
 }

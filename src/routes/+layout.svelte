@@ -16,6 +16,27 @@
 			: undefined;
 
 	const year = new Date().getFullYear();
+
+	// On the home page the intro's h1 is the name, so the header leaves it out until that heading
+	// scrolls under the sticky phone bar, then fades it in (#59). The desktop header isn't sticky,
+	// so there it simply stays out. `js:` keeps it visible without JavaScript.
+	const isHome = $derived(page.route.id === '/' && !page.error);
+	let introInView = $state(true);
+	$effect(() => {
+		if (!isHome) return;
+		const heading = document.getElementById('intro-name');
+		if (!heading) return;
+		const observer = new IntersectionObserver(
+			([entry]) => (introInView = entry.isIntersecting),
+			{ rootMargin: '-56px 0px 0px 0px' } // the sticky bar's height (h-14)
+		);
+		observer.observe(heading);
+		return () => {
+			observer.disconnect();
+			introInView = true;
+		};
+	});
+	const hideName = $derived(isHome && introInView);
 </script>
 
 <svelte:head>
@@ -42,7 +63,10 @@
 		<div class="mx-auto flex h-14 max-w-5xl items-center justify-between px-5 md:h-20 md:px-8">
 			<a
 				href={resolve('/')}
-				class="inline-flex min-h-11 items-center text-xl font-semibold tracking-tight md:text-2xl"
+				class={[
+					'inline-flex min-h-11 items-center text-xl font-semibold tracking-tight transition-[opacity,visibility] duration-200 motion-reduce:transition-none md:text-2xl',
+					hideName && 'js:invisible js:opacity-0'
+				]}
 			>
 				{site.name}
 			</a>
