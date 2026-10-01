@@ -9,7 +9,8 @@
 
 	const [lead, ...rest] = $derived(data.home.posts);
 
-	// F-home-v2: the intro from the Strapi profile (#42), then up to 3 featured posts.
+	// F-intro-r (#59): the intro from the Strapi profile (#42) with an optional round headshot,
+	// 768 wide like Writing; then up to 3 featured posts.
 	const profile = $derived(data.profile);
 	// The Resume link shows once /resume ships (#5); contact links only when set in the profile.
 	type IntroLink = {
@@ -43,20 +44,34 @@
 
 <Seo description={profile?.bioSummary || site.description} />
 
-<div class="mx-auto max-w-5xl px-5 md:px-8">
-	<section
-		aria-label="About"
-		class="flex flex-col gap-4 py-10 md:pt-14 lg:grid lg:grid-cols-12 lg:gap-8 lg:pt-16 lg:pb-14"
-	>
-		<div class="lg:col-span-5">
-			<h1 class="text-4xl/[1.1] font-medium tracking-tight">{profile?.name ?? site.name}</h1>
-			{#if profile}
-				<p class="mt-2 text-xl text-neutral-600 italic dark:text-neutral-400">{profile.tagline}</p>
+<div class="mx-auto max-w-3xl px-5 md:px-8">
+	<section aria-label="About" class="flex flex-col gap-4 py-10 md:pt-16 md:pb-14">
+		<div class="flex items-center gap-4 md:gap-5">
+			{#if profile?.photo}
+				<img
+					src={profile.photo.src}
+					srcset={profile.photo.srcset}
+					sizes="(min-width: 768px) 120px, 112px"
+					alt={profile.photo.alt}
+					width={profile.photo.width}
+					height={profile.photo.height}
+					decoding="async"
+					class="size-28 shrink-0 rounded-full bg-neutral-100 object-cover md:size-30 dark:bg-neutral-900"
+				/>
 			{/if}
+			<div class="min-w-0">
+				<!-- The layout hides the header's name while this heading is on screen (#59). -->
+				<h1 id="intro-name" class="text-4xl/[1.1] font-medium tracking-tight">
+					{profile?.name ?? site.name}
+				</h1>
+				{#if profile}
+					<p class="mt-2 text-xl text-neutral-600 italic dark:text-neutral-400">
+						{profile.tagline}
+					</p>
+				{/if}
+			</div>
 		</div>
-		<div
-			class="flex flex-col gap-4 text-lg/[1.7] text-neutral-700 lg:col-span-7 dark:text-neutral-300"
-		>
+		<div class="flex flex-col gap-4 text-lg/[1.7] text-neutral-700 dark:text-neutral-300">
 			{#if profile}
 				<div
 					class="flex flex-col gap-4 [&_a]:text-red-700 [&_a]:underline [&_a]:underline-offset-4 dark:[&_a]:text-red-400"

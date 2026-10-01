@@ -5,6 +5,14 @@ export interface Media {
 	alternativeText: string | null;
 	width: number | null;
 	height: number | null;
+	/** Resized copies Strapi makes on upload (thumbnail, small, medium, large), when the original is bigger. */
+	formats?: Record<string, MediaFormat> | null;
+}
+
+export interface MediaFormat {
+	url: string;
+	width: number;
+	height: number;
 }
 
 export interface Link {
@@ -71,6 +79,8 @@ export interface Post extends PostSummary {
 export interface Profile {
 	name: string;
 	tagline: string;
+	/** Optional headshot (#59); the intro lays out the same without it. */
+	photo: Media | null;
 	bio: string;
 	email: string | null;
 	linkedin: string | null;
