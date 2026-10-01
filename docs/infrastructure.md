@@ -328,6 +328,27 @@ The post `cover` changes from a media field to the `shared.image` component, so 
 3. **Content:** Content Manager → Tag (a few to start), then Aside → write and **Publish** at least one.
 4. **Show it:** set `live: true` for Asides in `src/lib/site.ts` (a one-line PR). Until then `/asides` works but isn't linked.
 
+### Edge cache and purge (#16, #17)
+
+Pages are cached at the edge for up to 10 minutes and purged by content type when Strapi changes them ([caching.md](caching.md)). Set up the purge in this order:
+
+1. **Cloudflare API token:** My Profile → API Tokens → Create Token → Custom token. Name `bs-blog-purge`; Permissions **Zone → Cache Purge → Purge**; Zone Resources **Include → Specific zone → bhargavshukla.com**; no expiry. Copy the token.
+2. **Worker secrets:** Workers & Pages → `bs-blog` → Settings → Variables and Secrets → Add, type **Secret**:
+   - `CF_PURGE_TOKEN`: the token from step 1.
+   - `PURGE_SECRET`: a fresh random value, made on your machine with `openssl rand -base64 32 | tr -d '\n' | pbcopy` and pasted straight in. Keep it in the clipboard for step 4 only.
+3. **Merge** the #17 PR. `CF_ZONE_ID` is already a plain var in [`wrangler.jsonc`](../wrangler.jsonc) (the zone's Overview page → API → Zone ID; not a secret). The secrets must exist first, or every purge answers 500.
+4. **Strapi webhook:** production admin → Settings → Webhooks → Create new webhook. Name `purge edge cache`; URL `https://bhargavshukla.com/api/purge`; header `Authorization` = `Bearer <PURGE_SECRET>`; events **Entry**: create, update, delete, publish, unpublish (leave Media off) → Save. **Trigger** must answer 200: a test event purges nothing, but proves the secret matches (a 401 means it doesn't).
+
+Checks:
+
+- `curl -s -D - -o /dev/null https://bhargavshukla.com/blog` twice → `x-edge-cache: MISS`, then `HIT`.
+- Edit and publish a post: Workers & Pages → `bs-blog` → Observability (or `pnpm exec wrangler tail`) shows `Purge: purged type:post`; the next `curl` is a `MISS` with the new content.
+- `curl -s -o /dev/null -w '%{http_code}' -X POST -H 'content-type: application/json' -H 'authorization: Bearer nope' -d '{}' https://bhargavshukla.com/api/purge` → 401.
+
+**Purge everything by hand:** the same request with the real secret and `-d '{"all":true}'` (or dashboard → Caching → Configuration → Purge Everything).
+
+**If a purge fails** (`Purge: failed …` in the logs; Strapi doesn't retry), pages stay stale for at most 10 minutes. A 403 from Cloudflare means the API token is wrong or expired: replace `CF_PURGE_TOKEN`. To rotate `PURGE_SECRET`, change it on the Worker and in the webhook header together.
+
 ### Automated CMS deploys (#48)
 
 Every push to `main` that touches `cms/**` (or the workflow) builds the image, then the `deploy` job in [`cms-image.yml`](../.github/workflows/cms-image.yml) runs [`cms/deploy/deploy.sh`](../cms/deploy/deploy.sh) on the VPS for that exact commit:

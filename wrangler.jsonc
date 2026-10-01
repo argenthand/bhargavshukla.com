@@ -7,6 +7,10 @@
 	"assets": { "binding": "ASSETS", "directory": ".svelte-kit/cloudflare" },
 	"routes": [{ "pattern": "bhargavshukla.com", "custom_domain": true }],
 	"observability": { "enabled": true },
-	// STRAPI_TOKEN is a secret: `pnpm exec wrangler secret put STRAPI_TOKEN` (docs/infrastructure.md).
-	"vars": { "STRAPI_URL": "https://cms.bhargavshukla.com" }
+	// Secrets (dashboard → Variables and Secrets): STRAPI_TOKEN, PURGE_SECRET, CF_PURGE_TOKEN
+	// (docs/infrastructure.md). The zone ID isn't secret; the purge API needs it.
+	"vars": {
+		"STRAPI_URL": "https://cms.bhargavshukla.com",
+		"CF_ZONE_ID": "46d06175f04c750ead2291f34512ae4f"
+	}
 }

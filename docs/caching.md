@@ -47,18 +47,19 @@ Publishing any post purges `type:post`, which clears every page that shows posts
 ### 4. Purge endpoint — `src/routes/api/purge/+server.ts` + `src/lib/server/purge.ts`
 
 - **Auth:** `Authorization: Bearer ${PURGE_SECRET}`, compared with `crypto.subtle.timingSafeEqual`; otherwise 401.
-- **Payload** (Strapi 5): `{ event, model, uid, entry }`. Derive the model from `uid` (`api::post.post` → `post`).
+- **Payload** (Strapi 5): `{ event, model, uid, entry }`, sent as JSON. Derive the model from `uid` (`api::post.post` → `post`); uids the site never reads (plugins, users) are ignored. Send JSON when calling it by hand: SvelteKit's CSRF check answers 403 to a form-encoded cross-site POST.
 - **Mapping:**
 
-  | Event                                              | Action                                                                                                            |
-  | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-  | `entry.publish`, `entry.unpublish`, `entry.delete` | purge `type:<model>`                                                                                              |
-  | `entry.create`, `entry.update`                     | purge only when model is `tag` (no Draft & Publish); otherwise it's a draft save that doesn't change live content |
-  | `media.*`                                          | ignore                                                                                                            |
-  | body `{ "all": true }`                             | `purge_everything` (manual escape hatch)                                                                          |
+  | Event                                              | Action                                                                                                                                     |
+  | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+  | `entry.publish`, `entry.unpublish`, `entry.delete` | purge `type:<model>`                                                                                                                       |
+  | `entry.create`, `entry.update`                     | purge only for models without Draft & Publish (`category`, `profile`, `tag`); otherwise it's a draft save that doesn't change live content |
+  | `media.*`                                          | ignore                                                                                                                                     |
+  | body `{ "all": true }`                             | `purge_everything` (manual escape hatch)                                                                                                   |
 
 - **Call:** `POST https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/purge_cache` with `{ "tags": [...] }` and `Authorization: Bearer ${CF_PURGE_TOKEN}`.
-- Respond 200 on success, 502 on failure, and `console.log` the outcome (shows in `wrangler tail` and Workers Logs). Strapi doesn't retry webhooks, so failures must be visible.
+- Respond 200 on success or when there's nothing to purge, 502 when Cloudflare fails, 500 when `CF_ZONE_ID`/`CF_PURGE_TOKEN` is missing, and log every outcome (`Purge: …` in `wrangler tail` and Workers Logs). Strapi doesn't retry webhooks, so failures must be visible.
+- The handler lives in `purge.ts` (`handlePurge(request, config, fetch)`) so it's tested without SvelteKit; `+server.ts` only passes the env in. `crypto.subtle.timingSafeEqual` is Workers-only: both sides are SHA-256 hashed first (equal lengths), with a constant-time loop in Node.
 
 ### 5. Configuration
 
