@@ -2,7 +2,11 @@
 
 import { shownDate } from '$lib/format';
 import type { Post, PostSummary } from '$lib/types/content';
+import { mergeDrafts } from './preview';
 import { strapi } from './strapi';
+
+/** `drafts`: in preview (#57), also show unpublished posts and unpublished edits. */
+type Options = { drafts?: boolean };
 
 const SUMMARY_FIELDS = [
 	'title',
@@ -19,19 +23,44 @@ const CATEGORY = { fields: ['name', 'slug'] };
 export const byShownDate = (a: PostSummary, b: PostSummary) =>
 	shownDate(b).localeCompare(shownDate(a));
 
-export async function listPosts(locals: App.Locals, filters: Record<string, unknown> = {}) {
-	const posts = await strapi(locals).findAll<PostSummary>('post', {
+export async function listPosts(
+	locals: App.Locals,
+	filters: Record<string, unknown> = {},
+	{ drafts = false }: Options = {}
+): Promise<PostSummary[]> {
+	const query = {
 		fields: SUMMARY_FIELDS,
 		populate: { category: CATEGORY },
 		filters,
 		sort: ['publishedAt:desc']
-	});
-	return posts.sort(byShownDate);
+	};
+	const client = strapi(locals);
+	const posts = await client.findAll<PostSummary>('post', query);
+	if (!drafts) return posts.sort(byShownDate);
+	const latest = await client.findAll<PostSummary>('post', { ...query, status: 'draft' });
+	return mergeDrafts(posts, latest).sort(byShownDate);
 }
 
-export async function getPost(locals: App.Locals, slug: string): Promise<Post | undefined> {
+export async function getPost(
+	locals: App.Locals,
+	slug: string,
+	{ drafts = false }: Options = {}
+): Promise<Post | undefined> {
+	if (drafts) {
+		// The latest draft, with the publish date of its live version if there is one (matched by
+		// document, so a slug changed in the draft still finds it).
+		const draft = await fetchPost(locals, { slug: { $eq: slug } }, 'draft');
+		if (!draft) return undefined;
+		const published = await fetchPost(locals, { documentId: { $eq: draft.documentId } });
+		return mergeDrafts(published ? [published] : [], [draft])[0];
+	}
+	return fetchPost(locals, { slug: { $eq: slug } });
+}
+
+async function fetchPost(locals: App.Locals, filters: Record<string, unknown>, status?: 'draft') {
 	const { data } = await strapi(locals).find<Post>('post', {
-		filters: { slug: { $eq: slug } },
+		...(status && { status }),
+		filters,
 		populate: {
 			category: CATEGORY,
 			cover: { populate: { file: { fields: ['url', 'alternativeText', 'width', 'height'] } } },
@@ -44,8 +73,8 @@ export async function getPost(locals: App.Locals, slug: string): Promise<Post | 
 }
 
 /** Home: up to 3 featured posts, or the newest posts when none are featured yet. */
-export async function homePosts(locals: App.Locals) {
-	const posts = await listPosts(locals);
+export async function homePosts(locals: App.Locals, options: Options = {}) {
+	const posts = await listPosts(locals, {}, options);
 	const featured = posts.filter((post) => post.featured);
 	return featured.length > 0
 		? { heading: 'Featured', posts: featured.slice(0, 3) }

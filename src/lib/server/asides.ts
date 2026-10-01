@@ -6,6 +6,7 @@ import { formatDate } from '$lib/format';
 import type { Aside, RenderedAside } from '$lib/types/content';
 import { renderMarkdown } from './markdown';
 import { firstParagraph } from './profile';
+import { mergeDrafts } from './preview';
 import { strapi } from './strapi';
 
 const QUERY = {
@@ -17,7 +18,8 @@ const QUERY = {
 		'sourceAuthor',
 		'sourceTitle',
 		'sourceUrl',
-		'publishedAt'
+		'publishedAt',
+		'updatedAt'
 	],
 	populate: { tags: { fields: ['name', 'slug'] } },
 	sort: ['publishedAt:desc']
@@ -49,14 +51,29 @@ function render({ body, ...aside }: Aside): RenderedAside {
 	};
 }
 
-export async function listAsides(locals: App.Locals): Promise<RenderedAside[]> {
-	const asides = await strapi(locals).findAll<Aside>('aside', QUERY);
-	return asides.map(render);
+/** `drafts`: in preview (#57), also unpublished asides and unpublished edits, newest edit first. */
+async function fetchAll(locals: App.Locals, drafts = false): Promise<Aside[]> {
+	const client = strapi(locals);
+	const published = await client.findAll<Aside>('aside', QUERY);
+	if (!drafts) return published;
+	const latest = await client.findAll<Aside>('aside', { ...QUERY, status: 'draft' });
+	return mergeDrafts(published, latest).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+}
+
+export async function listAsides(
+	locals: App.Locals,
+	{ drafts = false }: { drafts?: boolean } = {}
+): Promise<RenderedAside[]> {
+	return (await fetchAll(locals, drafts)).map(render);
 }
 
 /** One aside plus its neighbours in the stream (newer, older) for the page's links. */
-export async function getAside(locals: App.Locals, slug: string) {
-	const all = await strapi(locals).findAll<Aside>('aside', QUERY);
+export async function getAside(
+	locals: App.Locals,
+	slug: string,
+	{ drafts = false }: { drafts?: boolean } = {}
+) {
+	const all = await fetchAll(locals, drafts);
 	const i = all.findIndex((a) => a.slug === slug);
 	if (i === -1) return undefined;
 	const link = (a: Aside | undefined) => a && { slug: a.slug, label: asideLabel(a) };

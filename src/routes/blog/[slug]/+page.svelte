@@ -60,8 +60,13 @@
 			{post.title}
 		</h1>
 		<p class="flex flex-wrap items-center gap-2 meta">
-			<time datetime={isoDay(shownDate(post))}>{formatDate(shownDate(post))}</time>
-			{#if updated}
+			{#if post.draft}
+				<span>Not published</span>
+				<span class="draft-badge">Draft</span>
+			{:else}
+				<time datetime={isoDay(shownDate(post))}>{formatDate(shownDate(post))}</time>
+			{/if}
+			{#if updated && !post.draft}
 				<span aria-hidden="true">·</span>
 				<time datetime={isoDay(updated)}>Updated {formatDate(updated)}</time>
 			{/if}

@@ -2,7 +2,7 @@
 
 ```
 src/
-  hooks.server.ts                 edge-cache wrapper around resolve() — see caching.md
+  hooks.server.ts                 cache tags, draft-preview cookie check (#57), edge-cache wrapper — see caching.md
   app.d.ts                        App.Locals { cacheTags: Set<string> }, App.Platform
   lib/
     format.ts                     dates as shown (UTC), shown date = displayDate ?? publishedAt
@@ -19,8 +19,10 @@ src/
       edge-cache.ts               cache key, bypass rules, TTL constants
       purge.ts                    webhook payload → tags; Cloudflare purge API call
       feeds.ts                    RSS and sitemap XML builders (#56)
+      preview.ts                  draft preview: signed links and cookies, mergeDrafts (#57)
   routes/
-    +layout.svelte                header nav (md+) and bottom tab bar (below md), footer
+    +layout.svelte                header nav (md+) and bottom tab bar (below md), footer; preview banner
+    +layout.server.ts             { preview } for the banner (#57)
     +page.svelte, +page.server.ts /                 intro + up to 3 featured posts (the newest posts while none are featured)
     +error.svelte                 404 / 5xx
     resume/+page.server.ts        /resume           Strapi Resume + Profile (404 until published); print styles, Save as PDF
@@ -31,7 +33,8 @@ src/
     rss.xml/+server.ts            /rss.xml          RSS 2.0, newest 20 posts; linked from the layout head and footer
     sitemap.xml/+server.ts        /sitemap.xml      home, /blog, posts; /asides + asides and /resume only while live (isLive)
     api/purge/+server.ts          Strapi webhook target (POST)
-    api/preview/+server.ts        (later) Strapi Preview → draft-mode cookie
+    api/preview/+server.ts        Strapi "Open preview" → checks the signed link, sets the signed preview cookie (#57)
+    api/preview/exit/+server.ts   preview banner "Exit" → clears the cookie
 ```
 
 ## Conventions

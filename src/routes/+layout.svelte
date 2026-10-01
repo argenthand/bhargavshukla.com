@@ -10,7 +10,7 @@
 	import { consoleNote } from '$lib/easter-eggs';
 	import { nav, site } from '$lib/site';
 
-	let { children } = $props();
+	let { children, data } = $props();
 
 	// A section stays current on its detail pages (/blog/<slug> keeps Writing active).
 	// Error pages have no current section.
@@ -123,6 +123,30 @@
 			{/if}
 		</div>
 	</header>
+
+	{#if data.preview}
+		<!-- Draft preview (#57, F-writing-* preview mode): only for whoever opened it from Strapi. -->
+		<div
+			role="status"
+			class="border-b border-neutral-200 bg-neutral-50 meta dark:border-neutral-800 dark:bg-neutral-900 print:hidden"
+		>
+			<div class="mx-auto flex max-w-5xl items-center gap-2 px-5 md:px-8">
+				<span aria-hidden="true" class="size-2 shrink-0 rounded-full border border-current"></span>
+				<span class="py-2.5">Preview mode: drafts are visible to you only</span>
+				<!-- A server route: reload so the cookie is cleared before the page loads again. -->
+				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() can't take a query string -->
+				<a
+					href="{resolve('/api/preview/exit')}?path={encodeURIComponent(
+						page.url.pathname + page.url.search
+					)}"
+					data-sveltekit-reload
+					class="ml-auto tap-target link-quiet"
+				>
+					Exit<span class="sr-only"> preview mode</span>
+				</a>
+			</div>
+		</div>
+	{/if}
 
 	<main class="flex-1">
 		{@render children()}

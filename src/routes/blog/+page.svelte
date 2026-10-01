@@ -162,7 +162,11 @@
 							>
 								<a href={resolve('/blog/[slug]', { slug: post.slug })} class="group list-entry">
 									<span
-										class="list-title group-hover:text-red-700 dark:group-hover:text-red-400"
+										class={[
+											'list-title group-hover:text-red-700 dark:group-hover:text-red-400',
+											// A draft's title is muted, as in the preview-mode mockup (#57).
+											post.draft && 'text-neutral-600 dark:text-neutral-400'
+										]}
 										data-title-transition
 										style:view-transition-name={titleTransition('post', post.slug)}
 									>

@@ -364,6 +364,18 @@ Checks:
 
 **If a purge fails** (`Purge: failed …` in the logs; Strapi doesn't retry), pages stay stale for at most 10 minutes. A 403 from Cloudflare means the API token is wrong or expired: replace `CF_PURGE_TOKEN`. To rotate `PURGE_SECRET`, change it on the Worker and in the webhook header together.
 
+### Draft preview (#57)
+
+Strapi's **Open preview** opens drafts on the real site ([caching.md → Draft preview](caching.md#draft-preview-57--srclibserverpreviewts)). The CMS and the Worker share one secret. Set it up before merging:
+
+1. **Make the secret** on your machine: `openssl rand -hex 32 | tr -d '\n' | pbcopy`. Keep it in the clipboard for steps 2 and 3 only.
+2. **Worker:** Workers & Pages → `bs-blog` → Settings → Variables and Secrets → Add, type **Secret**, name `PREVIEW_SECRET`, paste.
+3. **VPS:** add `PREVIEW_SECRET=<paste>` to `/opt/cms/.env` (edit it in place; don't echo it into a shell where history keeps it). `CLIENT_URL` comes from the compose file.
+4. **Merge.** The CMS deploy restarts Strapi with both values, which turns preview on. Without them, Strapi shows no Preview button, and `/api/preview` answers 401.
+5. **Check:** create a post, save it without publishing, and click **Open preview**. The draft opens with the "Preview mode" banner. **Exit** goes back to the published view (a 404 for a post that was never published).
+
+To rotate the secret, change it on the Worker and in `/opt/cms/.env` together, then restart Strapi (`docker compose up -d` in `/opt/cms`). Changing it also ends every open preview session.
+
 ### Automated CMS deploys (#48)
 
 Every push to `main` that touches `cms/**` (or the workflow) builds the image, then the `deploy` job in [`cms-image.yml`](../.github/workflows/cms-image.yml) runs [`cms/deploy/deploy.sh`](../cms/deploy/deploy.sh) on the VPS for that exact commit:
