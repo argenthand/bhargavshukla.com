@@ -2,8 +2,11 @@
 	// Table of contents (docs/design.md → Table of contents: behaviour).
 	// `pill`: below lg, a sticky "On this page" pill that opens a bottom sheet; without JS, a
 	// collapsed <details> instead. `sidebar`: lg+, a sticky list beside the article.
-	// Both highlight the section being read (aria-current="location"); that is the only progress cue.
+	// Both highlight the section being read (aria-current="location"); with JS one red marker slides
+	// between entries (#61), without it the current entry's own border is red.
+	import type { Attachment } from 'svelte/attachments';
 	import Icon from '$lib/components/Icon.svelte';
+	import { reducedMotion } from '$lib/motion';
 	import type { Heading } from '$lib/types/content';
 
 	let { headings, variant }: { headings: Heading[]; variant: 'pill' | 'sidebar' } = $props();
@@ -44,10 +47,32 @@
 		dialog?.close();
 		const target = document.getElementById(id);
 		if (!target) return;
-		const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-		target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+		target.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
 		target.focus({ preventScroll: true });
 	}
+
+	/**
+	 * Moves the list's marker over the current entry, with transform only: `translate` to its top and
+	 * `scale` to its height (the marker is 1px tall), so entries that wrap work too. Re-measured when
+	 * the list resizes: the sheet and the <details> have no layout until they open. The first
+	 * placement doesn't slide; `data-placed` turns the transition on a frame later.
+	 */
+	const marker: Attachment<HTMLElement> = (list) => {
+		const id = active;
+		const place = () => {
+			const bar = list.querySelector<HTMLElement>('[data-toc-marker]');
+			const link = id && list.querySelector<HTMLElement>(`a[href="#${CSS.escape(id)}"]`);
+			if (!bar || !link || !link.offsetHeight) return;
+			bar.style.translate = `0 ${link.offsetTop}px`;
+			bar.style.scale = `1 ${link.offsetHeight}`;
+			if (!bar.hasAttribute('data-placed'))
+				requestAnimationFrame(() => bar.toggleAttribute('data-placed', true));
+		};
+		place();
+		const observer = new ResizeObserver(place);
+		observer.observe(list);
+		return () => observer.disconnect();
+	};
 
 	/** A click on the backdrop lands on the <dialog> itself. */
 	function closeOnBackdrop(event: MouseEvent) {
@@ -56,21 +81,28 @@
 </script>
 
 {#snippet list(onchoose?: (event: MouseEvent, id: string) => void)}
-	<ol>
-		{#each headings as heading (heading.id)}
-			<li>
-				<a
-					href="#{heading.id}"
-					data-level={heading.level}
-					aria-current={active === heading.id ? 'location' : undefined}
-					onclick={onchoose && ((event) => onchoose(event, heading.id))}
-					class="flex min-h-10 items-center border-l-2 border-neutral-200 py-1.5 pl-3 text-base/snug text-neutral-900 aria-[current=location]:border-red-700 aria-[current=location]:font-semibold aria-[current=location]:text-red-700 data-[level=3]:pl-7 data-[level=3]:text-sm data-[level=3]:text-neutral-600 dark:border-neutral-800 dark:text-neutral-100 dark:aria-[current=location]:border-red-400 dark:aria-[current=location]:text-red-400 dark:data-[level=3]:text-neutral-400"
-				>
-					{heading.text}
-				</a>
-			</li>
-		{/each}
-	</ol>
+	<div class="relative" {@attach marker}>
+		<span
+			aria-hidden="true"
+			data-toc-marker
+			class="pointer-events-none absolute top-0 left-0 hidden h-px w-0.5 origin-top bg-red-700 opacity-0 data-placed:opacity-100 motion-safe:data-placed:transition-[translate,scale] motion-safe:data-placed:duration-(--duration-motion) motion-safe:data-placed:ease-(--ease-motion) dark:bg-red-400 js:block"
+		></span>
+		<ol>
+			{#each headings as heading (heading.id)}
+				<li>
+					<a
+						href="#{heading.id}"
+						data-level={heading.level}
+						aria-current={active === heading.id ? 'location' : undefined}
+						onclick={onchoose && ((event) => onchoose(event, heading.id))}
+						class="flex min-h-10 items-center border-l-2 border-neutral-200 py-1.5 pl-3 text-base/snug text-neutral-900 aria-[current=location]:border-red-700 aria-[current=location]:font-semibold aria-[current=location]:text-red-700 data-[level=3]:pl-7 data-[level=3]:text-sm data-[level=3]:text-neutral-600 dark:border-neutral-800 dark:text-neutral-100 dark:aria-[current=location]:border-red-400 dark:aria-[current=location]:text-red-400 dark:data-[level=3]:text-neutral-400 js:aria-[current=location]:border-neutral-200 dark:js:aria-[current=location]:border-neutral-800"
+					>
+						{heading.text}
+					</a>
+				</li>
+			{/each}
+		</ol>
+	</div>
 {/snippet}
 
 {#if variant === 'pill'}

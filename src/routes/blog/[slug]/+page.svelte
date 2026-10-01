@@ -1,6 +1,7 @@
 <script lang="ts">
 	import NextUp from '$lib/components/NextUp.svelte';
 	import Prose from '$lib/components/Prose.svelte';
+	import ReadingProgress from '$lib/components/ReadingProgress.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import Toc from '$lib/components/Toc.svelte';
 	import { formatDate, isoDay, shownDate, updatedDate } from '$lib/format';
@@ -20,6 +21,7 @@
 	});
 	// The ToC only earns its space with 2 or more sections.
 	const showToc = $derived(data.headings.filter((h) => h.level === 2).length >= 2);
+	let article = $state<HTMLElement>();
 	// On lg+, the title and cover span the article + ToC columns (960px). Without a ToC they match
 	// the article column (672px), so everything lines up.
 </script>
@@ -35,6 +37,8 @@
 		section: post.category?.name
 	}}
 />
+
+<ReadingProgress target={article} />
 
 <div class="page">
 	<header
@@ -102,7 +106,7 @@
 			showToc && 'lg:grid lg:max-w-none lg:article-grid lg:justify-center'
 		]}
 	>
-		<article class="min-w-0">
+		<article class="min-w-0" bind:this={article}>
 			{#if showToc}
 				<!-- A direct child of the article, so the pill stays stuck for the whole post. -->
 				<Toc headings={data.headings} variant="pill" />

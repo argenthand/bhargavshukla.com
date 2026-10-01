@@ -23,6 +23,25 @@ describe('renderMarkdown', () => {
 		expect(html).toContain('<h1>Title</h1>');
 	});
 
+	it('adds a section link to h2/h3 only when asked, keeping it out of the ToC text', () => {
+		const md = '# Title\n\n## First *part*\n\n### Detail';
+		expect(renderMarkdown(md).html).not.toContain('data-heading-link');
+
+		const { html, headings } = renderMarkdown(md, { headingLinks: true });
+		expect(html).toContain(
+			'<h2 id="first-part" tabindex="-1">First <em>part</em><a href="#first-part" data-heading-link class="heading-link not-prose" aria-label="Copy link to this section">#</a></h2>'
+		);
+		expect(html).toContain('<a href="#detail" data-heading-link');
+		expect(html).toContain('<h1>Title</h1>');
+		expect(headings.map((h) => h.text)).toEqual(['First part', 'Detail']);
+	});
+
+	it('gives the Copy button a check icon for its confirmation', () => {
+		const { html } = renderMarkdown('```ts\nconst a = 1;\n```');
+		expect(html).toMatch(/<button[^>]*data-copy[^>]*><svg data-copy-icon[^>]*>/);
+		expect(html).toContain('<span data-copy-label>Copy</span>');
+	});
+
 	it('highlights code with both themes and a filename header', () => {
 		const { html } = renderMarkdown('```ts rotation.ts\nconst a = 1;\n```');
 		expect(html).toContain('class="shiki shiki-themes github-light github-dark');

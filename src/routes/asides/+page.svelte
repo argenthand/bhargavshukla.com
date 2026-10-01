@@ -8,6 +8,10 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import { isKind, KINDS, PAGE_SIZE } from '$lib/asides';
+	import { motionMs } from '$lib/motion';
+	import { cubicOut } from 'svelte/easing';
+	import { flip } from 'svelte/animate';
+	import { fade } from 'svelte/transition';
 
 	let { data } = $props();
 
@@ -143,9 +147,14 @@
 			{/if}
 		</div>
 	{:else}
+		<!-- Filter changes: asides that stay slide into place, new ones fade in (#61). -->
 		<ol class="border-t-2 border-neutral-900 dark:border-neutral-100">
 			{#each shown as aside (aside.slug)}
-				<li class="border-b border-neutral-200 pt-7 pb-2.5 last:border-b-0 dark:border-neutral-800">
+				<li
+					class="border-b border-neutral-200 pt-7 pb-2.5 last:border-b-0 dark:border-neutral-800"
+					animate:flip={{ duration: motionMs(), easing: cubicOut }}
+					in:fade={{ duration: motionMs(), easing: cubicOut }}
+				>
 					<article><AsideItem {aside} currentTag={tag} /></article>
 				</li>
 			{/each}
