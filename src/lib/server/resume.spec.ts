@@ -3,7 +3,7 @@ import type { Resume } from '$lib/types/content';
 
 vi.mock('$env/dynamic/private', () => ({ env: {} }));
 
-const { groupByEmployer } = await import('./resume');
+const { groupByEmployer, splitHighlights } = await import('./resume');
 
 type Job = Resume['experience'][number];
 
@@ -65,10 +65,29 @@ describe('groupByEmployer', () => {
 		expect(employers.map((e) => e.company)).toEqual(['Acme', 'Initech', 'Acme']);
 	});
 
-	it('renders highlights to HTML', () => {
+	it('splits highlights into bullets', () => {
 		const [acme] = groupByEmployer([
-			job('Lead', 'Acme', '2021-01-01', { highlights: '- Shipped' })
+			job('Lead', 'Acme', '2021-01-01', { highlights: '- Shipped\n- Hired' })
 		]);
-		expect(acme.roles[0].highlightsHtml).toContain('<li>Shipped</li>');
+		expect(acme.roles[0].bullets).toEqual(['Shipped', 'Hired']);
+	});
+});
+
+describe('splitHighlights', () => {
+	it('gives one HTML string per bullet of a list', () => {
+		expect(splitHighlights('- Shipped **v2**\n- Hired [3](https://x.y)')).toEqual({
+			bullets: ['Shipped <strong>v2</strong>', 'Hired <a href="https://x.y">3</a>'],
+			highlightsHtml: ''
+		});
+	});
+
+	it('renders anything but a single bulleted list whole', () => {
+		const { bullets, highlightsHtml } = splitHighlights('Intro.\n\n- One');
+		expect(bullets).toEqual([]);
+		expect(highlightsHtml).toContain('<p>Intro.</p>');
+	});
+
+	it('is empty without highlights', () => {
+		expect(splitHighlights(null)).toEqual({ bullets: [], highlightsHtml: '' });
 	});
 });

@@ -7,6 +7,7 @@
 	import Seo from '$lib/components/Seo.svelte';
 	import { formatMonth } from '$lib/format';
 	import { site } from '$lib/site';
+	import type { Employer, Role } from '$lib/server/resume';
 
 	let { data } = $props();
 
@@ -36,11 +37,78 @@
 
 	const sectionHeading = 'section-heading mb-4 break-after-avoid print:mb-2 print:text-black';
 	const datesClass = 'meta whitespace-nowrap tabular-nums print:text-black';
+	const highlights =
+		'body-copy print:text-sm/snug print:text-black [&_li]:mb-1.5 print:[&_li]:mb-0.5';
 </script>
 
 <Seo title="Resume" description={resume?.summary || profile?.bioSummary || site.description} />
 
-<div class="page flex max-w-3xl flex-col gap-8 print:max-w-none print:p-0 print:text-black">
+{#snippet companyHeading(employer: Employer)}
+	<div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
+		<h3 class="text-2xl font-semibold tracking-tight print:text-base print:font-bold">
+			{employer.company}{#if employer.location}<span class="hidden text-sm font-normal print:inline"
+					>{` · ${employer.location}`}</span
+				>{/if}
+		</h3>
+		<span class={datesClass}>{dates(employer.startDate, employer.endDate)}</span>
+	</div>
+	{#if employer.location}
+		<div class="mt-0.5 meta print:hidden">{employer.location}</div>
+	{/if}
+{/snippet}
+
+<!-- eslint-disable svelte/no-at-html-tags -- highlights: the author's own Markdown from Strapi, rendered on the server -->
+{#snippet roleEntry(role: Role, employer: Employer | null)}
+	<article>
+		<!-- Never ends a page (#96): the company heading (first role only), the role and its first
+		     bullet stay together; the page may break between the bullets after that. -->
+		<div class="break-inside-avoid">
+			{#if employer}
+				<div class="mb-5 print:mb-2">{@render companyHeading(employer)}</div>
+			{/if}
+			<div class="flex gap-3.5">
+				<span aria-hidden="true" class="mt-2.5 size-2 shrink-0 rounded-full bg-accent print:hidden"
+				></span>
+				<div class="min-w-0 flex-1">
+					<div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
+						<h4 class="text-xl font-semibold print:text-sm print:italic">
+							{role.role}
+						</h4>
+						<span class={datesClass}>{dates(role.startDate, role.endDate)}</span>
+					</div>
+					{#if role.location}
+						<div class="mt-0.5 meta print:text-black">{role.location}</div>
+					{/if}
+					{#if role.highlightsHtml}
+						<div class="mt-2.5 print:mt-1 {highlights} [&_ul]:list-disc [&_ul]:pl-5">
+							{@html role.highlightsHtml}
+						</div>
+					{/if}
+					{#if role.bullets.length > 0}
+						<ul class="mt-2.5 list-disc pl-5 print:mt-1 {highlights}">
+							<li>{@html role.bullets[0]}</li>
+						</ul>
+					{/if}
+				</div>
+			</div>
+		</div>
+		{#if role.bullets.length > 1}
+			<!-- Lines up with the first bullet: past the dot and its gap on screen. -->
+			<ul class="list-disc pl-10.5 print:pl-5 {highlights}">
+				{#each role.bullets.slice(1) as bullet, k (k)}
+					<li class="break-inside-avoid">{@html bullet}</li>
+				{/each}
+			</ul>
+		{/if}
+	</article>
+{/snippet}
+<!-- eslint-enable svelte/no-at-html-tags -->
+
+<!-- Print lays out in block flow, with space-y margins rather than flex gaps: browsers ignore
+     break-* avoid rules inside flex containers, which split a company heading from its roles (#96). -->
+<div
+	class="page flex max-w-3xl flex-col gap-8 print:block print:max-w-none print:p-0 print:text-black"
+>
 	{#if resume}
 		<div class="flex items-center justify-between gap-3 print:hidden">
 			<p class="meta">
@@ -53,17 +121,22 @@
 		</div>
 	{/if}
 
-	<div class="flex flex-col gap-14 md:gap-16 print:gap-5">
-		<header class="flex flex-col gap-2.5 print:gap-1">
-			<h1 class="page-title print:text-3xl">
-				{profile?.name ?? site.name}
-			</h1>
-			{#if profile?.tagline}
-				<p class="standfirst print:text-base print:text-black">
-					{profile.tagline}
-				</p>
-			{/if}
-			<ul class="flex flex-wrap gap-x-4 text-sm print:gap-x-3.5 print:gap-y-0.5">
+	<div class="space-y-14 md:space-y-16 print:space-y-4">
+		<!-- Columns from md and in print (#96): name and tagline, then the contacts one per line. -->
+		<header
+			class="flex flex-col gap-4 md:flex-row md:justify-between md:gap-8 print:flex-row print:justify-between print:gap-8"
+		>
+			<div class="flex flex-col gap-2.5 print:gap-1">
+				<h1 class="page-title print:text-2xl">
+					{profile?.name ?? site.name}
+				</h1>
+				{#if profile?.tagline}
+					<p class="standfirst print:text-base print:text-black">
+						{profile.tagline}
+					</p>
+				{/if}
+			</div>
+			<ul class="flex flex-wrap gap-x-4 text-sm md:flex-col print:flex-col print:gap-y-0.5">
 				{#each contacts as contact (contact.href)}
 					<li>
 						<!-- eslint-disable svelte/no-navigation-without-resolve -- mailto:, the site's origin and external profiles -->
@@ -87,7 +160,7 @@
 		{:else}
 			<section>
 				<h2 class={sectionHeading}>Summary</h2>
-				<p class="body-copy print:text-sm/relaxed print:text-black">
+				<p class="body-copy print:text-sm/snug print:text-black">
 					{resume.summary}
 				</p>
 			</section>
@@ -95,52 +168,12 @@
 			{#if resume.employers.length > 0}
 				<section>
 					<h2 class={sectionHeading}>Experience</h2>
-					<div class="flex flex-col gap-12 print:gap-4">
+					<div class="space-y-12 print:space-y-3">
 						{#each resume.employers as employer, i (i)}
 							<!-- One heading per company; a promotion is a second role under it (#94). -->
-							<div class="flex flex-col gap-5 print:gap-2.5">
-								<div class="break-after-avoid">
-									<div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
-										<h3
-											class="text-2xl font-semibold tracking-tight print:text-base print:font-bold"
-										>
-											{employer.company}{#if employer.location}<span
-													class="hidden text-sm font-normal print:inline"
-													>{` · ${employer.location}`}</span
-												>{/if}
-										</h3>
-										<span class={datesClass}>{dates(employer.startDate, employer.endDate)}</span>
-									</div>
-									{#if employer.location}
-										<div class="mt-0.5 meta print:hidden">{employer.location}</div>
-									{/if}
-								</div>
+							<div class="space-y-5 print:space-y-2">
 								{#each employer.roles as role, j (j)}
-									<article class="flex break-inside-avoid gap-3.5">
-										<span
-											aria-hidden="true"
-											class="mt-2.5 size-2 shrink-0 rounded-full bg-accent print:hidden"
-										></span>
-										<div class="min-w-0 flex-1">
-											<div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
-												<h4 class="text-xl font-semibold print:text-sm print:italic">
-													{role.role}
-												</h4>
-												<span class={datesClass}>{dates(role.startDate, role.endDate)}</span>
-											</div>
-											{#if role.location}
-												<div class="mt-0.5 meta print:text-black">{role.location}</div>
-											{/if}
-											{#if role.highlightsHtml}
-												<div
-													class="mt-2.5 body-copy print:mt-1 print:text-sm/relaxed print:text-black [&_li]:mb-1.5 print:[&_li]:mb-0.5 [&_ul]:list-disc [&_ul]:pl-5"
-												>
-													<!-- eslint-disable-next-line svelte/no-at-html-tags -- the author's own Markdown from Strapi, rendered on the server -->
-													{@html role.highlightsHtml}
-												</div>
-											{/if}
-										</div>
-									</article>
+									{@render roleEntry(role, j === 0 ? employer : null)}
 								{/each}
 							</div>
 						{/each}

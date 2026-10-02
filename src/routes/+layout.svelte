@@ -90,7 +90,7 @@
 <!-- Bottom padding keeps the footer clear of the fixed tab bar below md. -->
 <div
 	class={[
-		'flex min-h-dvh flex-col print:pb-0',
+		'flex min-h-dvh flex-col print:block print:pb-0',
 		nav.length > 0 && 'pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0'
 	]}
 >

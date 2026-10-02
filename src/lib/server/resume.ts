@@ -1,5 +1,6 @@
 // The Resume single type (#5). Only the published version is served, except in draft preview (#57).
 
+import { marked, type Tokens } from 'marked';
 import type { Resume } from '$lib/types/content';
 import { renderMarkdown } from './markdown';
 import { strapi } from './strapi';
@@ -12,7 +13,25 @@ export interface Role {
 	location: string | null;
 	startDate: string;
 	endDate: string | null;
+	/** Each bullet's HTML when the highlights are one Markdown list (the usual case), so print can
+	 *  keep a heading with its first bullet and break between the rest (#96). */
+	bullets: string[];
+	/** Anything else the highlights hold, rendered whole. */
 	highlightsHtml: string;
+}
+
+/** A Markdown list → one HTML string per item; anything that isn't a single list → whole HTML. */
+export function splitHighlights(markdown: string | null) {
+	if (!markdown?.trim()) return { bullets: [], highlightsHtml: '' };
+	const blocks = marked.lexer(markdown).filter((token) => token.type !== 'space');
+	if (blocks.length === 1 && blocks[0].type === 'list' && !(blocks[0] as Tokens.List).ordered) {
+		const items = (blocks[0] as Tokens.List).items;
+		return {
+			bullets: items.map((item) => marked.parseInline(item.text) as string),
+			highlightsHtml: ''
+		};
+	}
+	return { bullets: [], highlightsHtml: renderMarkdown(markdown).html };
 }
 
 /** One company heading over every role held there back to back (#94): a promotion shows as two roles. */
@@ -42,7 +61,7 @@ export function groupByEmployer(jobs: Job[]): Employer[] {
 			location: location === employer.location ? null : location,
 			startDate,
 			endDate,
-			highlightsHtml: highlights ? renderMarkdown(highlights).html : ''
+			...splitHighlights(highlights)
 		});
 	}
 	return employers;
