@@ -118,6 +118,7 @@
 	--role-line: var(--grey-200); /* the few lines left: ToC track, quiet underlines, ring track */
 	--role-accent: var(--hue-700); /* links, labels, markers, focus */
 	--role-accent-hover: var(--hue-800);
+	--role-accent-print: var(--hue-700); /* ink on paper: the light accent in either theme (#102) */
 
 	@variant dark {
 		--role-page: var(--grey-950);
@@ -150,6 +151,7 @@
 	--color-line: var(--role-line);
 	--color-accent: var(--role-accent);
 	--color-accent-hover: var(--role-accent-hover);
+	--color-accent-print: var(--role-accent-print);
 }
 
 /*
