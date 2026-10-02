@@ -26,7 +26,7 @@
 	onclick={cycle}
 	aria-label="Theme: {LABELS[pref]}. Switch to {LABELS[nextTheme(pref)]}"
 	title="Theme: {LABELS[pref]}"
-	class="relative hidden cursor-pointer items-center rounded-full bg-fill p-1 js:flex"
+	class="relative hidden items-center rounded-full bg-fill p-1 js:flex"
 >
 	<span aria-hidden="true" class="absolute top-1 left-1 size-9 theme-toggle-thumb"></span>
 	{#each THEMES as theme (theme)}
