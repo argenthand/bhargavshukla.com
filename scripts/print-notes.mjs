@@ -79,7 +79,7 @@ for (const { id, label } of PALETTES) {
 				children: [
 					span('Printed in ', grey),
 					span(label, accent),
-					span(` from ${host}/resume. Thanks for reading it on paper.`, grey)
+					span(` from ${host}/resume.`, grey)
 				]
 			}
 		},
