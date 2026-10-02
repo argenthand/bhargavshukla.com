@@ -397,6 +397,17 @@ Strapi's **Open preview** opens drafts on the real site ([caching.md → Draft p
 
 To rotate the secret, change it on the Worker and in `/opt/cms/.env` together, then restart Strapi (`docker compose up -d` in `/opt/cms`). Changing it also ends every open preview session.
 
+### Local dev against production content (#98)
+
+Test content and code on your machine before either goes live: `pnpm dev:cms` runs the local site against `cms.bhargavshukla.com` and can show drafts. Only `/admin*` sits behind Access; the REST API takes an API token.
+
+1. **Token (once):** in the production admin, Settings → API Tokens → Create. Name `local-dev-read`, type **Custom**, duration **30 days**. Permissions: `find` and `findOne` on Post, Category, Aside and Tag, and `find` on Profile and Resume (the same as frontend-read; it also reads drafts). Never reuse the Worker's `STRAPI_TOKEN`: this one can expire or be revoked on its own.
+2. **Env file (once):** copy [`.env.cms.example`](../.env.cms.example) to `.env.cms` (gitignored) and paste the token. Vite reads `.env` first and `.env.cms` on top of it, so only `STRAPI_URL` and `STRAPI_TOKEN` change.
+3. **Run:** `pnpm dev:cms`. Published content shows as on the live site; images come from R2.
+4. **Drafts:** `pnpm preview-link /resume` (any site path; add a port if it isn't 5173) prints a link that works for 5 minutes. Open it: the Preview mode banner shows, and every page shows drafts for 2 hours. **Exit** goes back to published content.
+
+The link is signed with the **local** `PREVIEW_SECRET` from `.env`, so the production secret never leaves the Worker and the VPS. Strapi's own **Open preview** button still opens the live site. Read counts come from the local D1 copy, not production. When the token expires, make a new one and replace it in `.env.cms`.
+
 ### Monitoring (#64)
 
 1. **UptimeRobot:** sign up (free) → **Add New Monitor** → type **HTTP(s)**, name `bhargavshukla.com`, URL `https://bhargavshukla.com/`, interval 5 minutes, alert contact your email. Again for `cms.bhargavshukla.com` with URL `https://cms.bhargavshukla.com/_health`.
