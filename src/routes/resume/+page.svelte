@@ -15,7 +15,7 @@
 	/** Link text without the scheme: "linkedin.com/in/…". It prints as-is, so it doubles as the URL. */
 	const bare = (url: string) => url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/+$/, '');
 
-	type Contact = { href: string; text: string; icon: 'mail' | 'globe' | 'external' };
+	type Contact = { href: string; text: string; icon: 'mail' | 'globe' | 'linkedin' | 'github' };
 	const contacts = $derived(
 		[
 			profile?.email && { href: `mailto:${profile.email}`, text: profile.email, icon: 'mail' },
@@ -23,9 +23,9 @@
 			profile?.linkedin && {
 				href: profile.linkedin,
 				text: bare(profile.linkedin),
-				icon: 'external'
+				icon: 'linkedin'
 			},
-			profile?.github && { href: profile.github, text: bare(profile.github), icon: 'external' }
+			profile?.github && { href: profile.github, text: bare(profile.github), icon: 'github' }
 		].filter(Boolean) as Contact[]
 	);
 

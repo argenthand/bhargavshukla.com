@@ -2,7 +2,6 @@
 	export type IconName =
 		| 'arrow-right'
 		| 'mail'
-		| 'external'
 		| 'rss'
 		| 'pen'
 		| 'code'
@@ -15,6 +14,8 @@
 		| 'globe'
 		| 'arrow-left'
 		| 'arrow-up'
+		| 'github'
+		| 'linkedin'
 		| 'note';
 </script>
 
@@ -44,9 +45,6 @@
 		<path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
 	{:else if name === 'mail'}
 		<rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" />
-	{:else if name === 'external'}
-		<path d="M15 3h6v6" /><path d="M10 14 21 3" />
-		<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
 	{:else if name === 'rss'}
 		<path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle
 			cx="5"
@@ -80,6 +78,14 @@
 		<path d="M19 12H5" /><path d="m12 19-7-7 7-7" />
 	{:else if name === 'arrow-up'}
 		<path d="M12 19V5" /><path d="m5 12 7-7 7 7" />
+	{:else if name === 'github'}
+		<!-- github, linkedin: Feather Icons 4.29.2 (MIT, © Cole Bemis), feathericons.com (#79). -->
+		<path
+			d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"
+		/>
+	{:else if name === 'linkedin'}
+		<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+		<rect x="2" y="9" width="4" height="12" /><circle cx="4" cy="4" r="2" />
 	{:else if name === 'note'}
 		<path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z" />
 		<path d="M15 3v4a2 2 0 0 0 2 2h4" />
