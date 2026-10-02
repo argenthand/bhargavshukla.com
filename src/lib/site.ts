@@ -17,8 +17,8 @@ export const site = {
  */
 const sections = [
 	{ href: '/blog', label: 'Writing', icon: 'pen', shortcut: 'w', live: true },
-	{ href: '/asides', label: 'Asides', icon: 'note', shortcut: 'a', live: false },
-	{ href: '/resume', label: 'Resume', icon: 'file', shortcut: 'r', live: false }
+	{ href: '/asides', label: 'Asides', icon: 'note', shortcut: 'a', live: true },
+	{ href: '/resume', label: 'Resume', icon: 'file', shortcut: 'r', live: true }
 ] as const;
 
 export const nav = sections.filter((section) => section.live);

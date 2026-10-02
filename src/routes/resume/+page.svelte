@@ -36,18 +36,20 @@
 		'section-heading mb-2.5 break-after-avoid print:border-b print:border-black print:text-black';
 </script>
 
-<Seo title="Resume" description={resume.summary} />
+<Seo title="Resume" description={resume?.summary || profile?.bioSummary || site.description} />
 
 <div class="page flex max-w-200 flex-col gap-6 print:max-w-none print:p-0 print:text-black">
-	<div class="flex items-center justify-between gap-3 print:hidden">
-		<p class="meta">
-			Last updated <time datetime={resume.updatedAt}>{formatMonth(resume.updatedAt)}</time>
-		</p>
-		<!-- Needs JavaScript; without it, the browser's own Print works just as well. -->
-		<button type="button" onclick={() => window.print()} class="hidden pill js:inline-flex">
-			<Icon name="printer" size={18} />Save as PDF
-		</button>
-	</div>
+	{#if resume}
+		<div class="flex items-center justify-between gap-3 print:hidden">
+			<p class="meta">
+				Last updated <time datetime={resume.updatedAt}>{formatMonth(resume.updatedAt)}</time>
+			</p>
+			<!-- Needs JavaScript; without it, the browser's own Print works just as well. -->
+			<button type="button" onclick={() => window.print()} class="hidden pill js:inline-flex">
+				<Icon name="printer" size={18} />Save as PDF
+			</button>
+		</div>
+	{/if}
 
 	<div class="flex flex-col gap-9 print:gap-5">
 		<header
@@ -74,85 +76,89 @@
 						<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					</li>
 				{/each}
-				{#if resume.location}
+				{#if resume?.location}
 					<li class="hidden print:block">{resume.location}</li>
 				{/if}
 			</ul>
 		</header>
 
-		<section>
-			<h2 class={sectionHeading}>Summary</h2>
-			<p class="body-copy print:text-sm/relaxed print:text-black">
-				{resume.summary}
-			</p>
-		</section>
-
-		{#if resume.experience.length > 0}
+		{#if !resume}
+			<p class="body-copy">The full resume is on its way.</p>
+		{:else}
 			<section>
-				<h2 class={sectionHeading}>Experience</h2>
-				{#each resume.experience as job, i (i)}
-					<article class="mb-5.5 break-inside-avoid print:mb-3.5">
-						<div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
-							<h3 class="text-lg font-bold print:text-base">
-								{job.role}<span class="font-normal text-muted print:text-black"
-									>{` · ${job.company}`}</span
-								>
-							</h3>
-							<span class="meta tabular-nums print:text-black">
-								{dates(job.startDate, job.endDate)}
-							</span>
-						</div>
-						{#if job.location}
-							<div class="mt-0.5 meta print:text-black">
-								{job.location}
-							</div>
-						{/if}
-						{#if job.highlightsHtml}
-							<div
-								class="mt-1.5 body-copy print:text-sm/relaxed print:text-black [&_li]:mb-0.5 [&_ul]:list-disc [&_ul]:pl-5"
-							>
-								<!-- eslint-disable-next-line svelte/no-at-html-tags -- the author's own Markdown from Strapi, rendered on the server -->
-								{@html job.highlightsHtml}
-							</div>
-						{/if}
-					</article>
-				{/each}
+				<h2 class={sectionHeading}>Summary</h2>
+				<p class="body-copy print:text-sm/relaxed print:text-black">
+					{resume.summary}
+				</p>
 			</section>
-		{/if}
 
-		{#if resume.skillGroups.length > 0}
-			<section class="break-inside-avoid">
-				<h2 class={sectionHeading}>Skills</h2>
-				<dl>
-					{#each resume.skillGroups as group, i (i)}
+			{#if resume.experience.length > 0}
+				<section>
+					<h2 class={sectionHeading}>Experience</h2>
+					{#each resume.experience as job, i (i)}
+						<article class="mb-5.5 break-inside-avoid print:mb-3.5">
+							<div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
+								<h3 class="text-lg font-bold print:text-base">
+									{job.role}<span class="font-normal text-muted print:text-black"
+										>{` · ${job.company}`}</span
+									>
+								</h3>
+								<span class="meta tabular-nums print:text-black">
+									{dates(job.startDate, job.endDate)}
+								</span>
+							</div>
+							{#if job.location}
+								<div class="mt-0.5 meta print:text-black">
+									{job.location}
+								</div>
+							{/if}
+							{#if job.highlightsHtml}
+								<div
+									class="mt-1.5 body-copy print:text-sm/relaxed print:text-black [&_li]:mb-0.5 [&_ul]:list-disc [&_ul]:pl-5"
+								>
+									<!-- eslint-disable-next-line svelte/no-at-html-tags -- the author's own Markdown from Strapi, rendered on the server -->
+									{@html job.highlightsHtml}
+								</div>
+							{/if}
+						</article>
+					{/each}
+				</section>
+			{/if}
+
+			{#if resume.skillGroups.length > 0}
+				<section class="break-inside-avoid">
+					<h2 class={sectionHeading}>Skills</h2>
+					<dl>
+						{#each resume.skillGroups as group, i (i)}
+							<div
+								class="grid grid-cols-2 gap-x-4 gap-y-0.5 py-1.5 sm:resume-skills-grid print:resume-skills-grid"
+							>
+								<dt class="text-base font-bold print:text-sm">{group.label}</dt>
+								<dd class="body-copy print:text-sm print:text-black">
+									{group.skills}
+								</dd>
+							</div>
+						{/each}
+					</dl>
+				</section>
+			{/if}
+
+			{#if resume.education.length > 0}
+				<section class="break-inside-avoid">
+					<h2 class={sectionHeading}>Education</h2>
+					{#each resume.education as item, i (i)}
 						<div
-							class="grid grid-cols-2 gap-x-4 gap-y-0.5 py-1.5 sm:resume-skills-grid print:resume-skills-grid"
+							class="flex flex-wrap justify-between gap-x-4 gap-y-1 body-copy print:text-sm print:text-black"
 						>
-							<dt class="text-base font-bold print:text-sm">{group.label}</dt>
-							<dd class="body-copy print:text-sm print:text-black">
-								{group.skills}
-							</dd>
+							<span
+								><strong class="text-ink print:text-black">{item.credential}</strong>
+								· {item.school}</span
+							>
+							{#if item.year}<span class="text-muted print:text-black">{item.year}</span>{/if}
 						</div>
 					{/each}
-				</dl>
-			</section>
-		{/if}
-
-		{#if resume.education.length > 0}
-			<section class="break-inside-avoid">
-				<h2 class={sectionHeading}>Education</h2>
-				{#each resume.education as item, i (i)}
-					<div
-						class="flex flex-wrap justify-between gap-x-4 gap-y-1 body-copy print:text-sm print:text-black"
-					>
-						<span
-							><strong class="text-ink print:text-black">{item.credential}</strong>
-							· {item.school}</span
-						>
-						{#if item.year}<span class="text-muted print:text-black">{item.year}</span>{/if}
-					</div>
-				{/each}
-			</section>
+				</section>
+			{/if}
 		{/if}
 	</div>
 	<!-- Only on paper (#63). Draft copy: edit freely. -->

@@ -30,7 +30,7 @@ Until the profile is saved, or when Strapi can't be reached, the home page shows
 
 ### Resume — `resume` (Draft & Publish on)
 
-The `/resume` page (#5). The header (name, tagline, email, LinkedIn, GitHub) comes from the Profile. Work on it as a draft; the page shows only the published version and returns 404 until the first publish.
+The `/resume` page (#5). The header (name, tagline, email, LinkedIn, GitHub) comes from the Profile. Work on it as a draft; the page shows only the published version. Until the first publish it shows the Profile header and "The full resume is on its way." (#91).
 
 | Field         | Type                                       | Notes                                                             |
 | ------------- | ------------------------------------------ | ----------------------------------------------------------------- |
