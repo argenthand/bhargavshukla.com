@@ -1,39 +1,47 @@
-// The Konami code's reward (#63): one short burst of accent-red paper squares. Loaded with a
-// dynamic import only when someone types the code, so it costs nothing otherwise. The caller skips
-// it under reduced motion. Transform and opacity only; everything is removed when it ends.
+// The Konami code's reward (#63): one short burst of confetti in the visitor's palette (#81) and
+// theme (#80). Loaded with a dynamic import only when someone types the code, so neither this nor
+// canvas-confetti costs anything otherwise. The caller skips it under reduced motion.
 
-const PIECES = 3200;
+import canvasConfetti from 'canvas-confetti';
+
+// Palette shades per theme, matching the accent (--hue-700 in light, --hue-400 in dark) plus a grey.
+const SHADES = {
+	light: ['--hue-700', '--hue-500', '--hue-300', '--grey-500'],
+	dark: ['--hue-400', '--hue-300', '--hue-500', '--grey-400']
+};
 const DURATION_MS = 2500;
-// The visitor's palette (#81): its accent shades and a mid grey.
-const COLORS = ['--hue-700', '--hue-500', '--hue-300', '--grey-500'];
+
+/** canvas-confetti only reads hex, and CSS variables resolve to oklch(), so go through a canvas. */
+function resolveColors(vars: string[]): string[] {
+	const ctx = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+	if (!ctx) return [];
+	const probe = document.createElement('span');
+	document.body.append(probe);
+	const colors = vars.map((name) => {
+		probe.style.color = `var(${name})`;
+		ctx.clearRect(0, 0, 1, 1);
+		ctx.fillStyle = getComputedStyle(probe).color;
+		ctx.fillRect(0, 0, 1, 1);
+		const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+		return `#${[r, g, b].map((c) => c.toString(16).padStart(2, '0')).join('')}`;
+	});
+	probe.remove();
+	return colors;
+}
 
 export function confetti() {
-	const layer = document.createElement('div');
-	layer.setAttribute('aria-hidden', 'true');
-	layer.style.cssText = 'position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:50';
-	document.body.append(layer);
+	// The inline script in app.html sets data-theme before first paint; fall back to the system.
+	const theme =
+		document.documentElement.dataset.theme ??
+		(matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+	const colors = resolveColors(SHADES[theme === 'dark' ? 'dark' : 'light']);
 
-	const falls = Array.from({ length: PIECES }, () => {
-		const piece = document.createElement('span');
-		const size = 6 + Math.random() * 6;
-		const color = COLORS[Math.floor(Math.random() * COLORS.length)];
-		piece.style.cssText = `position:absolute;top:0;left:${Math.random() * 100}%;width:${size}px;height:${size * 0.6}px;background:var(${color})`;
-		layer.append(piece);
-		const drift = (Math.random() - 0.5) * 240;
-		const spin = (Math.random() - 0.5) * 1440;
-		return piece.animate(
-			[
-				{ transform: 'translate(0, -5vh) rotate(0deg)', opacity: 1 },
-				{ transform: `translate(${drift}px, 105vh) rotate(${spin}deg)`, opacity: 0.6 }
-			],
-			{
-				duration: DURATION_MS * (0.7 + Math.random() * 0.6),
-				delay: Math.random() * 300,
-				easing: 'cubic-bezier(0.2, 0.6, 0.4, 1)',
-				fill: 'forwards'
-			}
-		).finished;
-	});
-
-	Promise.allSettled(falls).then(() => layer.remove());
+	const end = Date.now() + DURATION_MS;
+	const shoot = () => {
+		const options = { particleCount: 6, spread: 70, startVelocity: 55, colors, zIndex: 50 };
+		canvasConfetti({ ...options, angle: 60, origin: { x: 0, y: 0.8 } });
+		canvasConfetti({ ...options, angle: 120, origin: { x: 1, y: 0.8 } });
+		if (Date.now() < end) requestAnimationFrame(shoot);
+	};
+	shoot();
 }
