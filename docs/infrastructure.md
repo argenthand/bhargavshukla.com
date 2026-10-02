@@ -66,6 +66,14 @@ These must survive the move. `scripts/check-dns.sh` holds the same list.
 - **Privacy:** no cookies and no localStorage (checked on a fresh visit), so no consent banner. RUM is set to **exclude visitors in the EU**: their visits are not counted.
 - **Checking it:** requests without a browser `Accept: text/html` header get no beacon. Ad blockers and DNS blocklists (Pi-hole and the like) block `static.cloudflareinsights.com`, so those visits don't show up; on such a network, test with another resolver (for example Chromium's `--host-resolver-rules`).
 
+## Read counts: Cloudflare D1 (#87)
+
+- **What:** D1 database `bs-reads` (binding `READS`), the `views`, `seen` and `salts` tables from [`migrations/`](../migrations). Design and numbers: [view-counts.md](view-counts.md).
+- **Privacy:** read counts are anonymous: no cookies, and nothing that identifies you is stored. Only the page path and its count are kept; a salted hash of each day's readers is deleted the next day with its salt. The IP and User-Agent are used in memory to make the hash and never written.
+- **Cost:** within Workers Paid's included D1 usage (about 3 row writes per counted read).
+- **Locally:** `vite dev` uses a local copy in `.wrangler/state`, created by `pnpm exec wrangler d1 migrations apply bs-reads --local`.
+- **A new migration:** add `migrations/000N_*.sql`, apply it locally, and run `pnpm exec wrangler d1 migrations apply bs-reads --remote` **before** merging the code that needs it.
+
 ## VPS: Hetzner Cloud CX23 (EU)
 
 Prices checked 2026-09-28 (Hetzner raised prices on 2026-06-15).
@@ -396,6 +404,15 @@ To rotate the secret, change it on the Worker and in `/opt/cms/.env` together, t
 3. **VPS:** add `BACKUP_PING_URL=<that URL>` to `/opt/cms/backup.env` (edit the file; it's read by `backup.sh` at each run, no restart needed). The `backup.sh` with the ping arrives with the next CMS deploy.
 4. **Test the heartbeat:** `sudo -u deploy /opt/cms/backup.sh nightly` on the VPS; Healthchecks shows a ping within seconds.
 5. **Test the uptime alert** (planned, a minute of CMS downtime): `cd /opt/cms && docker compose stop strapi`; the CMS monitor goes down and emails within ~5 minutes; `docker compose start strapi` clears it. The site keeps serving cached pages meanwhile; uncached ones fail until Strapi is back.
+
+### Read counts (#87)
+
+Before merging #87 (the Worker refuses to deploy with a binding to a database that doesn't exist):
+
+1. `pnpm exec wrangler d1 create bs-reads`: creates the database and prints its `database_id`; that goes in `wrangler.jsonc` (not secret).
+2. `pnpm exec wrangler d1 migrations apply bs-reads --remote`: creates the tables.
+3. **Merge.** Counting starts with the deploy.
+4. **Check:** read a post for 10 seconds, then `pnpm exec wrangler d1 execute bs-reads --remote --command "SELECT * FROM views"` shows it with a count of 1. The page shows no number until 5.
 
 ### Automated CMS deploys (#48)
 

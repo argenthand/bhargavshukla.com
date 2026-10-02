@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import NextUp from '$lib/components/NextUp.svelte';
 	import Prose from '$lib/components/Prose.svelte';
 	import BackToTop from '$lib/components/BackToTop.svelte';
+	import ReadCount from '$lib/components/ReadCount.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import Toc from '$lib/components/Toc.svelte';
 	import { formatDate, isoDay, shownDate, updatedDate } from '$lib/format';
@@ -76,6 +78,9 @@
 			{#if updated && !post.draft}
 				<span aria-hidden="true">·</span>
 				<time datetime={isoDay(updated)}>Updated {formatDate(updated)}</time>
+			{/if}
+			{#if !post.draft}
+				<ReadCount path={resolve('/blog/[slug]', { slug: post.slug })} track />
 			{/if}
 		</p>
 	</header>

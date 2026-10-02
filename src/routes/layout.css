@@ -201,6 +201,14 @@
 			scale: 0.5;
 		}
 	}
+	/* A read count arriving (#87). */
+	--animate-appear: appear var(--duration-motion) var(--ease-motion);
+
+	@keyframes appear {
+		from {
+			opacity: 0;
+		}
+	}
 	/* The headshot's wink (#63): a quick tilt and back. */
 	--animate-wink: wink calc(var(--duration-motion) * 3) var(--ease-motion);
 

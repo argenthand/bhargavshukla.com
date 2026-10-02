@@ -58,6 +58,10 @@ The CMS and the site share `PREVIEW_SECRET`; the signed text is `link\n<path>\n<
 
 `/og/*.png` read Strapi through `strapi()` like pages, so they are stored and purged the same way: a post's card is tagged `type:post`, `type:category` and `type:profile` (for the headshot); an aside's `type:aside`, `type:tag` and `type:profile`; the default card `type:profile`. Pages link to them with `?v=<updatedAt>` so share sites that cache images by URL fetch a new card after an edit; `v` is not in the cache key, so it doesn't split the cache. A card rendered while the profile couldn't be loaded is `no-store`.
 
+### Read counts (#87)
+
+`/api/*` skips the edge cache. `GET /api/views` returns `Cache-Control: public, max-age=60`, so the **adapter's own worker** keeps it in `caches.default` for a minute, keyed by its URL, and answers repeats before SvelteKit runs (the same lookup the `/__edge/` prefix keeps away from pages). A popular page costs one D1 read a minute per data center. The beacon (`POST`) is never cached. Pages themselves don't change: the count is fetched after load.
+
 ### 4. Purge endpoint — `src/routes/api/purge/+server.ts` + `src/lib/server/purge.ts`
 
 - **Auth:** `Authorization: Bearer ${PURGE_SECRET}`, compared with `crypto.subtle.timingSafeEqual`; otherwise 401.
