@@ -1,9 +1,10 @@
 <script lang="ts">
 	// RRC-* (#94, Promotion path): on screen inside the site chrome, and a one-column Letter print
 	// ("Save as PDF") that reads cleanly in applicant tracking systems: standard headings, no icons.
-	// Content comes from the Strapi Resume; the header (name, tagline, links) from the Profile.
+	// Content comes from the Strapi Resume; the header is the shared ProfileHeader (#99) from the Profile.
 	import { page } from '$app/state';
 	import Icon from '$lib/components/Icon.svelte';
+	import ProfileHeader, { profileContacts } from '$lib/components/ProfileHeader.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import { formatMonth } from '$lib/format';
 	import { site } from '$lib/site';
@@ -14,22 +15,7 @@
 	const resume = $derived(data.resume);
 	const profile = $derived(data.profile);
 
-	/** Link text without the scheme: "linkedin.com/in/…". It prints as-is, so it doubles as the URL. */
-	const bare = (url: string) => url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/+$/, '');
-
-	type Contact = { href: string; text: string; icon: 'mail' | 'globe' | 'linkedin' | 'github' };
-	const contacts = $derived(
-		[
-			profile?.email && { href: `mailto:${profile.email}`, text: profile.email, icon: 'mail' },
-			{ href: page.url.origin, text: bare(page.url.origin), icon: 'globe' },
-			profile?.linkedin && {
-				href: profile.linkedin,
-				text: bare(profile.linkedin),
-				icon: 'linkedin'
-			},
-			profile?.github && { href: profile.github, text: bare(profile.github), icon: 'github' }
-		].filter(Boolean) as Contact[]
-	);
+	const contacts = $derived(profileContacts(profile, { website: page.url.origin }));
 
 	/** "Apr 2021 – Present". */
 	const dates = (start: string, end: string | null) =>
@@ -122,38 +108,7 @@
 	{/if}
 
 	<div class="space-y-14 md:space-y-16 print:space-y-4">
-		<!-- Columns from md and in print (#96): name and tagline, then the contacts one per line. -->
-		<header
-			class="flex flex-col gap-4 md:flex-row md:justify-between md:gap-8 print:flex-row print:justify-between print:gap-8"
-		>
-			<div class="flex flex-col gap-2.5 print:gap-1">
-				<h1 class="page-title print:text-2xl">
-					{profile?.name ?? site.name}
-				</h1>
-				{#if profile?.tagline}
-					<p class="standfirst print:text-base print:text-black">
-						{profile.tagline}
-					</p>
-				{/if}
-			</div>
-			<ul class="flex flex-wrap gap-x-4 text-sm md:flex-col print:flex-col print:gap-y-0.5">
-				{#each contacts as contact (contact.href)}
-					<li>
-						<!-- eslint-disable svelte/no-navigation-without-resolve -- mailto:, the site's origin and external profiles -->
-						<a
-							href={contact.href}
-							class="tap-target gap-1.5 text-accent hover:text-accent-hover print:min-h-0 print:text-black"
-						>
-							<Icon name={contact.icon} size={14} class="print:hidden" />{contact.text}
-						</a>
-						<!-- eslint-enable svelte/no-navigation-without-resolve -->
-					</li>
-				{/each}
-				{#if resume?.location}
-					<li class="hidden print:block">{resume.location}</li>
-				{/if}
-			</ul>
-		</header>
+		<ProfileHeader {profile} {contacts} printNote={resume?.location} />
 
 		{#if !resume}
 			<p class="body-copy">The full resume is on its way.</p>

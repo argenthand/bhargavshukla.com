@@ -14,17 +14,17 @@ Draft & Publish is **on** for every collection type except Tag and Category. Lon
 
 ### Profile — `profile` (Draft & Publish off)
 
-The home intro and contact links (#42); the resume header reuses them. Edits go live as soon as they're saved.
+The home intro and contact links (#42). Home and resume share one header built from them (`ProfileHeader`, #99). Edits go live as soon as they're saved.
 
-| Field      | Type                 | Notes                                                                                                                                                                                                              |
-| ---------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `name`     | string               | required; the intro heading                                                                                                                                                                                        |
-| `tagline`  | string               | required; the italic line under the name                                                                                                                                                                           |
-| `photo`    | media (one image)    | optional; round headshot beside the name (#59). Upload a roughly square photo, face centred; Strapi's resized copies feed the srcset. Alt text from the Media Library (empty by default: the name sits next to it) |
-| `bio`      | rich text (Markdown) | required; the intro paragraphs (there is no `/about` page)                                                                                                                                                         |
-| `email`    | email                | optional; the Email link (`mailto:`)                                                                                                                                                                               |
-| `linkedin` | string               | optional; full URL                                                                                                                                                                                                 |
-| `github`   | string               | optional; full URL                                                                                                                                                                                                 |
+| Field      | Type                 | Notes                                                                                                                                                                                                                                                     |
+| ---------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`     | string               | required; the intro heading                                                                                                                                                                                                                               |
+| `tagline`  | string               | required; the italic line under the name                                                                                                                                                                                                                  |
+| `photo`    | media (one image)    | optional; round headshot beside the name on home and resume (#59, #99; never printed). Upload a roughly square photo, face centred; Strapi's resized copies feed the srcset. Alt text from the Media Library (empty by default: the name sits next to it) |
+| `bio`      | rich text (Markdown) | required; the intro paragraphs (there is no `/about` page)                                                                                                                                                                                                |
+| `email`    | email                | optional; the Email link (`mailto:`)                                                                                                                                                                                                                      |
+| `linkedin` | string               | optional; full URL                                                                                                                                                                                                                                        |
+| `github`   | string               | optional; full URL                                                                                                                                                                                                                                        |
 
 Until the profile is saved, or when Strapi can't be reached, the home page shows the name from `src/lib/site.ts` and no bio or links.
 
