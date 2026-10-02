@@ -31,7 +31,7 @@ src/
     +layout.server.ts             { preview } for the banner (#57)
     +page.svelte, +page.server.ts /                 intro + up to 3 featured posts (the newest posts while none are featured)
     +error.svelte                 404 / 5xx
-    resume/+page.server.ts        /resume           Strapi Resume + Profile (404 until published); print styles, Save as PDF
+    resume/+page.server.ts        /resume           Strapi Resume + Profile (an empty state until published, #91); print styles, Save as PDF
     blog/+page.server.ts          /blog             all posts by year; client-side search + category filter (?q=&cat=)
     blog/[slug]/+page.server.ts   /blog/:slug       ToC + up to 2 recommended posts ("Next up")
     asides/+page.server.ts        /asides           every aside in full; ?kind= ?tag= ?page= from the URL, client-side
