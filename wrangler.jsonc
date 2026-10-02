@@ -12,7 +12,7 @@
 		{
 			"binding": "READS",
 			"database_name": "bs-reads",
-			"database_id": "00000000-0000-0000-0000-000000000000",
+			"database_id": "666761c6-6038-4855-90af-288880ba21fe",
 			"migrations_dir": "migrations"
 		}
 	],
