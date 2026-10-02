@@ -186,7 +186,7 @@ One `@utility` per role in `layout.css`. Change it there and every use follows.
 
 ## Icons
 
-Stroke icons, 24-unit grid, `stroke-width` 1.75, `currentColor`, in `Icon.svelte`; always decorative (`aria-hidden`), the text next to them is the label. Most come from the mockups (Lucide's style); **GitHub and LinkedIn are Feather Icons** (MIT, feathericons.com, #79). Contact links lead with their icon (Email, LinkedIn, GitHub on the home intro and resume header); arrows trail so they can nudge.
+**Every icon is from [Feather Icons](https://feathericons.com) 4.29.2** (MIT, © Cole Bemis; #79, #80), in `Icon.svelte`: 24-unit grid, `currentColor`, drawn at the site's `stroke-width` 1.75 (Feather's default is 2). Always decorative (`aria-hidden`); the text next to them is the label. The names say what they're for; where the Feather name differs: `pen` = edit-3, `file` = file-text, `close` = x, `note` = bookmark (Asides: things worth keeping). New icons come from Feather too. Contact links lead with their icon (Email, LinkedIn, GitHub on the home intro and resume header); arrows trail so they can nudge.
 
 ## Components
 

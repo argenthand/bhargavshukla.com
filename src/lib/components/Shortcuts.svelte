@@ -49,7 +49,6 @@
 			if (!destination) return;
 			event.preventDefault();
 			dialog?.close();
-			// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve('/') or nav hrefs from site.ts
 			goto(destination.href);
 		} else if (event.key === 'g') {
 			waitingForG = true;
