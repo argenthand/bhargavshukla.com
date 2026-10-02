@@ -126,7 +126,7 @@
 		<section aria-labelledby="featured">
 			<h2 id="featured" class="section-heading">{data.home.heading}</h2>
 			{#each data.home.posts as post (post.slug)}
-				<article class="list-entry border-b border-neutral-200 dark:border-neutral-800">
+				<article class="list-entry">
 					<PostMeta {post} />
 					<h3
 						class="list-title"

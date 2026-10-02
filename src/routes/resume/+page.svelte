@@ -33,7 +33,7 @@
 		`${formatMonth(start)} - ${end ? formatMonth(end) : 'Present'}`;
 
 	const sectionHeading =
-		'section-heading mb-2.5 break-after-avoid print:border-b print:border-black';
+		'section-heading mb-2.5 break-after-avoid print:border-b print:border-black print:text-black';
 </script>
 
 <Seo title="Resume" description={resume.summary} />
@@ -44,11 +44,7 @@
 			Last updated <time datetime={resume.updatedAt}>{formatMonth(resume.updatedAt)}</time>
 		</p>
 		<!-- Needs JavaScript; without it, the browser's own Print works just as well. -->
-		<button
-			type="button"
-			onclick={() => window.print()}
-			class="hidden min-h-11 items-center gap-2 border border-neutral-900 px-4 dark:border-neutral-100 js:inline-flex"
-		>
+		<button type="button" onclick={() => window.print()} class="hidden pill js:inline-flex">
 			<Icon name="printer" size={18} />Save as PDF
 		</button>
 	</div>
@@ -131,7 +127,7 @@
 				<dl>
 					{#each resume.skillGroups as group, i (i)}
 						<div
-							class="grid grid-cols-2 gap-x-4 gap-y-0.5 border-t border-neutral-200 py-1.5 sm:resume-skills-grid dark:border-neutral-800 print:resume-skills-grid print:border-0"
+							class="grid grid-cols-2 gap-x-4 gap-y-0.5 py-1.5 sm:resume-skills-grid print:resume-skills-grid"
 						>
 							<dt class="text-base font-bold print:text-sm">{group.label}</dt>
 							<dd class="body-copy print:text-sm print:text-black">

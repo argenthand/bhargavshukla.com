@@ -87,11 +87,9 @@
 {#snippet group(title: string, rows: { label: string; sequence: string[] }[])}
 	<section class="flex flex-col gap-1">
 		<h3 class="label-muted">{title}</h3>
-		<dl class="border-t-2 border-neutral-900 dark:border-neutral-100">
+		<dl>
 			{#each rows as row (row.label)}
-				<div
-					class="flex min-h-11 items-center justify-between gap-4 border-b border-neutral-200 dark:border-neutral-800"
-				>
+				<div class="flex min-h-11 items-center justify-between gap-4">
 					<dt class="text-lg">{row.label}</dt>
 					<dd>{@render keys(row.sequence)}</dd>
 				</div>
@@ -104,7 +102,7 @@
 	bind:this={dialog}
 	onclick={closeOnBackdrop}
 	aria-labelledby="shortcuts-title"
-	class="m-auto w-md border border-neutral-200 bg-white px-6 pt-2 pb-6 text-neutral-900 shadow-2xl backdrop:bg-black/45 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:backdrop:bg-black/60"
+	class="m-auto w-md rounded-xl bg-white px-6 pt-2 pb-6 text-neutral-900 shadow-2xl backdrop:bg-black/45 dark:bg-neutral-950 dark:text-neutral-100 dark:backdrop:bg-black/60"
 >
 	<div class="flex flex-col gap-5">
 		<div class="flex min-h-11 items-center justify-between">

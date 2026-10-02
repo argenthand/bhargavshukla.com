@@ -30,10 +30,7 @@
 	</article>
 
 	{#if data.newer || data.older}
-		<nav
-			aria-label="More asides"
-			class="grid grid-cols-2 gap-4 border-t border-neutral-200 pt-3 dark:border-neutral-800"
-		>
+		<nav aria-label="More asides" class="grid grid-cols-2 gap-4">
 			{#if data.newer}
 				<a
 					href={resolve('/asides/[slug]', { slug: data.newer.slug })}

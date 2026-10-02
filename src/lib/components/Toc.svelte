@@ -116,7 +116,7 @@
 
 {#if variant === 'pill'}
 	<!-- Without JavaScript: the same list, collapsed. -->
-	<details class="mb-7 border border-neutral-200 px-4 lg:hidden dark:border-neutral-800 js:hidden">
+	<details class="mb-7 surface px-4 lg:hidden js:hidden">
 		<summary class="flex min-h-11 cursor-pointer items-center meta"> On this page </summary>
 		<div class="pb-3">{@render list()}</div>
 	</details>
@@ -126,7 +126,7 @@
 			type="button"
 			aria-haspopup="dialog"
 			onclick={() => dialog?.showModal()}
-			class="flex min-h-11 w-full items-center gap-2.5 border border-neutral-200 bg-white px-4 text-left text-sm shadow-sm dark:border-neutral-800 dark:bg-neutral-950"
+			class="flex pill w-full text-left text-sm"
 		>
 			<Icon name="list" class="text-neutral-600 dark:text-neutral-400" />
 			<span class="text-neutral-600 dark:text-neutral-400">On this page</span>
@@ -139,7 +139,7 @@
 		bind:this={dialog}
 		onclick={closeOnBackdrop}
 		aria-labelledby="toc-sheet-title"
-		class="fixed inset-x-0 top-auto bottom-0 m-0 max-h-sheet w-full max-w-none border-t border-neutral-200 bg-white px-5 pt-2 pb-[calc(1.5rem+env(safe-area-inset-bottom))] text-neutral-900 shadow-2xl backdrop:bg-black/45 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
+		class="fixed inset-x-0 top-auto bottom-0 m-0 max-h-sheet w-full max-w-none rounded-t-xl bg-white px-5 pt-2 pb-[calc(1.5rem+env(safe-area-inset-bottom))] text-neutral-900 shadow-2xl backdrop:bg-black/45 dark:bg-neutral-950 dark:text-neutral-100"
 	>
 		<div
 			aria-hidden="true"

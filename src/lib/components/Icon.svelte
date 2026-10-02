@@ -14,6 +14,7 @@
 		| 'printer'
 		| 'globe'
 		| 'arrow-left'
+		| 'arrow-up'
 		| 'note';
 </script>
 
@@ -77,6 +78,8 @@
 		<path d="M12 3a14 14 0 0 1 0 18" /><path d="M12 3a14 14 0 0 0 0 18" />
 	{:else if name === 'arrow-left'}
 		<path d="M19 12H5" /><path d="m12 19-7-7 7-7" />
+	{:else if name === 'arrow-up'}
+		<path d="M12 19V5" /><path d="m5 12 7-7 7 7" />
 	{:else if name === 'note'}
 		<path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z" />
 		<path d="M15 3v4a2 2 0 0 0 2 2h4" />

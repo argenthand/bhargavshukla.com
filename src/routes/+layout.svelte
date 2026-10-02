@@ -94,7 +94,7 @@
 	<!-- Named, so page transitions keep the header still instead of fading it with the page. -->
 	<header
 		style:view-transition-name="site-header"
-		class="sticky top-0 z-10 border-b border-neutral-200 bg-white md:static dark:border-neutral-800 dark:bg-neutral-950 print:hidden"
+		class="sticky top-0 z-10 bar-top md:static md:bg-transparent md:shadow-none print:hidden"
 	>
 		<div class="mx-auto flex h-14 max-w-5xl items-center justify-between px-5 md:h-20 md:px-8">
 			<a
@@ -126,10 +126,7 @@
 
 	{#if data.preview}
 		<!-- Draft preview (#57, F-writing-* preview mode): only for whoever opened it from Strapi. -->
-		<div
-			role="status"
-			class="border-b border-neutral-200 bg-neutral-50 meta dark:border-neutral-800 dark:bg-neutral-900 print:hidden"
-		>
+		<div role="status" class="bg-neutral-50 meta dark:bg-neutral-900 print:hidden">
 			<div class="mx-auto flex max-w-5xl items-center gap-2 px-5 md:px-8">
 				<span aria-hidden="true" class="size-2 shrink-0 rounded-full border border-current"></span>
 				<span class="py-2.5">Preview mode: drafts are visible to you only</span>
@@ -152,7 +149,7 @@
 		{@render children()}
 	</main>
 
-	<footer class="border-t border-neutral-200 dark:border-neutral-800 print:hidden">
+	<footer class="print:hidden">
 		<div
 			class="mx-auto flex min-h-19 max-w-5xl items-center justify-between px-5 py-4 meta md:px-8"
 		>
@@ -172,18 +169,21 @@
 	<nav
 		aria-label="Primary"
 		style:view-transition-name="site-tabs"
-		class="fixed inset-x-0 bottom-0 z-20 grid auto-cols-fr grid-flow-col border-t border-neutral-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden dark:border-neutral-800 dark:bg-neutral-950 print:hidden"
+		class="fixed inset-x-0 bottom-0 z-20 grid auto-cols-fr grid-flow-col bar-bottom pb-[env(safe-area-inset-bottom)] md:hidden print:hidden"
 	>
-		<!-- One marker for the current tab; it slides rather than jumping between tabs. -->
+		<!-- One marker for the current tab; it slides rather than jumping between tabs. A short bar
+		     centred over the tab, not a line across it (#77). -->
 		<span
 			aria-hidden="true"
 			style:width="{100 / nav.length}%"
 			style:translate="{Math.max(currentTab, 0) * 100}% 0"
 			class={[
-				'absolute -top-px left-0 h-0.5 bg-red-700 transition duration-(--duration-motion) ease-(--ease-motion) motion-reduce:transition-none dark:bg-red-400',
+				'absolute top-0 left-0 flex justify-center transition duration-(--duration-motion) ease-(--ease-motion) motion-reduce:transition-none',
 				currentTab < 0 && 'opacity-0'
 			]}
-		></span>
+		>
+			<span class="h-0.5 w-8 rounded-full bg-red-700 dark:bg-red-400"></span>
+		</span>
 		{#each nav as item (item.href)}
 			<!-- eslint-disable svelte/no-navigation-without-resolve -- nav hrefs are plain strings from site.ts; resolve() needs route literals -->
 			<a

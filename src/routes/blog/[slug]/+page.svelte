@@ -1,7 +1,7 @@
 <script lang="ts">
 	import NextUp from '$lib/components/NextUp.svelte';
 	import Prose from '$lib/components/Prose.svelte';
-	import ReadingProgress from '$lib/components/ReadingProgress.svelte';
+	import BackToTop from '$lib/components/BackToTop.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import Toc from '$lib/components/Toc.svelte';
 	import { formatDate, isoDay, shownDate, updatedDate } from '$lib/format';
@@ -25,6 +25,7 @@
 	// The ToC only earns its space with 2 or more sections.
 	const showToc = $derived(data.headings.filter((h) => h.level === 2).length >= 2);
 	let article = $state<HTMLElement>();
+	let heading = $state<HTMLElement>();
 	// On lg+, the title and cover span the article + ToC columns (960px). Without a ToC they match
 	// the article column (672px), so everything lines up.
 </script>
@@ -41,7 +42,7 @@
 	}}
 />
 
-<ReadingProgress target={article} />
+<BackToTop {article} title={heading} />
 
 <div class="page">
 	<header
@@ -55,7 +56,10 @@
 				{post.category.name}
 			</span>
 		{/if}
+		<!-- tabindex: Back to top moves focus here (#77). -->
 		<h1
+			bind:this={heading}
+			tabindex="-1"
 			class="page-title"
 			data-title-transition
 			style:view-transition-name={titleTransition('post', post.slug)}
