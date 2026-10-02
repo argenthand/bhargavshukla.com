@@ -8,6 +8,7 @@
 	import Seo from '$lib/components/Seo.svelte';
 	import { formatMonth } from '$lib/format';
 	import { site } from '$lib/site';
+	import { isPalette, type PaletteId } from '$lib/theme';
 	import type { Employer, Role } from '$lib/server/resume';
 
 	let { data } = $props();
@@ -17,14 +18,30 @@
 
 	const contacts = $derived(profileContacts(profile, { website: page.url.origin }));
 
+	// The printed note (#102) in the current palette. Only that palette's image loads; it follows
+	// the palette picker. Without JavaScript the page is in Newsprint, the default.
+	let palette = $state<PaletteId>('newsprint');
+	$effect(() => {
+		const root = document.documentElement;
+		const read = () => {
+			const current = root.dataset.palette;
+			palette = isPalette(current) ? current : 'newsprint';
+		};
+		read();
+		const observer = new MutationObserver(read);
+		observer.observe(root, { attributes: true, attributeFilter: ['data-palette'] });
+		return () => observer.disconnect();
+	});
+
 	/** "Apr 2021 – Present". */
 	const dates = (start: string, end: string | null) =>
 		`${formatMonth(start)} – ${end ? formatMonth(end) : 'Present'}`;
 
 	const sectionHeading = 'section-heading mb-4 break-after-avoid print:mb-2 print:text-black';
 	const datesClass = 'meta whitespace-nowrap tabular-nums print:text-black';
+	// The bullets print in the palette's accent (#102): a small easter egg, and markers print as text.
 	const highlights =
-		'body-copy print:text-sm/snug print:text-black [&_li]:mb-1.5 print:[&_li]:mb-0.5';
+		'body-copy print:text-sm/snug print:text-black print:marker:text-accent-print [&_li]:mb-1.5 print:[&_li]:mb-0.5';
 </script>
 
 <Seo title="Resume" description={resume?.summary || profile?.bioSummary || site.description} />
@@ -199,8 +216,7 @@
 			{/if}
 		{/if}
 	</div>
-	<!-- Only on paper (#63). Draft copy: edit freely. -->
-	<p class="hidden text-xs text-faint print:mt-4 print:block">
-		Printed from {new URL(site.url).host}/resume. Thanks for reading it on paper.
-	</p>
+	<!-- Only on paper (#63). Outlined, not text (#102): readers see it, ATS parsers (which read the
+	     PDF's text) don't. The wording lives in scripts/print-notes.mjs: edit there, run pnpm print-notes. -->
+	<img src="/print-notes/{palette}.svg" alt="" class="hidden print:mt-4 print:block" />
 </div>
