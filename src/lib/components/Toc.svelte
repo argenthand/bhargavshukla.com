@@ -117,7 +117,7 @@
 {#if variant === 'pill'}
 	<!-- Without JavaScript: the same list, collapsed. -->
 	<details class="mb-7 surface px-4 lg:hidden js:hidden">
-		<summary class="flex min-h-11 cursor-pointer items-center meta"> On this page </summary>
+		<summary class="flex min-h-11 items-center meta"> On this page </summary>
 		<div class="pb-3">{@render list()}</div>
 	</details>
 

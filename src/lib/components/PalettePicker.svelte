@@ -36,7 +36,7 @@
 	popovertarget="palette-menu"
 	aria-label="Colour: {label}"
 	title="Colour: {label}"
-	class="hidden size-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-fill js:flex"
+	class="hidden size-11 shrink-0 items-center justify-center rounded-full bg-fill js:flex"
 >
 	<span aria-hidden="true" class="size-4.5 rounded-full bg-accent"></span>
 </button>
@@ -52,7 +52,7 @@
 		<legend class="sr-only">Colour</legend>
 		{#each PALETTES as palette (palette.id)}
 			<label
-				class="flex min-h-10 cursor-pointer items-center gap-2.5 rounded-lg px-3 text-base has-checked:bg-fill has-focus-visible:outline-2 has-focus-visible:outline-accent"
+				class="flex min-h-10 items-center gap-2.5 rounded-lg px-3 text-base has-checked:bg-fill has-focus-visible:outline-2 has-focus-visible:outline-accent"
 			>
 				<input
 					type="radio"
