@@ -270,6 +270,18 @@ Small, quick and optional (#60; part 2 is #61).
 | Filtering        | Writing and Asides lists (#61)                                   | When filters or the search change, rows that stay slide into place (`animate:flip`) and new rows and year headings fade in. Rows that go leave at once, so the rest can move straight away.                                                                                                                                                                                                                                                                                         |
 | Read count       | Posts, asides, home featured rows (#87)                          | `ReadCount.svelte`: the number fades in with `--animate-appear` when it arrives (none with reduced motion). Its space is held while it loads, so nothing moves.                                                                                                                                                                                                                                                                                                                     |
 
+## Favicon
+
+Option B from the canvas (#89, FV-b): a white Newsreader 600 **B** on a brand-red (`#b91c1c`) square, the same in light and dark tabs and in every palette, like the share cards.
+
+| File                          | What                                                                                 |
+| ----------------------------- | ------------------------------------------------------------------------------------ |
+| `static/favicon.svg`          | 64×64, corner radius 14, cap height 36. The B is a path (favicons can't load fonts). |
+| `static/favicon.ico`          | 16 and 32 px PNGs, for browsers and feed readers that ask for `/favicon.ico`.        |
+| `static/apple-touch-icon.png` | 180×180, full-bleed (iOS rounds the corners), cap height 92.                         |
+
+The B's outline came from `@fontsource/newsreader`'s 600 weight (opentype.js), and the PNGs from the SVG (resvg), in a one-off script; to change the icon, edit the SVG and re-render the two raster files from it.
+
 ## Share cards
 
 1200×630 PNGs for link previews (#62, F-og-*), rendered on the Worker (`src/lib/server/og.ts`). Light theme only. One line: a 12 px red rule along the top; no other borders.

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import './layout.css';
-	import favicon from '$lib/assets/favicon.svg';
 	import { onMount } from 'svelte';
 	import { onNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -74,7 +73,10 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
+	<!-- Favicon (#89): the ICO for browsers and feed readers that skip SVG, then the SVG; iOS home screens. -->
+	<link rel="icon" href="/favicon.ico" sizes="32x32" />
+	<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+	<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 	<!-- Feed autodiscovery (#56): absolute, like canonical URLs. -->
 	<link rel="alternate" type="application/rss+xml" title={site.name} href="{site.url}/rss.xml" />
 	<link rel="preconnect" href="https://fonts.googleapis.com" />
