@@ -4,6 +4,22 @@
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 
+/*
+ * Dark mode (#80) follows `data-theme` on <html>, which the inline script in app.html sets before
+ * the first paint from the visitor's choice (Light, Dark, System). Without JavaScript there's no
+ * `data-theme`, and the system setting applies as before.
+ */
+@custom-variant dark {
+	&:where([data-theme='dark'], [data-theme='dark'] *) {
+		@slot;
+	}
+	@media (prefers-color-scheme: dark) {
+		&:where(:root:not([data-theme]), :root:not([data-theme]) *) {
+			@slot;
+		}
+	}
+}
+
 @theme {
 	--font-sans: 'Newsreader', ui-serif, Georgia, serif;
 	--font-mono: 'JetBrains Mono', ui-monospace, monospace;
@@ -125,6 +141,26 @@
 	@apply bg-white shadow-bar-up dark:bg-neutral-900 dark:shadow-none;
 }
 
+/* The theme toggle (#80): the highlight slides to the current choice; light → dark → system is
+   left → right. Driven by `data-theme-pref` on <html>, so it's in place before the first paint. */
+@utility theme-toggle-thumb {
+	@apply rounded-full bg-white shadow-sm transition-[translate] duration-(--duration-motion) ease-(--ease-motion) motion-reduce:transition-none dark:bg-neutral-700;
+	:root[data-theme-pref='dark'] & {
+		translate: 100% 0;
+	}
+	:root[data-theme-pref='system'] & {
+		translate: 200% 0;
+	}
+}
+@utility theme-toggle-option {
+	@apply text-neutral-600 dark:text-neutral-400;
+	:root[data-theme-pref='light'] &[data-option='light'],
+	:root[data-theme-pref='dark'] &[data-option='dark'],
+	:root[data-theme-pref='system'] &[data-option='system'] {
+		@apply text-neutral-900 dark:text-neutral-100;
+	}
+}
+
 /* Tinted, rounded controls and panels instead of outlines (#77). One tint per role:
    `field` for inputs, `chip` for small labels (keys, the Draft badge), `surface` for panels. */
 /* `pill` leaves display to the element (`flex`, or `hidden js:inline-flex`). */
@@ -215,15 +251,28 @@
 }
 
 /* Shiki dual themes (#9): render with themes { light: 'github-light', dark: 'github-dark' } */
-@media (prefers-color-scheme: dark) {
-	.shiki,
-	.shiki span {
+.shiki,
+.shiki span {
+	@variant dark {
 		color: var(--shiki-dark) !important;
 	}
-	/* Only the block gets a background; on every token span it showed as a box per line (#77). */
-	.shiki {
+}
+/* Only the block gets a background; on every token span it showed as a box per line (#77). */
+.shiki {
+	@variant dark {
 		background-color: var(--shiki-dark-bg) !important;
 	}
+}
+
+/* Native controls and scrollbars match the theme (#80). */
+:root {
+	color-scheme: light dark;
+}
+:root[data-theme='light'] {
+	color-scheme: light;
+}
+:root[data-theme='dark'] {
+	color-scheme: dark;
 }
 
 html {
@@ -246,8 +295,8 @@ html {
 		outline: 2px solid var(--color-red-700);
 		outline-offset: 2px;
 	}
-	@media (prefers-color-scheme: dark) {
-		:focus-visible {
+	:focus-visible {
+		@variant dark {
 			outline-color: var(--color-red-400);
 		}
 	}

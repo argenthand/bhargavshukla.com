@@ -5,7 +5,28 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="text-scale" content="scale" />
 		<script>
-			document.documentElement.classList.add('js');
+			// Runs before the first paint. `js` turns on the js: variant. The theme (#80): the visitor's
+			// choice from localStorage (light | dark | system, default system) resolved to light or dark,
+			// so the page never flashes the wrong one. Keep in step with src/lib/theme.ts.
+			(function () {
+				var root = document.documentElement;
+				root.classList.add('js');
+				var pref = 'system';
+				try {
+					pref = localStorage.getItem('theme') || 'system';
+				} catch (e) {}
+				if (pref !== 'light' && pref !== 'dark') pref = 'system';
+				var system = matchMedia('(prefers-color-scheme: dark)');
+				var apply = function () {
+					var p = root.dataset.themePref;
+					root.dataset.theme =
+						p === 'dark' || (p === 'system' && system.matches) ? 'dark' : 'light';
+				};
+				root.dataset.themePref = pref;
+				apply();
+				// While on System, follow the OS live.
+				system.addEventListener('change', apply);
+			})();
 		</script>
 		%sveltekit.head%
 	</head>
