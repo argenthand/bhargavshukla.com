@@ -41,9 +41,7 @@
 				still load.
 			{/if}
 		</p>
-		<div
-			class="mt-2 flex flex-wrap items-center gap-x-6 gap-y-1 border-t border-neutral-200 pt-2 dark:border-neutral-800"
-		>
+		<div class="mt-2 flex flex-wrap items-center gap-x-6 gap-y-1">
 			{#if notFound}
 				{#if isLive('/blog')}
 					<a href={resolve('/blog')} class="link-cta">

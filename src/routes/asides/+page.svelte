@@ -79,7 +79,7 @@
 					name="kind"
 					value={kind}
 					onchange={(event) => setKind(event.currentTarget.value)}
-					class="select-underline"
+					class="select-field"
 				>
 					<option value="">All</option>
 					{#each KINDS as k (k.value)}
@@ -89,7 +89,7 @@
 				<Icon
 					name="chevron-down"
 					size={18}
-					class="pointer-events-none absolute right-0 text-neutral-600 dark:text-neutral-400"
+					class="pointer-events-none absolute right-4 text-neutral-600 dark:text-neutral-400"
 				/>
 			</div>
 		</div>
@@ -114,10 +114,7 @@
 	</form>
 
 	{#if tag}
-		<div
-			role="status"
-			class="flex min-h-13 items-center justify-between gap-3 border border-neutral-200 bg-neutral-50 pr-2 pl-4 dark:border-neutral-800 dark:bg-neutral-900"
-		>
+		<div role="status" class="flex min-h-13 items-center justify-between gap-3 surface pr-2 pl-4">
 			<span class="body-copy">
 				{#if filtered.length > 0}
 					{filtered.length}
@@ -137,10 +134,7 @@
 	{/if}
 
 	{#if shown.length === 0}
-		<div
-			class="flex flex-col gap-2 border-t-2 border-neutral-900 pt-6 dark:border-neutral-100"
-			role="status"
-		>
+		<div class="flex flex-col gap-2" role="status">
 			<p class="body-copy">Nothing here yet.</p>
 			{#if data.asides.length > 0}
 				<a href={resolve('/asides')} class="link-cta self-start"> See all asides </a>
@@ -148,10 +142,9 @@
 		</div>
 	{:else}
 		<!-- Filter changes: asides that stay slide into place, new ones fade in (#61). -->
-		<ol class="border-t-2 border-neutral-900 dark:border-neutral-100">
+		<ol class="flex flex-col gap-12">
 			{#each shown as aside (aside.slug)}
 				<li
-					class="border-b border-neutral-200 pt-7 pb-2.5 last:border-b-0 dark:border-neutral-800"
 					animate:flip={{ duration: motionMs(), easing: cubicOut }}
 					in:fade={{ duration: motionMs(), easing: cubicOut }}
 				>
@@ -161,10 +154,7 @@
 		</ol>
 
 		{#if pageCount > 1}
-			<nav
-				aria-label="Pages"
-				class="flex justify-between border-t border-neutral-200 pt-3 dark:border-neutral-800"
-			>
+			<nav aria-label="Pages" class="flex justify-between">
 				{#if pageNo > 1}
 					<!-- eslint-disable svelte/no-navigation-without-resolve -- href() starts from resolve('/asides') -->
 					<a href={href({ page: pageNo - 1 })} class="link-cta">

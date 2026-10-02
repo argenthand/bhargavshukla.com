@@ -1,4 +1,5 @@
-/* Broadsheet: the CSS entry from docs/design.md. Default Tailwind theme apart from the fonts. */
+/* Broadsheet, Quiet (#77): the CSS entry from docs/design.md. Space, type and flat tints separate
+   things; lines only where they do a job (focus rings, the ToC track, link underlines). */
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
@@ -15,6 +16,11 @@
 		var(--container-article) + var(--spacing-article-gap) + var(--spacing-toc)
 	); /* header and cover span text + ToC: max-w-article-wide */
 	--spacing-resume-label: calc(var(--spacing) * 36); /* the resume's skill-group label column */
+
+	/* Quiet (#77): faint shadows instead of the lines under the sticky phone header and above the
+	   tab bar: shadow-bar-down, shadow-bar-up. */
+	--shadow-bar-down: 0 1px 0 rgb(0 0 0 / 0.03), 0 2px 8px rgb(0 0 0 / 0.05);
+	--shadow-bar-up: 0 -2px 10px rgb(0 0 0 / 0.06);
 
 	/* Motion tokens (#60, docs/design.md → Motion): every animation uses these. */
 	--duration-motion: 200ms; /* fades, nudges, the tab marker, the page cross-fade */
@@ -78,7 +84,7 @@
 	@apply label text-neutral-600 dark:text-neutral-400;
 }
 @utility section-heading {
-	@apply border-b-2 border-neutral-900 pb-1.5 label dark:border-neutral-100;
+	@apply label text-neutral-500 dark:text-neutral-400;
 }
 
 /* Lists of posts and asides: every item alike. */
@@ -110,8 +116,43 @@
 @utility filter-button {
 	@apply tap-target px-2.5 text-lg whitespace-nowrap text-neutral-600 hover:text-neutral-900 aria-[current=true]:text-neutral-900 aria-[current=true]:underline aria-[current=true]:decoration-red-700 aria-[current=true]:decoration-2 aria-[current=true]:underline-offset-8 dark:text-neutral-400 dark:hover:text-neutral-100 dark:aria-[current=true]:text-neutral-100 dark:aria-[current=true]:decoration-red-400;
 }
-@utility select-underline {
-	@apply h-11 w-full appearance-none rounded-none border-0 border-b border-neutral-900 bg-transparent bg-none py-0 pr-8 pl-0 text-lg focus:border-b-2 focus:border-red-700 focus:ring-0 dark:border-neutral-100 dark:focus:border-red-400;
+/* The sticky phone header and the tab bar (#77): a faint shadow where they meet the page; in dark
+   mode, where shadows don't show, a slightly lighter background instead. */
+@utility bar-top {
+	@apply bg-white shadow-bar-down dark:bg-neutral-900 dark:shadow-none;
+}
+@utility bar-bottom {
+	@apply bg-white shadow-bar-up dark:bg-neutral-900 dark:shadow-none;
+}
+
+/* Tinted, rounded controls and panels instead of outlines (#77). One tint per role:
+   `field` for inputs, `chip` for small labels (keys, the Draft badge), `surface` for panels. */
+/* `pill` leaves display to the element (`flex`, or `hidden js:inline-flex`). */
+@utility pill {
+	@apply min-h-11 items-center gap-2 rounded-full bg-neutral-100 px-4 dark:bg-neutral-900;
+}
+@utility field {
+	@apply flex pill focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-red-700 dark:focus-within:outline-red-400;
+}
+@utility select-field {
+	@apply h-11 w-full appearance-none rounded-full border-0 bg-neutral-100 bg-none py-0 pr-10 pl-4 text-lg focus:ring-0 dark:bg-neutral-900;
+}
+@utility chip {
+	@apply inline-flex items-center rounded-md bg-neutral-100 px-1.5 dark:bg-neutral-800;
+}
+@utility surface {
+	@apply rounded-lg bg-neutral-50 dark:bg-neutral-900;
+}
+/* Curly quotes in accent red around a quote's text: post blockquotes and quote asides (#77). */
+@utility quote-marks {
+	& > p:first-child::before {
+		content: '“';
+		@apply text-red-700 dark:text-red-400;
+	}
+	& > p:last-child::after {
+		content: '”';
+		@apply text-red-700 dark:text-red-400;
+	}
 }
 
 /* Post headings' "#" link (#61): after the text, shown on hover and keyboard focus, always shown
@@ -140,12 +181,12 @@
 
 /* An unpublished entry in draft preview (#57; docs/design.md → Components). */
 @utility draft-badge {
-	@apply inline-flex items-center rounded-xs border border-dashed border-neutral-600 px-1.5 text-xs tracking-wide text-neutral-600 uppercase dark:border-neutral-400 dark:text-neutral-400;
+	@apply chip text-xs tracking-wide text-neutral-600 uppercase dark:text-neutral-400;
 }
 
 /* A key in the shortcuts panel (#63). */
 @utility key-cap {
-	@apply inline-flex h-6.5 min-w-6.5 items-center justify-center border border-b-2 border-neutral-300 bg-neutral-50 px-1.5 font-mono text-sm leading-none text-neutral-900 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100;
+	@apply chip h-6.5 min-w-6.5 justify-center font-mono text-sm leading-none text-neutral-900 dark:text-neutral-100;
 }
 
 /* Layout */
@@ -178,6 +219,9 @@
 	.shiki,
 	.shiki span {
 		color: var(--shiki-dark) !important;
+	}
+	/* Only the block gets a background; on every token span it showed as a box per line (#77). */
+	.shiki {
 		background-color: var(--shiki-dark-bg) !important;
 	}
 }

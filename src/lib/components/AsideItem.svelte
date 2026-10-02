@@ -77,9 +77,9 @@
 			<blockquote
 				class={[
 					// Same size as every other kind, here and on its own page (#66); italic sets it apart.
-					'border-y border-neutral-200 py-5 body-copy italic dark:border-neutral-800 [&_p]:my-0 [&_p+p]:mt-3',
-					// Curly quotes around the whole quote, as in the mockups; the author writes only the words.
-					"[&>p:first-child]:before:content-['“'] [&>p:last-child]:after:content-['”']"
+					'body-copy italic [&_p]:my-0 [&_p+p]:mt-3',
+					// Curly quotes around the whole quote; the author writes only the words.
+					'quote-marks'
 				]}
 			>
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -- the author's own Markdown from Strapi, rendered on the server -->

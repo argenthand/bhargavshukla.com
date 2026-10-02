@@ -82,9 +82,7 @@
 	>
 		<div class="flex flex-col gap-1">
 			<label for="q" class="label-muted"> Search titles </label>
-			<div
-				class="flex items-center gap-2 border-b border-neutral-900 focus-within:border-b-2 focus-within:border-red-700 dark:border-neutral-100 dark:focus-within:border-red-400"
-			>
+			<div class="field">
 				<Icon name="search" size={18} class="text-neutral-600 dark:text-neutral-400" />
 				<input
 					id="q"
@@ -101,7 +99,7 @@
 		<div class="flex flex-col gap-1 md:hidden">
 			<label for="cat" class="label-muted"> Category </label>
 			<div class="relative flex items-center">
-				<select id="cat" name="cat" bind:value={cat} class="select-underline">
+				<select id="cat" name="cat" bind:value={cat} class="select-field">
 					<option value="">All</option>
 					{#each data.categories as category (category.slug)}
 						<option value={category.slug}>{category.name}</option>
@@ -110,7 +108,7 @@
 				<Icon
 					name="chevron-down"
 					size={18}
-					class="pointer-events-none absolute right-0 text-neutral-600 dark:text-neutral-400"
+					class="pointer-events-none absolute right-4 text-neutral-600 dark:text-neutral-400"
 				/>
 			</div>
 		</div>
@@ -136,7 +134,7 @@
 	</form>
 
 	{#if filtered.length === 0}
-		<div class="border-t-2 border-neutral-900 pt-6 dark:border-neutral-100" role="status">
+		<div role="status">
 			<p class="body-copy">
 				{data.posts.length === 0 ? 'Nothing published yet.' : 'No posts match those filters.'}
 			</p>
@@ -149,14 +147,16 @@
 			<!-- When the filters change, rows that stay slide into place and new ones fade in (#61). Rows
 			     that go leave at once, so the rest can move straight away. -->
 			{#each years as group (group.year)}
-				<div class="mt-7 first:mt-0" in:fade={{ duration: motionMs(), easing: cubicOut }}>
+				<div
+					class="mt-10 flex flex-col gap-1 first:mt-0"
+					in:fade={{ duration: motionMs(), easing: cubicOut }}
+				>
 					<h2 class="section-heading">
 						{group.year}
 					</h2>
 					<ul>
 						{#each group.posts as post (post.slug)}
 							<li
-								class="border-b border-neutral-200 dark:border-neutral-800"
 								animate:flip={{ duration: motionMs(), easing: cubicOut }}
 								in:fade={{ duration: motionMs(), easing: cubicOut }}
 							>
