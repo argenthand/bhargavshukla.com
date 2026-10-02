@@ -32,21 +32,23 @@ Until the profile is saved, or when Strapi can't be reached, the home page shows
 
 The `/resume` page (#5). The header (name, tagline, email, LinkedIn, GitHub) comes from the Profile. Work on it as a draft; the page shows only the published version. Until the first publish it shows the Profile header and "The full resume is on its way." (#91).
 
-| Field         | Type                                       | Notes                                                             |
-| ------------- | ------------------------------------------ | ----------------------------------------------------------------- |
-| `location`    | string                                     | optional; printed in the header only, e.g. "Guelph, ON, Canada"   |
-| `summary`     | text                                       | required                                                          |
-| `experience`  | component `resume.experience`, repeatable  | shown newest first by start date, whatever the order in the admin |
-| `skillGroups` | component `resume.skill-group`, repeatable | shown in admin order                                              |
-| `education`   | component `resume.education`, repeatable   | shown in admin order                                              |
+| Field            | Type                                         | Notes                                                                                                                                                                                              |
+| ---------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `location`       | string                                       | optional; printed in the header only, e.g. "Guelph, ON, Canada"                                                                                                                                    |
+| `summary`        | text                                         | required                                                                                                                                                                                           |
+| `experience`     | component `resume.experience`, repeatable    | shown newest first by start date, whatever the order in the admin. Roles back to back at the same `company` (spelled the same) share one company heading (#94): enter a promotion as a second role |
+| `skillGroups`    | component `resume.skill-group`, repeatable   | shown in admin order                                                                                                                                                                               |
+| `education`      | component `resume.education`, repeatable     | shown in admin order                                                                                                                                                                               |
+| `certifications` | component `resume.certification`, repeatable | shown in admin order (#94)                                                                                                                                                                         |
 
-| Component            | Fields                                                                                                                                                                                                            |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `resume.experience`  | `role` string (required), `company` string (required), `location` string (e.g. "Kitchener, ON · Hybrid"), `startDate` date (required), `endDate` date (empty = Present), `highlights` rich text (a Markdown list) |
-| `resume.skill-group` | `label` string (required), `skills` text (required; comma-separated)                                                                                                                                              |
-| `resume.education`   | `credential` string (required; e.g. "BEng, Computer Engineering"), `school` string (required), `year` string                                                                                                      |
+| Component              | Fields                                                                                                                                                                                                            |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `resume.experience`    | `role` string (required), `company` string (required), `location` string (e.g. "Kitchener, ON · Hybrid"), `startDate` date (required), `endDate` date (empty = Present), `highlights` rich text (a Markdown list) |
+| `resume.skill-group`   | `label` string (required), `skills` text (required; comma-separated)                                                                                                                                              |
+| `resume.education`     | `credential` string (required; e.g. "BEng, Computer Engineering"), `school` string (required), `year` string                                                                                                      |
+| `resume.certification` | `name` string (required), `issuer` string, `year` string                                                                                                                                                          |
 
-Dates show as month and year ("Mar 2026"); the day is ignored.
+Dates show as month and year, ranges with an en dash ("Mar 2026 – Present"); the day is ignored. A company heading spans its first role's start to its last role's end, and shows the location of the newest role there; a role shows its own location only when it differs.
 
 ## Collection types
 

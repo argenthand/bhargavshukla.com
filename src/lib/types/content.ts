@@ -106,6 +106,7 @@ export interface Resume {
 	}[];
 	skillGroups: { label: string; skills: string }[];
 	education: { credential: string; school: string; year: string | null }[];
+	certifications: { name: string; issuer: string | null; year: string | null }[];
 }
 
 export interface Tag {
