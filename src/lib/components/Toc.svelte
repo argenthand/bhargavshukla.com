@@ -94,7 +94,7 @@
 		<span
 			aria-hidden="true"
 			data-toc-marker
-			class="pointer-events-none absolute top-0 left-0 hidden h-px w-0.5 origin-top bg-red-700 opacity-0 data-placed:opacity-100 motion-safe:data-placed:transition-[translate,scale] motion-safe:data-placed:duration-(--duration-motion) motion-safe:data-placed:ease-(--ease-motion) dark:bg-red-400 js:block"
+			class="pointer-events-none absolute top-0 left-0 hidden h-px w-0.5 origin-top bg-accent opacity-0 data-placed:opacity-100 motion-safe:data-placed:transition-[translate,scale] motion-safe:data-placed:duration-(--duration-motion) motion-safe:data-placed:ease-(--ease-motion) js:block"
 		></span>
 		<ol>
 			{#each headings as heading (heading.id)}
@@ -104,7 +104,7 @@
 						data-level={heading.level}
 						aria-current={active === heading.id ? 'location' : undefined}
 						onclick={onchoose && ((event) => onchoose(event, heading.id))}
-						class="flex min-h-10 items-center border-l-2 border-neutral-200 py-1.5 pl-3 text-base/snug text-neutral-900 aria-[current=location]:border-red-700 aria-[current=location]:font-semibold aria-[current=location]:text-red-700 data-[level=3]:pl-7 data-[level=3]:text-sm data-[level=3]:text-neutral-600 dark:border-neutral-800 dark:text-neutral-100 dark:aria-[current=location]:border-red-400 dark:aria-[current=location]:text-red-400 dark:data-[level=3]:text-neutral-400 js:aria-[current=location]:border-neutral-200 dark:js:aria-[current=location]:border-neutral-800"
+						class="flex min-h-10 items-center border-l-2 border-line py-1.5 pl-3 text-base/snug text-ink aria-[current=location]:border-accent aria-[current=location]:font-semibold aria-[current=location]:text-accent data-[level=3]:pl-7 data-[level=3]:text-sm data-[level=3]:text-muted js:aria-[current=location]:border-line"
 					>
 						{heading.text}
 					</a>
@@ -128,10 +128,10 @@
 			onclick={() => dialog?.showModal()}
 			class="flex pill w-full text-left text-sm"
 		>
-			<Icon name="list" class="text-neutral-600 dark:text-neutral-400" />
-			<span class="text-neutral-600 dark:text-neutral-400">On this page</span>
+			<Icon name="list" class="text-muted" />
+			<span class="text-muted">On this page</span>
 			<span class="flex-1 truncate font-semibold">{activeText}</span>
-			<Icon name="chevron-down" class="text-neutral-600 dark:text-neutral-400" />
+			<Icon name="chevron-down" class="text-muted" />
 		</button>
 	</div>
 
@@ -139,12 +139,9 @@
 		bind:this={dialog}
 		onclick={closeOnBackdrop}
 		aria-labelledby="toc-sheet-title"
-		class="fixed inset-x-0 top-auto bottom-0 m-0 max-h-sheet w-full max-w-none rounded-t-xl bg-white px-5 pt-2 pb-[calc(1.5rem+env(safe-area-inset-bottom))] text-neutral-900 shadow-2xl backdrop:bg-black/45 dark:bg-neutral-950 dark:text-neutral-100"
+		class="fixed inset-x-0 top-auto bottom-0 m-0 max-h-sheet w-full max-w-none rounded-t-xl bg-page px-5 pt-2 pb-[calc(1.5rem+env(safe-area-inset-bottom))] text-ink shadow-2xl backdrop:bg-black/45"
 	>
-		<div
-			aria-hidden="true"
-			class="mx-auto h-1 w-9 rounded-full bg-neutral-900/30 dark:bg-neutral-100/30"
-		></div>
+		<div aria-hidden="true" class="mx-auto h-1 w-9 rounded-full bg-ink/30"></div>
 		<div class="flex items-center justify-between py-2">
 			<h2 id="toc-sheet-title" class="label">On this page</h2>
 			<button

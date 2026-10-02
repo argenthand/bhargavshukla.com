@@ -27,7 +27,7 @@
 		<span class="label-accent">
 			{kindLabel(aside.kind)}
 		</span>
-		<span aria-hidden="true" class="text-neutral-600 dark:text-neutral-400">·</span>
+		<span aria-hidden="true" class="text-muted">·</span>
 		{#snippet date()}
 			<!-- In draft preview (#57) an unpublished aside says so instead of showing a date. -->
 			{#if aside.draft}
@@ -62,9 +62,8 @@
 				data-title-transition
 				style:view-transition-name={titleTransition('aside', aside.slug)}
 			>
-				<a
-					href={resolve('/asides/[slug]', { slug: aside.slug })}
-					class="hover:text-red-700 dark:hover:text-red-400">{aside.title}</a
+				<a href={resolve('/asides/[slug]', { slug: aside.slug })} class="hover:text-accent"
+					>{aside.title}</a
 				>
 			</h2>
 		{/if}
@@ -111,7 +110,7 @@
 					<a
 						href={tagHref(tag.slug)}
 						aria-current={currentTag === tag.slug ? 'true' : undefined}
-						class="tap-target meta link-quiet italic aria-[current=true]:text-neutral-900 aria-[current=true]:decoration-red-700 aria-[current=true]:decoration-2 dark:aria-[current=true]:text-neutral-100 dark:aria-[current=true]:decoration-red-400"
+						class="tap-target meta link-quiet italic aria-[current=true]:text-ink aria-[current=true]:decoration-accent aria-[current=true]:decoration-2"
 					>
 						{tag.name}
 					</a>

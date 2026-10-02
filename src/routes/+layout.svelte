@@ -7,6 +7,7 @@
 	import { page } from '$app/state';
 	import Icon from '$lib/components/Icon.svelte';
 	import Shortcuts from '$lib/components/Shortcuts.svelte';
+	import PalettePicker from '$lib/components/PalettePicker.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { consoleNote } from '$lib/easter-eggs';
 	import { nav, site } from '$lib/site';
@@ -101,7 +102,7 @@
 			<a
 				href={resolve('/')}
 				class={[
-					'tap-target text-xl font-semibold tracking-tight transition-fade duration-(--duration-motion) hover:text-red-700 motion-reduce:transition-none md:text-2xl dark:hover:text-red-400',
+					'tap-target text-xl font-semibold tracking-tight transition-fade duration-(--duration-motion) hover:text-accent motion-reduce:transition-none md:text-2xl',
 					hideName && 'js:invisible js:opacity-0'
 				]}
 			>
@@ -115,7 +116,7 @@
 							<a
 								href={item.href}
 								aria-current={current(item.href)}
-								class="tap-target px-3 text-lg text-neutral-600 hover:text-neutral-900 aria-[current=page]:text-neutral-900 aria-[current=page]:underline aria-[current=page]:decoration-red-700 aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-8 dark:text-neutral-400 dark:hover:text-neutral-100 dark:aria-[current=page]:text-neutral-100 dark:aria-[current=page]:decoration-red-400"
+								class="tap-target px-3 text-lg text-muted hover:text-ink aria-[current=page]:text-ink aria-[current=page]:underline aria-[current=page]:decoration-accent aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-8"
 							>
 								{item.label}
 							</a>
@@ -123,15 +124,18 @@
 						{/each}
 					</nav>
 				{/if}
-				<!-- Light / Dark / System (#80). -->
-				<ThemeToggle />
+				<!-- Colour palette (#81) and Light / Dark / System (#80). -->
+				<div class="flex items-center gap-2">
+					<PalettePicker />
+					<ThemeToggle />
+				</div>
 			</div>
 		</div>
 	</header>
 
 	{#if data.preview}
 		<!-- Draft preview (#57, F-writing-* preview mode): only for whoever opened it from Strapi. -->
-		<div role="status" class="bg-neutral-50 meta dark:bg-neutral-900 print:hidden">
+		<div role="status" class="bg-panel meta print:hidden">
 			<div class="mx-auto flex max-w-5xl items-center gap-2 px-5 md:px-8">
 				<span aria-hidden="true" class="size-2 shrink-0 rounded-full border border-current"></span>
 				<span class="py-2.5">Preview mode: drafts are visible to you only</span>
@@ -187,14 +191,14 @@
 				currentTab < 0 && 'opacity-0'
 			]}
 		>
-			<span class="h-0.5 w-8 rounded-full bg-red-700 dark:bg-red-400"></span>
+			<span class="h-0.5 w-8 rounded-full bg-accent"></span>
 		</span>
 		{#each nav as item (item.href)}
 			<!-- eslint-disable svelte/no-navigation-without-resolve -- nav hrefs are plain strings from site.ts; resolve() needs route literals -->
 			<a
 				href={item.href}
 				aria-current={current(item.href)}
-				class="flex min-h-14 flex-col items-center justify-center gap-1 text-xs tracking-wide text-neutral-600 aria-[current=page]:font-semibold aria-[current=page]:text-red-700 dark:text-neutral-400 dark:aria-[current=page]:text-red-400"
+				class="flex min-h-14 flex-col items-center justify-center gap-1 text-xs tracking-wide text-muted aria-[current=page]:font-semibold aria-[current=page]:text-accent"
 			>
 				<Icon name={item.icon} size={22} />
 				<span>{item.label}</span>

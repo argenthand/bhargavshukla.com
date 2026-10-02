@@ -5,7 +5,7 @@ src/
   hooks.server.ts                 cache tags, draft-preview cookie check (#57), edge-cache wrapper — see caching.md
   app.d.ts                        App.Locals { cacheTags: Set<string> }, App.Platform
   lib/
-    theme.ts                      Light / Dark / System: cycle order, resolve, save (#80; app.html applies it on load)
+    theme.ts                      Light / Dark / System (#80) and PALETTES (#81): cycle, resolve, save (app.html applies both on load)
     format.ts                     dates as shown (UTC), shown date = displayDate ?? publishedAt
     site.ts                       name, links, Primary nav (`live` flags hide sections until they ship)
     types/content.ts              Post, PostSummary, Category, Media, Seo, Link, Heading, Tag, Aside, RenderedAside
@@ -13,7 +13,7 @@ src/
                                   Toc.svelte (pill + sheet, or sidebar), NextUp.svelte, Seo.svelte; AsideItem.svelte;
                                   BackToTop.svelte (posts: back to the title, ring = reading progress, #77);
                                   Shortcuts.svelte (keyboard shortcuts + Konami, #63);
-                                  ThemeToggle.svelte (Light / Dark / System, #80)
+                                  ThemeToggle.svelte (Light / Dark / System, #80); PalettePicker.svelte (colour palettes, #81)
     server/
       strapi.ts                   typed REST client; records cache tags into locals
       posts.ts                    post queries (lists, one post, home picks, Next up)

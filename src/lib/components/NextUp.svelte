@@ -16,7 +16,7 @@
 	<section aria-label="Recommended reading" class="mt-12">
 		<a
 			href={resolve('/blog/[slug]', { slug: first.slug })}
-			class="flex flex-col gap-2 surface p-5 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+			class="flex flex-col gap-2 surface p-5 hover:bg-chip"
 		>
 			<span class="flex items-center justify-between label-accent">
 				Next up <Icon name="arrow-right" size={18} />

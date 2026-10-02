@@ -39,7 +39,7 @@
 					<span class="inline-flex items-center gap-1.5 meta">
 						<Icon name="arrow-left" size={14} />Newer
 					</span>
-					<span class="font-medium group-hover:text-red-700 dark:group-hover:text-red-400">
+					<span class="font-medium group-hover:text-accent">
 						{data.newer.label}
 					</span>
 				</a>
@@ -54,7 +54,7 @@
 					<span class="inline-flex items-center gap-1.5 meta">
 						Older<Icon name="arrow-right" size={14} />
 					</span>
-					<span class="font-medium group-hover:text-red-700 dark:group-hover:text-red-400">
+					<span class="font-medium group-hover:text-accent">
 						{data.older.label}
 					</span>
 				</a>

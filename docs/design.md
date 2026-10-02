@@ -101,20 +101,39 @@ html {
 
 ## Colour roles
 
-Light and dark: Tailwind's `dark:` variant follows `data-theme` on `<html>` (#80). The inline script in `app.html` sets it before the first paint from the visitor's choice in `localStorage` (`theme`: light, dark or system; default system, which follows the OS live). Without JavaScript there's no `data-theme` and the OS setting applies. `color-scheme` matches, so native controls and scrollbars follow. Share cards stay light.
+Components never name a Tailwind colour (#81). They use the **roles** below (`text-ink`, `bg-fill`, `text-accent`, `decoration-line`…), defined once in `layout.css`. Each role follows both the **palette** (`data-palette` on `<html>`) and **light/dark** (`data-theme`), so markup has no `dark:` colour pairs and a new palette is one block of CSS.
 
-| Role                                                                    | Light         | vs bg  | Dark                                | vs bg  |
-| ----------------------------------------------------------------------- | ------------- | ------ | ----------------------------------- | ------ |
-| Page background                                                         | `white`       |        | `neutral-950`                       |        |
-| Surface (`surface`): Next up card, code, preview banner, tag filter bar | `neutral-50`  |        | `neutral-900`                       |        |
-| Headings, primary text                                                  | `neutral-900` | 17.9:1 | `neutral-100`                       | 18.2:1 |
-| Body copy (prose)                                                       | `neutral-700` | 10.4:1 | `neutral-300`                       | 13.4:1 |
-| Dates, captions, inactive nav                                           | `neutral-600` | 7.8:1  | `neutral-400`                       | 7.8:1  |
-| Fields, pills and chips (`field`, `pill`, `chip`)                       | `neutral-100` |        | `neutral-900` (chips `neutral-800`) |        |
-| Section labels (`section-heading`)                                      | `neutral-500` | 4.7:1  | `neutral-400`                       | 7.8:1  |
-| Links, active tab, category labels, focus, ToC active                   | `red-700`     | 6.5:1  | `red-400`                           | 7.2:1  |
-| Link hover                                                              | `red-800`     | 8.3:1  | `red-300`                           | 10.4:1 |
-| Inline code background                                                  | `neutral-100` |        | `neutral-800`                       |        |
+| Role (`text-*`, `bg-*`, …) | Used for                                                                 | Light    | Dark     |
+| -------------------------- | ------------------------------------------------------------------------ | -------- | -------- |
+| `page`                     | Page background                                                          | `white`  | grey-950 |
+| `ink`                      | Headings, primary text, hover on quiet links                             | grey-900 | grey-100 |
+| `body`                     | Running text (prose, `body-copy`)                                        | grey-700 | grey-300 |
+| `muted`                    | Dates, captions, inactive nav, icons                                     | grey-600 | grey-400 |
+| `faint`                    | Section labels, placeholders, list bullets                               | grey-500 | grey-400 |
+| `fill`                     | Fields, pills, the theme toggle, the colour dot                          | grey-100 | grey-900 |
+| `chip`                     | Keys, the Draft badge, inline code, panel hover                          | grey-100 | grey-800 |
+| `panel`                    | `surface`: code, Next up, the tag bar                                    | grey-50  | grey-900 |
+| `raised`                   | Sticky bars, Back to top, the palette menu                               | `white`  | grey-900 |
+| `thumb`                    | The theme toggle's highlight                                             | `white`  | grey-700 |
+| `line`                     | The few lines left: ToC track, quiet underlines, ring track, table rules | grey-200 | grey-800 |
+| `accent`                   | Links, labels, markers, focus ring, quote marks, ring                    | hue-700  | hue-400  |
+| `accent-hover`             | Link hover                                                               | hue-800  | hue-300  |
+
+Posts use the same roles: `prose-roles` points the typography plugin's colours at them. Fixed on purpose: print (black on white), dialog backdrops (black), share cards (Newsprint), Shiki's token colours.
+
+### Palettes
+
+A palette is a grey family (`--grey-*`) and an accent hue (`--hue-*`), both Tailwind scales. Newsprint is the default and the brand. All pass AA: accent text is 5.1:1 or better on white and on the dark page; muted text 7.5:1 or better.
+
+| Palette                 | Accent  | Greys   | Accent on white | Accent on dark |
+| ----------------------- | ------- | ------- | --------------- | -------------- |
+| **Newsprint** (default) | red     | neutral | 6.4             | 6.8            |
+| Harbour                 | blue    | slate   | 6.8             | 7.7            |
+| Sage                    | emerald | stone   | 5.4             | 10.2           |
+| Plum                    | violet  | zinc    | 7.3             | 7.0            |
+| Ochre                   | amber   | stone   | 5.1             | 11.5           |
+
+Visitors pick one with the colour dot next to the theme toggle (`PalettePicker.svelte`); it's saved in `localStorage` (`palette`) and applied before the first paint by the inline script in `app.html`, like the theme. To add a palette: a `:root[data-palette=…]` block in `layout.css`, an entry in `PALETTES` (`src/lib/theme.ts`), and the id in the inline script.
 
 ## Styling rules
 
@@ -197,6 +216,7 @@ One `@utility` per role in `layout.css`. Change it there and every use follows.
 | Body               | `bg-white text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100`                                                                                                                                                                                                                                                                                                                                |
 | Header             | `sticky top-0 z-10 bar-top md:static md:bg-transparent md:shadow-none` › `mx-auto flex h-14 max-w-5xl items-center justify-between px-5 md:h-20 md:px-8` › name: `tap-target text-xl md:text-2xl font-semibold tracking-tight`                                                                                                                                                                                   |
 | Theme toggle       | `ThemeToggle.svelte` (#80), at the end of the header (after the nav on md+, opposite the name on phones): one `button` showing sun · moon · monitor in a `bg-neutral-100` pill; each press goes Light → Dark → System → Light. The highlight (`theme-toggle-thumb`) and the selected icon (`theme-toggle-option`) follow `data-theme-pref` on `<html>`. Label: "Theme: Dark. Switch to System". JavaScript only. |
+| Palette picker     | `PalettePicker.svelte` (#81), just before the theme toggle: a `size-11 rounded-full bg-fill` button with a dot in `bg-accent` ("Colour: Harbour"). It opens a native `popover` menu (`bg-raised rounded-xl shadow-xl`, under the button, right-aligned) of radio buttons: swatch + name, the checked one on `bg-fill`; arrow keys apply each palette at once; Esc or a click outside closes it. JavaScript only. |
 | Nav link (md+)     | `tap-target px-3 text-lg text-neutral-600 hover:text-neutral-900` + `aria-[current=page]:` underline in red, `decoration-2`, `underline-offset-8`                                                                                                                                                                                                                                                                |
 | Bottom tab bar     | `fixed inset-x-0 bottom-0 z-20 grid auto-cols-fr grid-flow-col bar-bottom pb-[env(safe-area-inset-bottom)] md:hidden`                                                                                                                                                                                                                                                                                            |
 | Tab                | `flex min-h-14 flex-col items-center justify-center gap-1 text-xs text-neutral-600` + `aria-[current=page]:` red text and `font-semibold`; the red marker above slides between tabs ([Motion](#motion))                                                                                                                                                                                                          |

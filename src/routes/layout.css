@@ -5,6 +5,154 @@
 @plugin '@tailwindcss/typography';
 
 /*
+ * Colour (#81). A palette is a grey family and an accent hue; `data-palette` on <html> picks one
+ * (the inline script in app.html sets it before the first paint; Newsprint is the default and the
+ * brand). Components never name a Tailwind colour: they use the roles below (`text-ink`,
+ * `bg-fill`, `text-accent`…), which follow both the palette and light/dark, so there are no
+ * `dark:` colour pairs in markup. See docs/design.md → Colour roles.
+ */
+:root,
+:root[data-palette='newsprint'] {
+	--grey-50: var(--color-neutral-50);
+	--grey-100: var(--color-neutral-100);
+	--grey-200: var(--color-neutral-200);
+	--grey-300: var(--color-neutral-300);
+	--grey-400: var(--color-neutral-400);
+	--grey-500: var(--color-neutral-500);
+	--grey-600: var(--color-neutral-600);
+	--grey-700: var(--color-neutral-700);
+	--grey-800: var(--color-neutral-800);
+	--grey-900: var(--color-neutral-900);
+	--grey-950: var(--color-neutral-950);
+	--hue-300: var(--color-red-300);
+	--hue-400: var(--color-red-400);
+	--hue-500: var(--color-red-500);
+	--hue-700: var(--color-red-700);
+	--hue-800: var(--color-red-800);
+}
+:root[data-palette='harbour'] {
+	--grey-50: var(--color-slate-50);
+	--grey-100: var(--color-slate-100);
+	--grey-200: var(--color-slate-200);
+	--grey-300: var(--color-slate-300);
+	--grey-400: var(--color-slate-400);
+	--grey-500: var(--color-slate-500);
+	--grey-600: var(--color-slate-600);
+	--grey-700: var(--color-slate-700);
+	--grey-800: var(--color-slate-800);
+	--grey-900: var(--color-slate-900);
+	--grey-950: var(--color-slate-950);
+	--hue-300: var(--color-blue-300);
+	--hue-400: var(--color-blue-400);
+	--hue-500: var(--color-blue-500);
+	--hue-700: var(--color-blue-700);
+	--hue-800: var(--color-blue-800);
+}
+:root[data-palette='sage'] {
+	--grey-50: var(--color-stone-50);
+	--grey-100: var(--color-stone-100);
+	--grey-200: var(--color-stone-200);
+	--grey-300: var(--color-stone-300);
+	--grey-400: var(--color-stone-400);
+	--grey-500: var(--color-stone-500);
+	--grey-600: var(--color-stone-600);
+	--grey-700: var(--color-stone-700);
+	--grey-800: var(--color-stone-800);
+	--grey-900: var(--color-stone-900);
+	--grey-950: var(--color-stone-950);
+	--hue-300: var(--color-emerald-300);
+	--hue-400: var(--color-emerald-400);
+	--hue-500: var(--color-emerald-500);
+	--hue-700: var(--color-emerald-700);
+	--hue-800: var(--color-emerald-800);
+}
+:root[data-palette='plum'] {
+	--grey-50: var(--color-zinc-50);
+	--grey-100: var(--color-zinc-100);
+	--grey-200: var(--color-zinc-200);
+	--grey-300: var(--color-zinc-300);
+	--grey-400: var(--color-zinc-400);
+	--grey-500: var(--color-zinc-500);
+	--grey-600: var(--color-zinc-600);
+	--grey-700: var(--color-zinc-700);
+	--grey-800: var(--color-zinc-800);
+	--grey-900: var(--color-zinc-900);
+	--grey-950: var(--color-zinc-950);
+	--hue-300: var(--color-violet-300);
+	--hue-400: var(--color-violet-400);
+	--hue-500: var(--color-violet-500);
+	--hue-700: var(--color-violet-700);
+	--hue-800: var(--color-violet-800);
+}
+:root[data-palette='ochre'] {
+	--grey-50: var(--color-stone-50);
+	--grey-100: var(--color-stone-100);
+	--grey-200: var(--color-stone-200);
+	--grey-300: var(--color-stone-300);
+	--grey-400: var(--color-stone-400);
+	--grey-500: var(--color-stone-500);
+	--grey-600: var(--color-stone-600);
+	--grey-700: var(--color-stone-700);
+	--grey-800: var(--color-stone-800);
+	--grey-900: var(--color-stone-900);
+	--grey-950: var(--color-stone-950);
+	--hue-300: var(--color-amber-300);
+	--hue-400: var(--color-amber-400);
+	--hue-500: var(--color-amber-500);
+	--hue-700: var(--color-amber-700);
+	--hue-800: var(--color-amber-800);
+}
+
+/* The roles, light then dark. */
+:root {
+	--role-page: white;
+	--role-ink: var(--grey-900); /* headings, primary text */
+	--role-body: var(--grey-700); /* running text */
+	--role-muted: var(--grey-600); /* dates, captions, inactive nav, icons */
+	--role-faint: var(--grey-500); /* section labels, placeholders */
+	--role-fill: var(--grey-100); /* fields, pills, the toggle */
+	--role-chip: var(--grey-100); /* keys, the Draft badge, hover on panels */
+	--role-panel: var(--grey-50); /* code, Next up, the tag bar */
+	--role-raised: white; /* sticky bars, dialogs, Back to top */
+	--role-thumb: white; /* the theme toggle's highlight */
+	--role-line: var(--grey-200); /* the few lines left: ToC track, quiet underlines, ring track */
+	--role-accent: var(--hue-700); /* links, labels, markers, focus */
+	--role-accent-hover: var(--hue-800);
+
+	@variant dark {
+		--role-page: var(--grey-950);
+		--role-ink: var(--grey-100);
+		--role-body: var(--grey-300);
+		--role-muted: var(--grey-400);
+		--role-faint: var(--grey-400);
+		--role-fill: var(--grey-900);
+		--role-chip: var(--grey-800);
+		--role-panel: var(--grey-900);
+		--role-raised: var(--grey-900);
+		--role-thumb: var(--grey-700);
+		--role-line: var(--grey-800);
+		--role-accent: var(--hue-400);
+		--role-accent-hover: var(--hue-300);
+	}
+}
+
+@theme inline {
+	--color-page: var(--role-page);
+	--color-ink: var(--role-ink);
+	--color-body: var(--role-body);
+	--color-muted: var(--role-muted);
+	--color-faint: var(--role-faint);
+	--color-fill: var(--role-fill);
+	--color-chip: var(--role-chip);
+	--color-panel: var(--role-panel);
+	--color-raised: var(--role-raised);
+	--color-thumb: var(--role-thumb);
+	--color-line: var(--role-line);
+	--color-accent: var(--role-accent);
+	--color-accent-hover: var(--role-accent-hover);
+}
+
+/*
  * Dark mode (#80) follows `data-theme` on <html>, which the inline script in app.html sets before
  * the first paint from the visitor's choice (Light, Dark, System). Without JavaScript there's no
  * `data-theme`, and the system setting applies as before.
@@ -82,25 +230,25 @@
 	@apply text-4xl font-medium tracking-tight text-balance;
 }
 @utility standfirst {
-	@apply text-xl text-neutral-600 italic dark:text-neutral-400;
+	@apply text-xl text-muted italic;
 }
 @utility body-copy {
-	@apply text-lg/relaxed text-neutral-700 dark:text-neutral-300;
+	@apply text-lg/relaxed text-body;
 }
 @utility meta {
-	@apply text-sm text-neutral-600 dark:text-neutral-400;
+	@apply text-sm text-muted;
 }
 @utility label {
 	@apply text-xs font-semibold tracking-widest uppercase;
 }
 @utility label-accent {
-	@apply label text-red-700 dark:text-red-400;
+	@apply label text-accent;
 }
 @utility label-muted {
-	@apply label text-neutral-600 dark:text-neutral-400;
+	@apply label text-muted;
 }
 @utility section-heading {
-	@apply label text-neutral-500 dark:text-neutral-400;
+	@apply label text-faint;
 }
 
 /* Lists of posts and asides: every item alike. */
@@ -116,7 +264,7 @@
 	}
 }
 @utility summary {
-	@apply line-clamp-2 text-lg text-neutral-600 dark:text-neutral-400;
+	@apply line-clamp-2 text-lg text-muted;
 }
 
 /* Links and controls */
@@ -124,27 +272,27 @@
 	@apply inline-flex min-h-11 items-center;
 }
 @utility link-cta {
-	@apply tap-target gap-1.5 text-lg text-red-700 underline decoration-1 underline-offset-4 hover:text-red-800 hover:decoration-2 dark:text-red-400 dark:hover:text-red-300;
+	@apply tap-target gap-1.5 text-lg text-accent underline decoration-1 underline-offset-4 hover:text-accent-hover hover:decoration-2;
 }
 @utility link-quiet {
-	@apply underline decoration-neutral-200 underline-offset-4 hover:text-neutral-900 hover:decoration-current dark:decoration-neutral-800 dark:hover:text-neutral-100;
+	@apply underline decoration-line underline-offset-4 hover:text-ink hover:decoration-current;
 }
 @utility filter-button {
-	@apply tap-target px-2.5 text-lg whitespace-nowrap text-neutral-600 hover:text-neutral-900 aria-[current=true]:text-neutral-900 aria-[current=true]:underline aria-[current=true]:decoration-red-700 aria-[current=true]:decoration-2 aria-[current=true]:underline-offset-8 dark:text-neutral-400 dark:hover:text-neutral-100 dark:aria-[current=true]:text-neutral-100 dark:aria-[current=true]:decoration-red-400;
+	@apply tap-target px-2.5 text-lg whitespace-nowrap text-muted hover:text-ink aria-[current=true]:text-ink aria-[current=true]:underline aria-[current=true]:decoration-accent aria-[current=true]:decoration-2 aria-[current=true]:underline-offset-8;
 }
 /* The sticky phone header and the tab bar (#77): a faint shadow where they meet the page; in dark
    mode, where shadows don't show, a slightly lighter background instead. */
 @utility bar-top {
-	@apply bg-white shadow-bar-down dark:bg-neutral-900 dark:shadow-none;
+	@apply bg-raised shadow-bar-down dark:shadow-none;
 }
 @utility bar-bottom {
-	@apply bg-white shadow-bar-up dark:bg-neutral-900 dark:shadow-none;
+	@apply bg-raised shadow-bar-up dark:shadow-none;
 }
 
 /* The theme toggle (#80): the highlight slides to the current choice; light → dark → system is
    left → right. Driven by `data-theme-pref` on <html>, so it's in place before the first paint. */
 @utility theme-toggle-thumb {
-	@apply rounded-full bg-white shadow-sm transition-[translate] duration-(--duration-motion) ease-(--ease-motion) motion-reduce:transition-none dark:bg-neutral-700;
+	@apply rounded-full bg-thumb shadow-sm transition-[translate] duration-(--duration-motion) ease-(--ease-motion) motion-reduce:transition-none;
 	:root[data-theme-pref='dark'] & {
 		translate: 100% 0;
 	}
@@ -153,48 +301,68 @@
 	}
 }
 @utility theme-toggle-option {
-	@apply text-neutral-600 dark:text-neutral-400;
+	@apply text-muted;
 	:root[data-theme-pref='light'] &[data-option='light'],
 	:root[data-theme-pref='dark'] &[data-option='dark'],
 	:root[data-theme-pref='system'] &[data-option='system'] {
-		@apply text-neutral-900 dark:text-neutral-100;
+		@apply text-ink;
 	}
+}
+
+/* Rendered Markdown in the colour roles (#81): the typography plugin's own greys would ignore the
+   palette. Replaces `prose-neutral dark:prose-invert`. */
+@utility prose-roles {
+	--tw-prose-body: var(--color-body);
+	--tw-prose-headings: var(--color-ink);
+	--tw-prose-lead: var(--color-muted);
+	--tw-prose-links: var(--color-accent);
+	--tw-prose-bold: var(--color-ink);
+	--tw-prose-counters: var(--color-muted);
+	--tw-prose-bullets: var(--color-faint);
+	--tw-prose-hr: var(--color-line);
+	--tw-prose-quotes: var(--color-ink);
+	--tw-prose-quote-borders: var(--color-line);
+	--tw-prose-captions: var(--color-muted);
+	--tw-prose-kbd: var(--color-ink);
+	--tw-prose-code: var(--color-ink);
+	--tw-prose-th-borders: var(--color-line);
+	--tw-prose-td-borders: var(--color-line);
 }
 
 /* Tinted, rounded controls and panels instead of outlines (#77). One tint per role:
    `field` for inputs, `chip` for small labels (keys, the Draft badge), `surface` for panels. */
 /* `pill` leaves display to the element (`flex`, or `hidden js:inline-flex`). */
 @utility pill {
-	@apply min-h-11 items-center gap-2 rounded-full bg-neutral-100 px-4 dark:bg-neutral-900;
+	@apply min-h-11 items-center gap-2 rounded-full bg-fill px-4;
 }
 @utility field {
-	@apply flex pill focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-red-700 dark:focus-within:outline-red-400;
+	@apply flex pill focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent;
 }
 @utility select-field {
-	@apply h-11 w-full appearance-none rounded-full border-0 bg-neutral-100 bg-none py-0 pr-10 pl-4 text-lg focus:ring-0 dark:bg-neutral-900;
+	@apply h-11 w-full appearance-none rounded-full border-0 bg-fill bg-none py-0 pr-10 pl-4 text-lg focus:ring-0;
 }
 @utility chip {
-	@apply inline-flex items-center rounded-md bg-neutral-100 px-1.5 dark:bg-neutral-800;
+	@apply inline-flex items-center rounded-md bg-chip px-1.5;
 }
 @utility surface {
-	@apply rounded-lg bg-neutral-50 dark:bg-neutral-900;
+	@apply rounded-lg bg-panel;
 }
 /* Curly quotes in accent red around a quote's text: post blockquotes and quote asides (#77). */
 @utility quote-marks {
 	& > p:first-child::before {
 		content: '“';
-		@apply text-red-700 dark:text-red-400;
+		@apply text-accent;
 	}
 	& > p:last-child::after {
 		content: '”';
-		@apply text-red-700 dark:text-red-400;
+		@apply text-accent;
 	}
 }
 
 /* Post headings' "#" link (#61): after the text, shown on hover and keyboard focus, always shown
    (faintly) on touch screens, which can't hover. Clicking copies the section URL (Prose.svelte). */
 @utility heading-link {
-	@apply relative ml-2 font-normal text-neutral-500 no-underline opacity-0 hover:text-red-700 dark:hover:text-red-400;
+	@apply relative ml-2 font-normal text-faint no-underline opacity-0 hover:text-accent;
 	transition:
 		opacity var(--duration-motion) var(--ease-motion),
 		color var(--duration-hover) var(--ease-motion);
@@ -217,12 +385,12 @@
 
 /* An unpublished entry in draft preview (#57; docs/design.md → Components). */
 @utility draft-badge {
-	@apply chip text-xs tracking-wide text-neutral-600 uppercase dark:text-neutral-400;
+	@apply chip text-xs tracking-wide text-muted uppercase;
 }
 
 /* A key in the shortcuts panel (#63). */
 @utility key-cap {
-	@apply chip h-6.5 min-w-6.5 justify-center font-mono text-sm leading-none text-neutral-900 dark:text-neutral-100;
+	@apply chip h-6.5 min-w-6.5 justify-center font-mono text-sm leading-none text-ink;
 }
 
 /* Layout */
@@ -292,13 +460,8 @@ html {
 /* Focus ring for everything focusable (docs/design.md → Components). */
 @layer base {
 	:focus-visible {
-		outline: 2px solid var(--color-red-700);
+		outline: 2px solid var(--color-accent);
 		outline-offset: 2px;
-	}
-	:focus-visible {
-		@variant dark {
-			outline-color: var(--color-red-400);
-		}
 	}
 }
 

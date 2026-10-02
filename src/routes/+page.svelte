@@ -78,7 +78,7 @@
 					onclick={onPhotoClick}
 					onanimationend={() => (winking = false)}
 					class={[
-						'size-28 shrink-0 rounded-full bg-neutral-100 object-cover select-none md:size-30 dark:bg-neutral-900',
+						'size-28 shrink-0 rounded-full bg-fill object-cover select-none md:size-30',
 						winking && 'motion-safe:animate-wink'
 					]}
 				/>
@@ -95,9 +95,7 @@
 		</div>
 		<div class="flex flex-col gap-4 body-copy">
 			{#if profile}
-				<div
-					class="flex flex-col gap-4 [&_a]:text-red-700 [&_a]:underline [&_a]:underline-offset-4 dark:[&_a]:text-red-400"
-				>
+				<div class="flex flex-col gap-4 [&_a]:text-accent [&_a]:underline [&_a]:underline-offset-4">
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -- the author's own Markdown from Strapi, rendered on the server -->
 					{@html profile.bioHtml}
 				</div>
@@ -136,10 +134,7 @@
 						data-title-transition
 						style:view-transition-name={titleTransition('post', post.slug)}
 					>
-						<a
-							href={resolve('/blog/[slug]', { slug: post.slug })}
-							class="hover:text-red-700 dark:hover:text-red-400"
-						>
+						<a href={resolve('/blog/[slug]', { slug: post.slug })} class="hover:text-accent">
 							{post.title}
 						</a>
 					</h3>

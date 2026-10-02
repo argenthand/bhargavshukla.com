@@ -4,7 +4,8 @@
 
 const PIECES = 3200;
 const DURATION_MS = 2500;
-const COLORS = ['--color-red-700', '--color-red-500', '--color-red-300', '--color-neutral-500'];
+// The visitor's palette (#81): its accent shades and a mid grey.
+const COLORS = ['--hue-700', '--hue-500', '--hue-300', '--grey-500'];
 
 export function confetti() {
 	const layer = document.createElement('div');

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isTheme, nextTheme, resolveTheme } from './theme';
+import { isPalette, isTheme, nextTheme, PALETTES, resolveTheme } from './theme';
 
 describe('theme', () => {
 	it('cycles light → dark → system → light', () => {
@@ -19,5 +19,13 @@ describe('theme', () => {
 		expect(isTheme('dark')).toBe(true);
 		expect(isTheme('sepia')).toBe(false);
 		expect(isTheme(null)).toBe(false);
+	});
+});
+
+describe('palettes', () => {
+	it('knows the five palettes, Newsprint first', () => {
+		expect(PALETTES.map((p) => p.id)).toEqual(['newsprint', 'harbour', 'sage', 'plum', 'ochre']);
+		expect(isPalette('plum')).toBe(true);
+		expect(isPalette('neon')).toBe(false);
 	});
 });
