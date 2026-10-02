@@ -80,18 +80,23 @@ A vertical slice: schema in `cms/`, deploy the image, then routes. Projects, boo
 
 [#22](https://github.com/argenthand/bhargavshukla.com/issues/22) was split into these on 2026-10-01. The Projects section was cut: side projects stay posts.
 
-| #                                                                | Ticket                                              | Blocked by |
-| ---------------------------------------------------------------- | --------------------------------------------------- | ---------- |
-| [#56](https://github.com/argenthand/bhargavshukla.com/issues/56) | RSS feed and sitemap                                | —          |
-| [#57](https://github.com/argenthand/bhargavshukla.com/issues/57) | Draft preview                                       | —          |
-| [#58](https://github.com/argenthand/bhargavshukla.com/issues/58) | Cloudflare Web Analytics                            | —          |
-| [#59](https://github.com/argenthand/bhargavshukla.com/issues/59) | Home intro: headshot and name placement             | —          |
-| [#60](https://github.com/argenthand/bhargavshukla.com/issues/60) | Micro-interactions 1: navigation and links          | —          |
-| [#61](https://github.com/argenthand/bhargavshukla.com/issues/61) | Micro-interactions 2: reading and tools             | #60        |
-| [#62](https://github.com/argenthand/bhargavshukla.com/issues/62) | Generated OG images                                 | —          |
-| [#63](https://github.com/argenthand/bhargavshukla.com/issues/63) | Easter eggs                                         | #59        |
-| [#64](https://github.com/argenthand/bhargavshukla.com/issues/64) | Uptime checks for the site and CMS (low priority)   | —          |
-| [#66](https://github.com/argenthand/bhargavshukla.com/issues/66) | Tailwind cleanup: theme tokens and shared utilities | —          |
+| #                                                                | Ticket                                                  | Blocked by |
+| ---------------------------------------------------------------- | ------------------------------------------------------- | ---------- |
+| [#56](https://github.com/argenthand/bhargavshukla.com/issues/56) | RSS feed and sitemap                                    | —          |
+| [#57](https://github.com/argenthand/bhargavshukla.com/issues/57) | Draft preview                                           | —          |
+| [#58](https://github.com/argenthand/bhargavshukla.com/issues/58) | Cloudflare Web Analytics                                | —          |
+| [#59](https://github.com/argenthand/bhargavshukla.com/issues/59) | Home intro: headshot and name placement                 | —          |
+| [#60](https://github.com/argenthand/bhargavshukla.com/issues/60) | Micro-interactions 1: navigation and links              | —          |
+| [#61](https://github.com/argenthand/bhargavshukla.com/issues/61) | Micro-interactions 2: reading and tools                 | #60        |
+| [#62](https://github.com/argenthand/bhargavshukla.com/issues/62) | Generated OG images                                     | —          |
+| [#63](https://github.com/argenthand/bhargavshukla.com/issues/63) | Easter eggs                                             | #59        |
+| [#64](https://github.com/argenthand/bhargavshukla.com/issues/64) | Uptime checks for the site and CMS (low priority)       | —          |
+| [#66](https://github.com/argenthand/bhargavshukla.com/issues/66) | Tailwind cleanup: theme tokens and shared utilities     | —          |
+| [#77](https://github.com/argenthand/bhargavshukla.com/issues/77) | Quiet redesign: fewer borders; Back to top              | —          |
+| [#79](https://github.com/argenthand/bhargavshukla.com/issues/79) | Brand icons (Feather)                                   | —          |
+| [#80](https://github.com/argenthand/bhargavshukla.com/issues/80) | Theme toggle: Light / Dark / System                     | —          |
+| [#81](https://github.com/argenthand/bhargavshukla.com/issues/81) | Colour themes: palettes and a picker                    | #80        |
+| [#82](https://github.com/argenthand/bhargavshukla.com/issues/82) | Explore: view counts ([view-counts.md](view-counts.md)) | —          |
 
 ## Checks for every ticket
 
