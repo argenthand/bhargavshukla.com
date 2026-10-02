@@ -182,6 +182,10 @@ One `@utility` per role in `layout.css`. Change it there and every use follows.
 | `max-h-sheet`           | The ToC bottom sheet                                                                                                                | `max-height: 80dvh`                                                                                                                     |
 | `transition-fade`       | Fades that also hide (the home header name)                                                                                         | `transition-property: opacity, visibility` with the default timing                                                                      |
 
+## Icons
+
+Stroke icons, 24-unit grid, `stroke-width` 1.75, `currentColor`, in `Icon.svelte`; always decorative (`aria-hidden`), the text next to them is the label. Most come from the mockups (Lucide's style); **GitHub and LinkedIn are Feather Icons** (MIT, feathericons.com, #79). Contact links lead with their icon (Email, LinkedIn, GitHub on the home intro and resume header); arrows trail so they can nudge.
+
 ## Components
 
 `›` separates an element from its children. Component classes above are used by name.

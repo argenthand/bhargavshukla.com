@@ -15,26 +15,26 @@
 	type IntroLink = {
 		href: string;
 		label: string;
-		icon: 'arrow-right' | 'mail' | 'external';
+		icon: 'arrow-right' | 'mail' | 'linkedin' | 'github';
 		size: number;
 		external?: boolean;
 	};
 	const links = $derived(
 		[
 			isLive('/resume') && { href: '/resume', label: 'Resume', icon: 'arrow-right', size: 16 },
-			profile?.email && { href: `mailto:${profile.email}`, label: 'Email', icon: 'mail', size: 14 },
+			profile?.email && { href: `mailto:${profile.email}`, label: 'Email', icon: 'mail', size: 16 },
 			profile?.linkedin && {
 				href: profile.linkedin,
 				label: 'LinkedIn',
-				icon: 'external',
-				size: 14,
+				icon: 'linkedin',
+				size: 16,
 				external: true
 			},
 			profile?.github && {
 				href: profile.github,
 				label: 'GitHub',
-				icon: 'external',
-				size: 14,
+				icon: 'github',
+				size: 16,
 				external: true
 			}
 		].filter(Boolean) as IntroLink[]
@@ -112,7 +112,10 @@
 							rel={link.external ? 'noopener noreferrer' : undefined}
 							class="link-cta"
 						>
-							{link.label}<Icon name={link.icon} size={link.size} />
+							<!-- Contact icons lead (#79); the Resume arrow trails, so it can nudge on hover. -->
+							{#if link.icon !== 'arrow-right'}<Icon name={link.icon} size={link.size} />{/if}
+							{link.label}
+							{#if link.icon === 'arrow-right'}<Icon name={link.icon} size={link.size} />{/if}
 							{#if link.external}<span class="sr-only"> (opens in a new tab)</span>{/if}
 						</a>
 						<!-- eslint-enable svelte/no-navigation-without-resolve -->
