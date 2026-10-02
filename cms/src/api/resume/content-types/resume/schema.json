@@ -33,6 +33,11 @@
       "type": "component",
       "repeatable": true,
       "component": "resume.education"
+    },
+    "certifications": {
+      "type": "component",
+      "repeatable": true,
+      "component": "resume.certification"
     }
   }
 }
