@@ -7,6 +7,7 @@
 	import { page } from '$app/state';
 	import Icon from '$lib/components/Icon.svelte';
 	import Shortcuts from '$lib/components/Shortcuts.svelte';
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { consoleNote } from '$lib/easter-eggs';
 	import { nav, site } from '$lib/site';
 
@@ -106,21 +107,25 @@
 			>
 				{site.name}
 			</a>
-			{#if nav.length > 0}
-				<nav aria-label="Primary" class="hidden items-center gap-2 md:flex">
-					{#each nav as item (item.href)}
-						<!-- eslint-disable svelte/no-navigation-without-resolve -- nav hrefs are plain strings from site.ts; resolve() needs route literals -->
-						<a
-							href={item.href}
-							aria-current={current(item.href)}
-							class="tap-target px-3 text-lg text-neutral-600 hover:text-neutral-900 aria-[current=page]:text-neutral-900 aria-[current=page]:underline aria-[current=page]:decoration-red-700 aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-8 dark:text-neutral-400 dark:hover:text-neutral-100 dark:aria-[current=page]:text-neutral-100 dark:aria-[current=page]:decoration-red-400"
-						>
-							{item.label}
-						</a>
-						<!-- eslint-enable svelte/no-navigation-without-resolve -->
-					{/each}
-				</nav>
-			{/if}
+			<div class="flex items-center gap-4">
+				{#if nav.length > 0}
+					<nav aria-label="Primary" class="hidden items-center gap-2 md:flex">
+						{#each nav as item (item.href)}
+							<!-- eslint-disable svelte/no-navigation-without-resolve -- nav hrefs are plain strings from site.ts; resolve() needs route literals -->
+							<a
+								href={item.href}
+								aria-current={current(item.href)}
+								class="tap-target px-3 text-lg text-neutral-600 hover:text-neutral-900 aria-[current=page]:text-neutral-900 aria-[current=page]:underline aria-[current=page]:decoration-red-700 aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-8 dark:text-neutral-400 dark:hover:text-neutral-100 dark:aria-[current=page]:text-neutral-100 dark:aria-[current=page]:decoration-red-400"
+							>
+								{item.label}
+							</a>
+							<!-- eslint-enable svelte/no-navigation-without-resolve -->
+						{/each}
+					</nav>
+				{/if}
+				<!-- Light / Dark / System (#80). -->
+				<ThemeToggle />
+			</div>
 		</div>
 	</header>
 

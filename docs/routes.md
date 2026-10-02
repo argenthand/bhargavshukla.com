@@ -5,13 +5,15 @@ src/
   hooks.server.ts                 cache tags, draft-preview cookie check (#57), edge-cache wrapper — see caching.md
   app.d.ts                        App.Locals { cacheTags: Set<string> }, App.Platform
   lib/
+    theme.ts                      Light / Dark / System: cycle order, resolve, save (#80; app.html applies it on load)
     format.ts                     dates as shown (UTC), shown date = displayDate ?? publishedAt
     site.ts                       name, links, Primary nav (`live` flags hide sections until they ship)
     types/content.ts              Post, PostSummary, Category, Media, Seo, Link, Heading, Tag, Aside, RenderedAside
     components/                   Icon.svelte, PostMeta.svelte (category · date), Prose.svelte (+ code Copy),
                                   Toc.svelte (pill + sheet, or sidebar), NextUp.svelte, Seo.svelte; AsideItem.svelte;
                                   BackToTop.svelte (posts: back to the title, ring = reading progress, #77);
-                                  Shortcuts.svelte (keyboard shortcuts + Konami, #63)
+                                  Shortcuts.svelte (keyboard shortcuts + Konami, #63);
+                                  ThemeToggle.svelte (Light / Dark / System, #80)
     server/
       strapi.ts                   typed REST client; records cache tags into locals
       posts.ts                    post queries (lists, one post, home picks, Next up)
