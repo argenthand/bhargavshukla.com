@@ -9,6 +9,7 @@ import {
 	verifyCookie,
 	verifyLink
 } from './preview';
+import { LINK_TTL_S, previewLink } from '../../../scripts/preview-link.mjs';
 
 const SECRET = 'test-secret';
 const NOW = 1_800_000_000;
@@ -116,5 +117,19 @@ describe('mergeDrafts', () => {
 				draft: true
 			}
 		]);
+	});
+});
+
+describe('scripts/preview-link.mjs (#98)', () => {
+	it('mints links the site accepts, and only for the secret it was given', async () => {
+		const url = new URL(previewLink('http://localhost:5173', '/resume', SECRET, NOW + LINK_TTL_S));
+		const link = {
+			path: url.searchParams.get('path'),
+			exp: url.searchParams.get('exp'),
+			sig: url.searchParams.get('sig')
+		};
+		expect(url.pathname).toBe('/api/preview');
+		expect(await verifyLink(link, SECRET, NOW)).toBe(true);
+		expect(await verifyLink(link, 'production-secret', NOW)).toBe(false);
 	});
 });

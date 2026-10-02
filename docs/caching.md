@@ -52,7 +52,7 @@ Publishing any post purges `type:post`, which clears every page that shows posts
 4. **Caching.** Any `__preview` cookie bypasses the edge cache (step 2 above). A preview response also gets `Cache-Control: private, no-store` and `X-Robots-Tag: noindex`.
 5. **UI.** The layout shows "Preview mode: drafts are visible to you only" with **Exit** (`/api/preview/exit?path=…`, which clears the cookie and goes back to the page). Unpublished entries show "Not published" and the Draft badge.
 
-The CMS and the site share `PREVIEW_SECRET`; the signed text is `link\n<path>\n<exp>` for links and `cookie\n<exp>` for the cookie, so one can't stand in for the other.
+The CMS and the site share `PREVIEW_SECRET`; the signed text is `link\n<path>\n<exp>` for links and `cookie\n<exp>` for the cookie, so one can't stand in for the other. [`scripts/preview-link.mjs`](../scripts/preview-link.mjs) (`pnpm preview-link`, #98) mints the same links on localhost with the local secret; a test checks that `verifyLink` accepts them. Keep the three signers in step: `previewLink` in cms/config/admin.ts, `linkPayload` here, and the script.
 
 ### Share cards (#62)
 
