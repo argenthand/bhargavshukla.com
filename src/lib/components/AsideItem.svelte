@@ -3,6 +3,7 @@
 	// attribution, tags. In the stream the date links to the aside's own page; on that page it doesn't.
 	import { resolve } from '$app/paths';
 	import Prose from '$lib/components/Prose.svelte';
+	import ReadCount from '$lib/components/ReadCount.svelte';
 	import { kindLabel } from '$lib/asides';
 	import { formatDate, isoDay } from '$lib/format';
 	import { titleTransition } from '$lib/motion';
@@ -45,6 +46,9 @@
 			</a>
 		{/if}
 		{#if aside.draft}<span class="draft-badge">Draft</span>{/if}
+		{#if standalone && !aside.draft}
+			<ReadCount path={resolve('/asides/[slug]', { slug: aside.slug })} track />
+		{/if}
 	</p>
 
 	{#if aside.title}

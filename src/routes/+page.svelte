@@ -128,7 +128,7 @@
 			<h2 id="featured" class="section-heading">{data.home.heading}</h2>
 			{#each data.home.posts as post (post.slug)}
 				<article class="list-entry">
-					<PostMeta {post} />
+					<PostMeta {post} reads />
 					<h3
 						class="list-title"
 						data-title-transition

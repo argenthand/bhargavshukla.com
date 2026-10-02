@@ -7,6 +7,15 @@
 	"assets": { "binding": "ASSETS", "directory": ".svelte-kit/cloudflare" },
 	"routes": [{ "pattern": "bhargavshukla.com", "custom_domain": true }],
 	"observability": { "enabled": true },
+	// Read counts (#87, docs/view-counts.md). `vite dev` uses a local copy in .wrangler/.
+	"d1_databases": [
+		{
+			"binding": "READS",
+			"database_name": "bs-reads",
+			"database_id": "666761c6-6038-4855-90af-288880ba21fe",
+			"migrations_dir": "migrations"
+		}
+	],
 	// Secrets (dashboard → Variables and Secrets): STRAPI_TOKEN, PURGE_SECRET, CF_PURGE_TOKEN
 	// (docs/infrastructure.md). The zone ID isn't secret; the purge API needs it.
 	"vars": {

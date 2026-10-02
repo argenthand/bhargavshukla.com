@@ -44,6 +44,7 @@ src/
     api/purge/+server.ts          Strapi webhook target (POST)
     api/preview/+server.ts        Strapi "Open preview" → checks the signed link, sets the signed preview cookie (#57)
     api/preview/exit/+server.ts   preview banner "Exit" → clears the cookie
+    api/views/+server.ts          read counts (#87): GET counts for some pages, POST the 10-second beacon
 ```
 
 ## Conventions

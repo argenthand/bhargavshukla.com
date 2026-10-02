@@ -1,6 +1,6 @@
 # View counts (#82)
 
-Exploration: show how many times a post or aside has been read, on its own page. This doc compares where to keep the counts, what counts as a view, how to show a number on edge-cached pages, and what that means for privacy. It ends with a recommendation and the decisions needed before a build ticket.
+Exploration: show how many times a post or aside has been read, on its own page. This doc compares where to keep the counts, what counts as a view, how to show a number on edge-cached pages, and what that means for privacy. It ends with a recommendation, the decisions made, and what was built in #87.
 
 Prices and limits checked 2026-10-01, on Workers Paid ($5/month, already paid for share cards).
 
@@ -55,13 +55,13 @@ CREATE TABLE salts (day  TEXT PRIMARY KEY, salt TEXT NOT NULL);
 
 Pages are edge-cached for 10 minutes and purged by content type ([caching.md](caching.md)). A view isn't a content change, so the count can't go into the HTML without either going stale or purging the cache on every read. The options:
 
-| Option                                         | Verdict                                                                                                                                                                                                                                               |
-| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Fetch after load** (`GET /api/views?path=…`) | **Recommended.** The page stays fully cached. The endpoint answers from its own small Cache API entry (60 seconds, not tag-based), so a popular post costs one D1 read a minute. Space for the number is reserved, so nothing shifts when it arrives. |
-| Render at the edge, in the cached HTML         | Out. Stale for up to the TTL, and staler once `EDGE_TTL` goes up as planned. The reader's own view never shows.                                                                                                                                       |
-| Purge on every view                            | Out. The purge API allows 5 requests a minute per account.                                                                                                                                                                                            |
+| Option                                         | Verdict                                                                                                                                                                                                                               |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Fetch after load** (`GET /api/views?path=…`) | **Recommended.** The page stays fully cached. The endpoint's response is cached in the data center for 60 seconds, so a popular post costs one D1 read a minute. Space for the number is reserved, so nothing shifts when it arrives. |
+| Render at the edge, in the cached HTML         | Out. Stale for up to the TTL, and staler once `EDGE_TTL` goes up as planned. The reader's own view never shows.                                                                                                                       |
+| Purge on every view                            | Out. The purge API allows 5 requests a minute per account.                                                                                                                                                                            |
 
-- **Where:** in the post's meta line next to the date and reading time (posts), and in the aside's footer (asides). Not on lists for now. `/blog` with a number on every row turns writing into a leaderboard; it can be added later from the same table.
+- **Where:** in the post's meta line next to the date and reading time (posts), and in the aside's meta line (asides). Not on `/blog`: a number on every row turns writing into a leaderboard. (The home page's featured rows were added in the decisions below.)
 - **Format:** `Intl.NumberFormat` compact notation: "87 reads", "1.2K reads".
 - **Without JavaScript:** no number, and no gap; the reserved space only exists with the `js` class.
 - **Errors:** if the fetch fails, nothing is shown.
@@ -74,9 +74,23 @@ Pages are edge-cached for 10 minutes and purged by content type ([caching.md](ca
 - **Line for the docs** ([infrastructure.md](infrastructure.md), next to Analytics): "Read counts are anonymous: no cookies, and nothing that identifies you is stored."
 - No consent banner needed: there's no cookie or device storage, and nothing that identifies a person is kept.
 
-## Decisions for the build ticket
+## Decisions (2026-10-01)
 
-1. **Wording:** "reads" (we count reading, not loading) or "views".
-2. **Threshold:** hide the number until a page has, say, 10 reads, so new posts don't open with "1 read".
-3. **Starting point:** start every page at zero, or seed once from Web Analytics totals (which undercount: no EU, no ad-blocked visits). Recommendation: start at zero; the date the counter started goes in the docs.
-4. **Lists:** posts and asides pages only (recommended), or `/blog` and the home page as well.
+1. **Wording:** "reads": we count reading, not loading.
+2. **Threshold:** a page shows no count until it has **5** reads (`READS_SHOWN_FROM`).
+3. **Starting point:** every page starts at **zero** on the day #87 deploys. Earlier visits are in Web Analytics only.
+4. **Where:** post pages, aside pages and the **home page's featured rows**. Not `/blog` or `/asides`.
+
+## Built (#87)
+
+| Piece                                                                   | What it does                                                                                                                                                                                                                                                 |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`migrations/0001_reads.sql`](../migrations/0001_reads.sql)             | The `views`, `seen` and `salts` tables. D1 database `bs-reads`, binding `READS` in `wrangler.jsonc`.                                                                                                                                                         |
+| [`src/lib/server/reads.ts`](../src/lib/server/reads.ts)                 | `recordRead` (daily salt, hash, `INSERT OR IGNORE`, increment) and `readCounts`. Tested against the real migration on Node's built-in SQLite.                                                                                                                |
+| [`src/routes/api/views/+server.ts`](../src/routes/api/views/+server.ts) | `GET ?path=…&path=…` → `{ "/blog/a": 1200 }`, at most 10 paths, `public, max-age=60`. `POST` (the beacon, the path as plain text) → always 204; ignored unless same-origin, on `bhargavshukla.com`, outside preview mode, and for a published post or aside. |
+| [`src/lib/reads.ts`](../src/lib/reads.ts)                               | `readCount` (counts asked for in the same tick share one request), `trackRead` (10 s of visible time, then `navigator.sendBeacon`), `formatReads`.                                                                                                           |
+| [`ReadCount.svelte`](../src/lib/components/ReadCount.svelte)            | "· 1.2K reads" at the end of a meta line; `track` also counts the page's read. Used by the post page, `AsideItem` (standalone) and `PostMeta` (`reads`, home only).                                                                                          |
+
+**Not counting your own reads:** in the browser console on each of your devices, `localStorage.setItem('noCount', '1')`. `localStorage.removeItem('noCount')` undoes it.
+
+**Looking at the numbers:** `pnpm exec wrangler d1 execute bs-reads --remote --command "SELECT * FROM views ORDER BY count DESC"`.

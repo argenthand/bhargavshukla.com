@@ -1,5 +1,7 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
+import type { ReadsDb } from '$lib/server/reads';
+
 declare global {
 	namespace App {
 		// interface Error {}
@@ -11,7 +13,10 @@ declare global {
 		}
 		// interface PageData {}
 		// interface PageState {}
-		// interface Platform {}
+		interface Platform {
+			/** Bindings from wrangler.jsonc. `READS` is D1 (#87); `vite dev` gets a local copy. */
+			env: { READS?: ReadsDb };
+		}
 	}
 }
 
