@@ -125,7 +125,8 @@
 	{/if}
 
 	<div class="space-y-14 md:space-y-16 print:space-y-4">
-		<ProfileHeader {profile} {contacts} printNote={resume?.location} />
+		<!-- The layout hides the header's name while this heading is on screen (#106). -->
+		<ProfileHeader {profile} {contacts} headingId="intro-name" printNote={resume?.location} />
 
 		{#if !resume}
 			<p class="body-copy">The full resume is on its way.</p>

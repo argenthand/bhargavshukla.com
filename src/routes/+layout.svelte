@@ -22,13 +22,17 @@
 
 	const year = new Date().getFullYear();
 
-	// On the home page the intro's h1 is the name, so the header leaves it out until that heading
-	// scrolls under the sticky phone bar, then fades it in (#59). The desktop header isn't sticky,
-	// so there it simply stays out. `js:` keeps it visible without JavaScript.
-	const isHome = $derived(page.route.id === '/' && !page.error);
+	// On home and the resume the page's h1 (ProfileHeader) is the name, so the header leaves it out
+	// until that heading scrolls under the sticky phone bar, then fades it in (#59, #106). The desktop
+	// header isn't sticky, so there it simply stays out. `js:` keeps it visible without JavaScript.
+	// Print never shows the site header.
+	const NAME_ROUTES = ['/', '/resume'];
+	const hasIntro = $derived(NAME_ROUTES.includes(page.route.id ?? '') && !page.error);
 	let introInView = $state(true);
 	$effect(() => {
-		if (!isHome) return;
+		// Re-run on every navigation: home → resume swaps the heading this observes.
+		void page.url.pathname;
+		if (!hasIntro) return;
 		const heading = document.getElementById('intro-name');
 		if (!heading) return;
 		const observer = new IntersectionObserver(
@@ -41,7 +45,7 @@
 			introInView = true;
 		};
 	});
-	const hideName = $derived(isHome && introInView);
+	const hideName = $derived(hasIntro && introInView);
 
 	// Page transitions (#60): a short cross-fade between pages. A title moves only between a list and
 	// its own page (Writing → post, Asides → aside, and back); between two lists it just fades.

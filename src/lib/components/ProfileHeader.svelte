@@ -41,7 +41,7 @@
 	type Props = {
 		profile: Awaited<ReturnType<typeof getProfile>>;
 		contacts: Contact[];
-		/** The home intro's heading id: the layout fades the header name in once it scrolls away (#59). */
+		/** `intro-name` on home and the resume: the layout fades the header name in once it scrolls away (#59, #106). */
 		headingId?: string;
 		/** Printed after the contacts, e.g. the resume's location. */
 		printNote?: string | null;
