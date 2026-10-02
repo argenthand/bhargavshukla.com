@@ -67,7 +67,7 @@
 						<!-- eslint-disable svelte/no-navigation-without-resolve -- mailto:, the site's origin and external profiles -->
 						<a
 							href={contact.href}
-							class="tap-target gap-1.5 text-red-700 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 print:min-h-0 print:text-black"
+							class="tap-target gap-1.5 text-accent hover:text-accent-hover print:min-h-0 print:text-black"
 						>
 							<Icon name={contact.icon} size={14} class="print:hidden" />{contact.text}
 						</a>
@@ -94,8 +94,7 @@
 					<article class="mb-5.5 break-inside-avoid print:mb-3.5">
 						<div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
 							<h3 class="text-lg font-bold print:text-base">
-								{job.role}<span
-									class="font-normal text-neutral-600 dark:text-neutral-400 print:text-black"
+								{job.role}<span class="font-normal text-muted print:text-black"
 									>{` · ${job.company}`}</span
 								>
 							</h3>
@@ -147,21 +146,17 @@
 						class="flex flex-wrap justify-between gap-x-4 gap-y-1 body-copy print:text-sm print:text-black"
 					>
 						<span
-							><strong class="text-neutral-900 dark:text-neutral-100 print:text-black"
-								>{item.credential}</strong
-							>
+							><strong class="text-ink print:text-black">{item.credential}</strong>
 							· {item.school}</span
 						>
-						{#if item.year}<span class="text-neutral-600 dark:text-neutral-400 print:text-black"
-								>{item.year}</span
-							>{/if}
+						{#if item.year}<span class="text-muted print:text-black">{item.year}</span>{/if}
 					</div>
 				{/each}
 			</section>
 		{/if}
 	</div>
 	<!-- Only on paper (#63). Draft copy: edit freely. -->
-	<p class="hidden text-xs text-neutral-500 print:mt-4 print:block">
+	<p class="hidden text-xs text-faint print:mt-4 print:block">
 		Printed from {new URL(site.url).host}/resume. Thanks for reading it on paper.
 	</p>
 </div>

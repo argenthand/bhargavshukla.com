@@ -13,7 +13,7 @@
 		<span class="label-accent">
 			{post.category.name}
 		</span>
-		<span aria-hidden="true" class="text-neutral-600 dark:text-neutral-400">·</span>
+		<span aria-hidden="true" class="text-muted">·</span>
 	{/if}
 	{#if post.draft}
 		<span class="meta">Not published</span>

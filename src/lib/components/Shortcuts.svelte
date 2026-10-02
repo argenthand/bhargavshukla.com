@@ -101,7 +101,7 @@
 	bind:this={dialog}
 	onclick={closeOnBackdrop}
 	aria-labelledby="shortcuts-title"
-	class="m-auto w-md rounded-xl bg-white px-6 pt-2 pb-6 text-neutral-900 shadow-2xl backdrop:bg-black/45 dark:bg-neutral-950 dark:text-neutral-100 dark:backdrop:bg-black/60"
+	class="m-auto w-md rounded-xl bg-page px-6 pt-2 pb-6 text-ink shadow-2xl backdrop:bg-black/45 dark:backdrop:bg-black/60"
 >
 	<div class="flex flex-col gap-5">
 		<div class="flex min-h-11 items-center justify-between">
@@ -110,7 +110,7 @@
 				type="button"
 				aria-label="Close"
 				onclick={() => dialog?.close()}
-				class="-mr-3 inline-flex min-h-11 min-w-11 items-center justify-center text-neutral-600 dark:text-neutral-400"
+				class="-mr-3 inline-flex min-h-11 min-w-11 items-center justify-center text-muted"
 			>
 				<Icon name="close" size={20} />
 			</button>
@@ -134,7 +134,7 @@
 <p
 	role="status"
 	class={toast
-		? 'pointer-events-none fixed inset-x-0 bottom-20 z-50 mx-auto w-fit animate-confirm bg-neutral-900 px-4 py-2 text-white motion-reduce:animate-none md:bottom-8 dark:bg-neutral-100 dark:text-neutral-900 print:hidden'
+		? 'pointer-events-none fixed inset-x-0 bottom-20 z-50 mx-auto w-fit animate-confirm bg-ink px-4 py-2 text-page motion-reduce:animate-none md:bottom-8 print:hidden'
 		: 'sr-only'}
 >
 	{toast}

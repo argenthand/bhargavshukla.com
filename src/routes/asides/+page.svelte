@@ -89,7 +89,7 @@
 				<Icon
 					name="chevron-down"
 					size={18}
-					class="pointer-events-none absolute right-4 text-neutral-600 dark:text-neutral-400"
+					class="pointer-events-none absolute right-4 text-muted"
 				/>
 			</div>
 		</div>
@@ -123,7 +123,7 @@
 					{kindPlural ?? 'Asides'}
 				{/if}
 				tagged
-				<em class="font-semibold text-neutral-900 not-italic dark:text-neutral-100">{tagName}</em>
+				<em class="font-semibold text-ink not-italic">{tagName}</em>
 			</span>
 			<!-- eslint-disable svelte/no-navigation-without-resolve -- href() starts from resolve('/asides') -->
 			<a href={href({ tag: '' })} class="link-cta px-2">

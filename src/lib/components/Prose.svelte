@@ -82,7 +82,7 @@
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 <div
 	{onclick}
-	class="prose prose-lg max-w-none prose-neutral dark:prose-invert prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-balance prose-h2:text-2xl md:prose-h2:text-3xl prose-h3:text-xl prose-a:text-red-700 prose-a:decoration-1 prose-a:underline-offset-4 prose-a:hover:text-red-800 prose-a:hover:decoration-2 dark:prose-a:text-red-400 dark:prose-a:hover:text-red-300 prose-blockquote:border-0 prose-blockquote:pl-0 prose-blockquote:text-2xl prose-blockquote:font-normal prose-blockquote:quote-marks prose-blockquote:text-neutral-900 dark:prose-blockquote:text-neutral-100 prose-figcaption:text-sm prose-code:font-normal prose-code:before:content-none prose-code:after:content-none [&_:not(pre)>code]:bg-neutral-100 [&_:not(pre)>code]:px-1.5 [&_:not(pre)>code]:py-0.5 dark:[&_:not(pre)>code]:bg-neutral-800"
+	class="prose prose-lg max-w-none prose-roles prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-balance prose-h2:text-2xl md:prose-h2:text-3xl prose-h3:text-xl prose-a:text-accent prose-a:decoration-1 prose-a:underline-offset-4 prose-a:hover:text-accent-hover prose-a:hover:decoration-2 prose-blockquote:border-0 prose-blockquote:pl-0 prose-blockquote:text-2xl prose-blockquote:font-normal prose-blockquote:quote-marks prose-blockquote:text-ink prose-figcaption:text-sm prose-code:font-normal prose-code:before:content-none prose-code:after:content-none [&_:not(pre)>code]:bg-chip [&_:not(pre)>code]:px-1.5 [&_:not(pre)>code]:py-0.5"
 >
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -- the author's own Markdown from Strapi, rendered on the server -->
 	{@html html}

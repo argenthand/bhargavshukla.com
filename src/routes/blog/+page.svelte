@@ -83,14 +83,14 @@
 		<div class="flex flex-col gap-1">
 			<label for="q" class="label-muted"> Search titles </label>
 			<div class="field">
-				<Icon name="search" size={18} class="text-neutral-600 dark:text-neutral-400" />
+				<Icon name="search" size={18} class="text-muted" />
 				<input
 					id="q"
 					name="q"
 					type="search"
 					placeholder="e.g. delegation"
 					bind:value={q}
-					class="h-11 min-w-0 flex-1 border-0 bg-transparent p-0 text-lg placeholder:text-neutral-500 focus:ring-0 focus:outline-none"
+					class="h-11 min-w-0 flex-1 border-0 bg-transparent p-0 text-lg placeholder:text-faint focus:ring-0 focus:outline-none"
 				/>
 			</div>
 		</div>
@@ -108,7 +108,7 @@
 				<Icon
 					name="chevron-down"
 					size={18}
-					class="pointer-events-none absolute right-4 text-neutral-600 dark:text-neutral-400"
+					class="pointer-events-none absolute right-4 text-muted"
 				/>
 			</div>
 		</div>
@@ -163,9 +163,9 @@
 								<a href={resolve('/blog/[slug]', { slug: post.slug })} class="group list-entry">
 									<span
 										class={[
-											'list-title group-hover:text-red-700 dark:group-hover:text-red-400',
+											'list-title group-hover:text-accent',
 											// A draft's title is muted, as in the preview-mode mockup (#57).
-											post.draft && 'text-neutral-600 dark:text-neutral-400'
+											post.draft && 'text-muted'
 										]}
 										data-title-transition
 										style:view-transition-name={titleTransition('post', post.slug)}
