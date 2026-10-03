@@ -1,6 +1,8 @@
 /* Broadsheet, Quiet (#77): the CSS entry from docs/design.md. Space, type and flat tints separate
    things; lines only where they do a job (focus rings, the ToC track, link underlines). */
-@import 'tailwindcss';
+/* Classes come from src/ only (#117): the docs, the CMS and skill files mention class names too,
+   which Tailwind would otherwise ship. */
+@import 'tailwindcss' source('../');
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 
