@@ -171,7 +171,7 @@
 }
 
 @theme {
-	--font-sans: 'Newsreader', ui-serif, Georgia, serif;
+	--font-sans: 'Newsreader', 'Newsreader Fallback', ui-serif, Georgia, serif;
 	--font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
 	/* Layout tokens (#66): named sizes built from the default scale, never raw values in markup. */

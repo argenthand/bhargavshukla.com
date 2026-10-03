@@ -89,9 +89,13 @@ html {
 
 ## Fonts
 
-- **Newsreader** (Google Fonts; 400, 500, 600, italic 400; optical sizing on) for every piece of text.
-- **JetBrains Mono** (400, 500) for code only.
-- Load with `display=swap`; preconnect to `fonts.gstatic.com`.
+- **Newsreader** (400–600, italic 400; optical sizing on) for every piece of text.
+- **JetBrains Mono** (400–500) for code only.
+- **Self-hosted** (#110): `src/lib/fonts/`, made by `pnpm fonts` (`scripts/fonts.mjs`) from the Fontsource variable fonts and imported by the layout, so the files are hashed and cached for a year. No requests to Google.
+  - Only what the site uses: weight 400–600 (italic 400) and optical size 12–48 (`text-xs` to the largest heading). A size or weight outside those ranges renders at the nearest one; widen the range in the script if the design needs it.
+  - Each Newsreader style is two files by `unicode-range`: core (ASCII plus the site's punctuation, about 55 KB roman and 36 KB italic) and the rest of Latin, which only downloads for a page that uses it. A first visit loads about 91 KB of fonts, down from about 195 KB.
+  - Not preloaded: on Slow 4G and 3G a preload competed with the CSS and delayed the first paint ([performance.md](performance.md)). `font-display: swap`; while Newsreader loads, text is in "Newsreader Fallback", Georgia scaled to Newsreader's metrics (Capsize), so the swap barely moves it.
+  - Share cards (`og.ts`) and the print note still read `@fontsource/newsreader` directly.
 
 ## Breakpoints
 
