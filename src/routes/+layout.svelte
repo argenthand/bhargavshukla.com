@@ -1,4 +1,7 @@
 <script lang="ts">
+	// Self-hosted fonts (#110, made by pnpm fonts). Not preloaded: on slow networks a preload took
+	// bandwidth from the CSS and delayed the first paint (docs/performance.md).
+	import '$lib/fonts/fonts.css';
 	import './layout.css';
 	import { onMount } from 'svelte';
 	import { onNavigate } from '$app/navigation';
@@ -80,12 +83,6 @@
 	<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 	<!-- Feed autodiscovery (#56): absolute, like canonical URLs. -->
 	<link rel="alternate" type="application/rss+xml" title={site.name} href="{site.url}/rss.xml" />
-	<link rel="preconnect" href="https://fonts.googleapis.com" />
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-	<link
-		rel="stylesheet"
-		href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=JetBrains+Mono:wght@400;500&display=swap"
-	/>
 </svelte:head>
 
 <NavProgress />

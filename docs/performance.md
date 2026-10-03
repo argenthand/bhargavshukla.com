@@ -124,6 +124,55 @@ The reference for the real-world log below.
 | 3G      | off | Tap Asides         | 2224       | 2164     | 2164     | 7   | 1 page, 0 data |
 | 3G      | off | Return visit: home | 2189       | 2192     | 2192     | 8   |                |
 
+### Self-hosted fonts (#110, measured before deploy)
+
+Both columns are local builds under `wrangler dev`, measured the same way: the #108 branch with Google Fonts, and #110 with self-hosted, slimmed fonts (no preload). Compare local with local: a local build paints about 0.25 s sooner than production on Slow 4G whatever the fonts, because it skips the real network to Cloudflare.
+
+| First visit, home              | Google Fonts  | Self-hosted   |
+| ------------------------------ | ------------- | ------------- |
+| KB, JS on / off                | 282 / 215     | 181 / 114     |
+| First paint, Slow 4G, on / off | 1.48 / 1.28 s | 1.47 / 1.28 s |
+| First paint, 3G, on / off      | 5.13 / 4.48 s | 5.10 / 4.41 s |
+| Fully loaded, JS on, Slow 4G   | 3.27 s        | 2.60 s        |
+| Fully loaded, JS on, 3G        | 11.44 s       | 9.22 s        |
+
+- About 100 KB less on a first visit, and with JS on the page finishes loading about 20% sooner.
+- First paint barely moves in the simulation. Throttling adds latency per request but doesn't model opening connections to two more origins (fonts.googleapis.com, fonts.gstatic.com: DNS, TCP and TLS each), which is where a real phone should gain more. The production run after the deploy is the real comparison.
+- **Preloading the roman font was slower:** with a `<link rel="preload">`, first paint with JS off went from 1.28 to 1.46 s on Slow 4G and from 4.41 to 4.71 s on 3G, because the font took bandwidth from the CSS the page needs before it can paint. So the fonts aren't preloaded.
+
+| Network | JS  | Step               | Total (ms) | FCP (ms) | LCP (ms) | KB  | Requests       |
+| ------- | --- | ------------------ | ---------- | -------- | -------- | --- | -------------- |
+| Fast 4G | on  | First visit: home  | 794        | 416      | 416      | 181 |                |
+| Fast 4G | on  | Tap Writing        | 258        | –        | –        | 0   | 0 page, 1 data |
+| Fast 4G | on  | Tap Resume         | 231        | –        | –        | 3   | 0 page, 1 data |
+| Fast 4G | on  | Tap Asides         | 232        | –        | –        | 0   | 0 page, 1 data |
+| Fast 4G | on  | Return visit: home | 200        | 204      | 204      | 0   |                |
+| Fast 4G | off | First visit: home  | 374        | 392      | 392      | 114 |                |
+| Fast 4G | off | Tap Writing        | 253        | 196      | 196      | 6   | 1 page, 0 data |
+| Fast 4G | off | Tap Resume         | 434        | 204      | 204      | 19  | 1 page, 0 data |
+| Fast 4G | off | Tap Asides         | 261        | 204      | 204      | 6   | 1 page, 0 data |
+| Fast 4G | off | Return visit: home | 197        | 200      | 200      | 0   |                |
+| Slow 4G | on  | First visit: home  | 2596       | 1472     | 1472     | 181 |                |
+| Slow 4G | on  | Tap Writing        | 1094       | –        | –        | 0   | 0 page, 1 data |
+| Slow 4G | on  | Tap Resume         | 1065       | –        | –        | 3   | 0 page, 1 data |
+| Slow 4G | on  | Tap Asides         | 1045       | –        | –        | 0   | 0 page, 1 data |
+| Slow 4G | on  | Return visit: home | 600        | 604      | 604      | 0   |                |
+| Slow 4G | off | First visit: home  | 1257       | 1280     | 1280     | 114 |                |
+| Slow 4G | off | Tap Writing        | 665        | 612      | 612      | 6   | 1 page, 0 data |
+| Slow 4G | off | Tap Resume         | 1303       | 600      | 620      | 19  | 1 page, 0 data |
+| Slow 4G | off | Tap Asides         | 673        | 612      | 612      | 6   | 1 page, 0 data |
+| Slow 4G | off | Return visit: home | 593        | 596      | 596      | 0   |                |
+| 3G      | on  | First visit: home  | 9221       | 5100     | 5100     | 181 |                |
+| 3G      | on  | Tap Writing        | 2551       | –        | –        | 0   | 0 page, 1 data |
+| 3G      | on  | Tap Resume         | 2578       | –        | –        | 3   | 0 page, 1 data |
+| 3G      | on  | Tap Asides         | 2498       | –        | –        | 10  | 0 page, 1 data |
+| 3G      | on  | Return visit: home | 2042       | 2048     | 2048     | 0   |                |
+| 3G      | off | First visit: home  | 4387       | 4408     | 4408     | 114 |                |
+| 3G      | off | Tap Writing        | 2212       | 2132     | 2132     | 6   | 1 page, 0 data |
+| 3G      | off | Tap Resume         | 4438       | 2076     | 2112     | 19  | 1 page, 0 data |
+| 3G      | off | Tap Asides         | 2185       | 2108     | 2108     | 6   | 1 page, 0 data |
+| 3G      | off | Return visit: home | 2057       | 2060     | 2060     | 0   |                |
+
 ## Real-world log
 
 Add a row whenever you try the site on a slow connection. Time from tap until the page is readable, by stopwatch or by feel.

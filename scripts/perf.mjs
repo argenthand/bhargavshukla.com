@@ -6,6 +6,7 @@
 //
 //   pnpm perf                                  # https://bhargavshukla.com, 3 runs
 //   pnpm perf http://localhost:8788 --runs 5   # a local build under `wrangler dev`
+//   pnpm perf --network 3G                     # one preset only
 //
 // The edge cache is warmed first, so these are cache HITs; a cold edge cache adds a Strapi trip.
 
@@ -25,11 +26,16 @@ const TABS = [
 ];
 
 const args = process.argv.slice(2);
-const base = (
-	args.find((a) => !a.startsWith('--') && isNaN(Number(a))) ?? 'https://bhargavshukla.com'
-).replace(/\/+$/, '');
+const base = (args.find((a) => /^https?:\/\//.test(a)) ?? 'https://bhargavshukla.com').replace(
+	/\/+$/,
+	''
+);
 const runsAt = args.indexOf('--runs');
 const runs = runsAt === -1 ? 3 : Number(args[runsAt + 1]);
+const networkAt = args.indexOf('--network');
+const networks = networkAt === -1 ? Object.keys(NETWORKS) : [args[networkAt + 1]];
+if (!networks.every((n) => n in NETWORKS))
+	throw new Error(`--network: one of ${Object.keys(NETWORKS).join(', ')}`);
 
 const median = (values) => {
 	const sorted = values.filter((v) => v != null).sort((a, b) => a - b);
@@ -132,7 +138,7 @@ const fmt = (v, unit = '') => (v == null ? '–' : `${Math.round(v)}${unit}`);
 console.log(`Target: ${base} · ${new Date().toISOString().slice(0, 10)} · ${runs} runs, medians\n`);
 console.log('| Network | JS | Step | Total (ms) | FCP (ms) | LCP (ms) | KB | Requests |');
 console.log('| --- | --- | --- | --- | --- | --- | --- | --- |');
-for (const network of Object.keys(NETWORKS)) {
+for (const network of networks) {
 	for (const js of [true, false]) {
 		const all = [];
 		for (let i = 0; i < runs; i++) {
