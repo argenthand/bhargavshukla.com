@@ -89,7 +89,7 @@ Tapping a tab with JS on, the median of Writing, Resume and Asides:
 
 ### Production after #108 (https://bhargavshukla.com)
 
-Superseded as the reference by [Production after #110](#production-after-110-httpsbhargavshuklacom).
+Superseded as the reference by [Production after #117](#production-after-117-httpsbhargavshuklacom).
 
 | Network | JS  | Step               | Total (ms) | FCP (ms) | LCP (ms) | KB  | Requests       |
 | ------- | --- | ------------------ | ---------- | -------- | -------- | --- | -------------- |
@@ -175,7 +175,7 @@ Both columns are local builds under `wrangler dev`, measured the same way: the #
 
 #### Production after #110 (https://bhargavshukla.com)
 
-The current reference for the real-world log. Against production after #108 (Google Fonts), measured the same day:
+Against production after #108 (Google Fonts), measured the same day:
 
 | First visit, home                 | Google Fonts   | Self-hosted    |
 | --------------------------------- | -------------- | -------------- |
@@ -219,7 +219,7 @@ The same picture as the local builds: 100 KB less, fully loaded about 17% sooner
 | 3G      | off | Tap Asides         | 2219       | 2164     | 2164     | 6   | 1 page, 0 data |
 | 3G      | off | Return visit: home | 2186       | 2188     | 2188     | 7   |                |
 
-### Inline CSS (#117, measured before deploy)
+### Inline CSS (#117)
 
 Lighthouse (mobile, 2026-10-03) put most of the LCP in "render delay": the stylesheet (16 KB) had to arrive before anything painted. #117 puts all CSS in the HTML (`inlineStyleThreshold` in `vite.config.ts`) and has Tailwind read `src/` only. It used to read the docs, the CMS and skill files too, which shipped about 60 classes no page uses (95.6 → 86.0 KB raw).
 
@@ -270,6 +270,52 @@ Local builds, before and after, measured the same way:
 | 3G      | off | Tap Resume         | 4716       | 2380     | 2440     | 33  | 1 page, 0 data |
 | 3G      | off | Tap Asides         | 2488       | 2396     | 2396     | 20  | 1 page, 0 data |
 | 3G      | off | Return visit: home | 2053       | 2060     | 2060     | 0   |                |
+
+#### Production after #117 (https://bhargavshukla.com)
+
+The current reference for the real-world log. Against production after #110, both with a warm edge cache:
+
+| First visit, home                 | After #110    | After #117    |
+| --------------------------------- | ------------- | ------------- |
+| Lighthouse score (median of 5)    | 99            | 100           |
+| Lighthouse FCP / LCP              | 1.5 / 1.9 s   | 1.04 / 1.04 s |
+| First paint, Slow 4G, JS on / off | 1.71 / 1.33 s | 0.78 / 0.77 s |
+| First paint, 3G, JS on / off      | 5.88 / 4.50 s | 2.55 / 2.56 s |
+
+In production Lighthouse does credit it: LCP drops with FCP, unlike the local build.
+
+| Network | JS  | Step               | Total (ms) | FCP (ms) | LCP (ms) | KB  | Requests       |
+| ------- | --- | ------------------ | ---------- | -------- | -------- | --- | -------------- |
+| Fast 4G | on  | First visit: home  | 600        | 292      | 292      | 187 |                |
+| Fast 4G | on  | Tap Writing        | 260        | –        | –        | 1   | 0 page, 1 data |
+| Fast 4G | on  | Tap Resume         | 651        | –        | –        | 13  | 0 page, 1 data |
+| Fast 4G | on  | Tap Asides         | 663        | –        | –        | 1   | 0 page, 1 data |
+| Fast 4G | on  | Return visit: home | 212        | 208      | 208      | 23  |                |
+| Fast 4G | off | First visit: home  | 524        | 272      | 272      | 114 |                |
+| Fast 4G | off | Tap Writing        | 258        | 204      | 204      | 22  | 1 page, 0 data |
+| Fast 4G | off | Tap Resume         | 451        | 220      | 220      | 36  | 1 page, 0 data |
+| Fast 4G | off | Tap Asides         | 272        | 208      | 208      | 22  | 1 page, 0 data |
+| Fast 4G | off | Return visit: home | 206        | 208      | 208      | 23  |                |
+| Slow 4G | on  | First visit: home  | 2152       | 780      | 780      | 187 |                |
+| Slow 4G | on  | Tap Writing        | 1081       | –        | –        | 1   | 0 page, 1 data |
+| Slow 4G | on  | Tap Resume         | 1083       | –        | –        | 3   | 0 page, 1 data |
+| Slow 4G | on  | Tap Asides         | 1031       | –        | –        | 1   | 0 page, 1 data |
+| Slow 4G | on  | Return visit: home | 721        | 720      | 720      | 23  |                |
+| Slow 4G | off | First visit: home  | 1866       | 772      | 772      | 114 |                |
+| Slow 4G | off | Tap Writing        | 770        | 708      | 708      | 22  | 1 page, 0 data |
+| Slow 4G | off | Tap Resume         | 1411       | 740      | 740      | 36  | 1 page, 0 data |
+| Slow 4G | off | Tap Asides         | 766        | 708      | 708      | 22  | 1 page, 0 data |
+| Slow 4G | off | Return visit: home | 718        | 720      | 720      | 23  |                |
+| 3G      | on  | First visit: home  | 7455       | 2548     | 2548     | 187 |                |
+| 3G      | on  | Tap Writing        | 2533       | –        | –        | 1   | 0 page, 1 data |
+| 3G      | on  | Tap Resume         | 2578       | –        | –        | 3   | 0 page, 1 data |
+| 3G      | on  | Tap Asides         | 2514       | –        | –        | 11  | 0 page, 1 data |
+| 3G      | on  | Return visit: home | 2501       | 2500     | 2500     | 23  |                |
+| 3G      | off | First visit: home  | 6439       | 2556     | 2556     | 114 |                |
+| 3G      | off | Tap Writing        | 2528       | 2468     | 2468     | 22  | 1 page, 0 data |
+| 3G      | off | Tap Resume         | 4840       | 2580     | 2580     | 36  | 1 page, 0 data |
+| 3G      | off | Tap Asides         | 2526       | 2468     | 2468     | 22  | 1 page, 0 data |
+| 3G      | off | Return visit: home | 2498       | 2500     | 2500     | 23  |                |
 
 ## Real-world log
 
