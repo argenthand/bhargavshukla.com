@@ -9,6 +9,7 @@
 		"dev:cms": "vite dev --mode cms",
 		"preview-link": "node scripts/preview-link.mjs",
 		"print-notes": "node scripts/print-notes.mjs",
+		"perf": "node scripts/perf.mjs",
 		"build": "vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
