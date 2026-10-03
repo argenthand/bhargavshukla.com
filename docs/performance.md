@@ -48,8 +48,8 @@ Tapping a tab with JS on, the median of Writing, Resume and Asides:
 | 3G      | 7.2 s       | 2.5 s      | 2 data fetches + a full reload |
 
 - **Taps:** after the fix, a tap is one small data request (a few KB), so it costs about one round trip at any speed. Before, it cost three. With JS off, every tap is a full page load and takes about as long as a fixed JS-on tap.
-- **First visit is the slow part now:** text appears at 1.3–1.5 s on Slow 4G and 4.5–5 s on 3G, and the page weighs about 280 KB, of which about 200 KB is fonts. They come from two other origins (fonts.googleapis.com, fonts.gstatic.com), each needing its own connection before text renders in its real font. That's the input for #110 (self-hosted fonts).
-- **With JS on, `load` comes much later than first paint on 3G** (11.4 s vs 5.1 s): the page is readable at FCP while its scripts keep loading. Reading isn't blocked, but taps before then are full page loads.
+- **First visit is the slow part now:** text appears at 1.3–1.7 s on Slow 4G and 4.5–5.9 s on 3G, and the page weighs about 290 KB, of which about 200 KB is fonts. They come from two other origins (fonts.googleapis.com, fonts.gstatic.com), each needing its own connection before text renders in its real font. That's the input for #110 (self-hosted fonts).
+- **With JS on, `load` comes much later than first paint on 3G** (12.3 s vs 5.9 s): the page is readable at FCP while its scripts keep loading. Reading isn't blocked, but taps before then are full page loads.
 - **Return visits** cost about one round trip (0.6 s on Slow 4G, 2 s on 3G): everything else comes from the browser cache.
 
 ### Production before #108 (https://bhargavshukla.com)
@@ -87,42 +87,42 @@ Tapping a tab with JS on, the median of Writing, Resume and Asides:
 | 3G      | off | Tap Asides         | 2221       | 2164     | 2164     | 7   | 1 page, 0 data |
 | 3G      | off | Return visit: home | 2193       | 2196     | 2196     | 8   |                |
 
-### After #108 (the branch on a local Workers runtime)
+### Production after #108 (https://bhargavshukla.com)
 
-Measured with `wrangler dev` on localhost against production content, not through Cloudflare's network, so first visits here skip a real connection to Cloudflare. Taps are comparable. Replace this table with production numbers after the deploy (`pnpm perf`).
+The reference for the real-world log below.
 
 | Network | JS  | Step               | Total (ms) | FCP (ms) | LCP (ms) | KB  | Requests       |
 | ------- | --- | ------------------ | ---------- | -------- | -------- | --- | -------------- |
-| Fast 4G | on  | First visit: home  | 854        | 428      | 428      | 282 |                |
-| Fast 4G | on  | Tap Writing        | 263        | –        | –        | 0   | 0 page, 1 data |
-| Fast 4G | on  | Tap Resume         | 650        | –        | –        | 12  | 0 page, 1 data |
-| Fast 4G | on  | Tap Asides         | 652        | –        | –        | 0   | 0 page, 1 data |
-| Fast 4G | on  | Return visit: home | 201        | 204      | 204      | 0   |                |
-| Fast 4G | off | First visit: home  | 410        | 436      | 436      | 215 |                |
-| Fast 4G | off | Tap Writing        | 262        | 200      | 200      | 6   | 1 page, 0 data |
-| Fast 4G | off | Tap Resume         | 425        | 204      | 204      | 19  | 1 page, 0 data |
-| Fast 4G | off | Tap Asides         | 266        | 204      | 204      | 6   | 1 page, 0 data |
-| Fast 4G | off | Return visit: home | 195        | 200      | 200      | 0   |                |
-| Slow 4G | on  | First visit: home  | 3270       | 1476     | 1476     | 282 |                |
-| Slow 4G | on  | Tap Writing        | 1086       | –        | –        | 0   | 0 page, 1 data |
-| Slow 4G | on  | Tap Resume         | 1078       | –        | –        | 3   | 0 page, 1 data |
-| Slow 4G | on  | Tap Asides         | 1047       | –        | –        | 0   | 0 page, 1 data |
-| Slow 4G | on  | Return visit: home | 605        | 608      | 608      | 0   |                |
-| Slow 4G | off | First visit: home  | 1259       | 1284     | 1284     | 215 |                |
-| Slow 4G | off | Tap Writing        | 671        | 604      | 604      | 6   | 1 page, 0 data |
-| Slow 4G | off | Tap Resume         | 1303       | 596      | 616      | 19  | 1 page, 0 data |
-| Slow 4G | off | Tap Asides         | 669        | 612      | 612      | 6   | 1 page, 0 data |
-| Slow 4G | off | Return visit: home | 601        | 608      | 608      | 0   |                |
-| 3G      | on  | First visit: home  | 11444      | 5132     | 5132     | 282 |                |
-| 3G      | on  | Tap Writing        | 2542       | –        | –        | 0   | 0 page, 1 data |
-| 3G      | on  | Tap Resume         | 2563       | –        | –        | 3   | 0 page, 1 data |
-| 3G      | on  | Tap Asides         | 2496       | –        | –        | 10  | 0 page, 1 data |
-| 3G      | on  | Return visit: home | 2071       | 2072     | 2072     | 0   |                |
-| 3G      | off | First visit: home  | 4456       | 4476     | 4476     | 215 |                |
-| 3G      | off | Tap Writing        | 2209       | 2116     | 2116     | 6   | 1 page, 0 data |
-| 3G      | off | Tap Resume         | 4471       | 2100     | 2136     | 19  | 1 page, 0 data |
-| 3G      | off | Tap Asides         | 2209       | 2128     | 2128     | 6   | 1 page, 0 data |
-| 3G      | off | Return visit: home | 2051       | 2056     | 2056     | 0   |                |
+| Fast 4G | on  | First visit: home  | 940        | 528      | 528      | 289 |                |
+| Fast 4G | on  | Tap Writing        | 716        | –        | –        | 1   | 0 page, 1 data |
+| Fast 4G | on  | Tap Resume         | 647        | –        | –        | 13  | 0 page, 1 data |
+| Fast 4G | on  | Tap Asides         | 648        | –        | –        | 1   | 0 page, 1 data |
+| Fast 4G | on  | Return visit: home | 208        | 212      | 212      | 8   |                |
+| Fast 4G | off | First visit: home  | 879        | 484      | 484      | 217 |                |
+| Fast 4G | off | Tap Writing        | 258        | 204      | 204      | 7   | 1 page, 0 data |
+| Fast 4G | off | Tap Resume         | 432        | 208      | 208      | 21  | 1 page, 0 data |
+| Fast 4G | off | Tap Asides         | 267        | 204      | 204      | 7   | 1 page, 0 data |
+| Fast 4G | off | Return visit: home | 198        | 204      | 204      | 8   |                |
+| Slow 4G | on  | First visit: home  | 3528       | 1724     | 1724     | 289 |                |
+| Slow 4G | on  | Tap Writing        | 1090       | –        | –        | 1   | 0 page, 1 data |
+| Slow 4G | on  | Tap Resume         | 1064       | –        | –        | 3   | 0 page, 1 data |
+| Slow 4G | on  | Tap Asides         | 1050       | –        | –        | 1   | 0 page, 1 data |
+| Slow 4G | on  | Return visit: home | 626        | 632      | 632      | 8   |                |
+| Slow 4G | off | First visit: home  | 1322       | 1344     | 1344     | 217 |                |
+| Slow 4G | off | Tap Writing        | 668        | 616      | 616      | 7   | 1 page, 0 data |
+| Slow 4G | off | Tap Resume         | 1329       | 648      | 648      | 21  | 1 page, 0 data |
+| Slow 4G | off | Tap Asides         | 673        | 616      | 616      | 7   | 1 page, 0 data |
+| Slow 4G | off | Return visit: home | 621        | 640      | 640      | 8   |                |
+| 3G      | on  | First visit: home  | 12287      | 5856     | 5856     | 289 |                |
+| 3G      | on  | Tap Writing        | 2526       | –        | –        | 1   | 0 page, 1 data |
+| 3G      | on  | Tap Resume         | 2579       | –        | –        | 3   | 0 page, 1 data |
+| 3G      | on  | Tap Asides         | 2479       | –        | –        | 11  | 0 page, 1 data |
+| 3G      | on  | Return visit: home | 2192       | 2188     | 2188     | 8   |                |
+| 3G      | off | First visit: home  | 4508       | 4532     | 4532     | 217 |                |
+| 3G      | off | Tap Writing        | 2219       | 2160     | 2160     | 7   | 1 page, 0 data |
+| 3G      | off | Tap Resume         | 4491       | 2256     | 2256     | 21  | 1 page, 0 data |
+| 3G      | off | Tap Asides         | 2224       | 2164     | 2164     | 7   | 1 page, 0 data |
+| 3G      | off | Return visit: home | 2189       | 2192     | 2192     | 8   |                |
 
 ## Real-world log
 
