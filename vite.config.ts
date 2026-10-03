@@ -15,7 +15,11 @@ export default defineConfig({
 			},
 
 			// Builds a Cloudflare Worker with Static Assets; see wrangler.jsonc and docs/infrastructure.md.
-			adapter: adapter()
+			adapter: adapter(),
+
+			// All CSS goes inline in the HTML (#117): no stylesheet round trip before the first paint.
+			// Client-side navigation never refetches the HTML, so only full page loads carry it.
+			inlineStyleThreshold: Infinity
 		})
 	],
 	// Share cards (#62): leave .wasm imports to wrangler, which bundles them as WebAssembly modules

@@ -219,6 +219,58 @@ The same picture as the local builds: 100 KB less, fully loaded about 17% sooner
 | 3G      | off | Tap Asides         | 2219       | 2164     | 2164     | 6   | 1 page, 0 data |
 | 3G      | off | Return visit: home | 2186       | 2188     | 2188     | 7   |                |
 
+### Inline CSS (#117, measured before deploy)
+
+Lighthouse (mobile, 2026-10-03) put most of the LCP in "render delay": the stylesheet (16 KB) had to arrive before anything painted. #117 puts all CSS in the HTML (`inlineStyleThreshold` in `vite.config.ts`) and has Tailwind read `src/` only. It used to read the docs, the CMS and skill files too, which shipped about 60 classes no page uses (95.6 → 86.0 KB raw).
+
+Local builds, before and after, measured the same way:
+
+| First visit, home                  | Before (#110) | Inline CSS    | Inline CSS + font preload |
+| ---------------------------------- | ------------- | ------------- | ------------------------- |
+| First paint, Slow 4G, JS on        | 1.48 s        | 0.70 s        | 0.80 s                    |
+| First paint, 3G, JS on             | 5.10 s        | 2.38 s        | 2.38 s                    |
+| Fully loaded, JS on, 3G            | 9.19 s        | 6.97 s        | 11.44 s                   |
+| Lighthouse FCP / LCP (median of 5) | 1.96 / 2.41 s | 1.88 / 2.41 s | 1.67 / 2.57 s             |
+
+- **First paint is more than twice as fast** on slow networks, with JS on or off.
+- **The cost:** with JS off, every full page load carries the CSS (about 15 KB compressed): a tap is 20 KB instead of 6 KB, and paints about 0.06 s later on Slow 4G and 0.23 s later on 3G. With JS on, taps only fetch data, so nothing changes.
+- **With JS off, "Total" is higher on a first visit** (Slow 4G 1.26 → 1.78 s): the fonts are found in the HTML now, so `load` waits for them. Text shows long before, in the matched fallback.
+- **Font preload, tried again:** still slower, now competing with the JavaScript; not used.
+- **Lighthouse barely moves:** its simulation ties the LCP text to its font download and doesn't credit the fallback paint, so the score stays about the same while real first paint halves.
+
+| Network | JS  | Step               | Total (ms) | FCP (ms) | LCP (ms) | KB  | Requests       |
+| ------- | --- | ------------------ | ---------- | -------- | -------- | --- | -------------- |
+| Fast 4G | on  | First visit: home  | 630        | 212      | 212      | 180 |                |
+| Fast 4G | on  | Tap Writing        | 265        | –        | –        | 0   | 0 page, 1 data |
+| Fast 4G | on  | Tap Resume         | 231        | –        | –        | 3   | 0 page, 1 data |
+| Fast 4G | on  | Tap Asides         | 649        | –        | –        | 0   | 0 page, 1 data |
+| Fast 4G | on  | Return visit: home | 198        | 204      | 204      | 0   |                |
+| Fast 4G | off | First visit: home  | 464        | 200      | 228      | 112 |                |
+| Fast 4G | off | Tap Writing        | 261        | 200      | 200      | 20  | 1 page, 0 data |
+| Fast 4G | off | Tap Resume         | 430        | 192      | 208      | 33  | 1 page, 0 data |
+| Fast 4G | off | Tap Asides         | 263        | 208      | 208      | 20  | 1 page, 0 data |
+| Fast 4G | off | Return visit: home | 200        | 204      | 204      | 0   |                |
+| Slow 4G | on  | First visit: home  | 1988       | 700      | 700      | 180 |                |
+| Slow 4G | on  | Tap Writing        | 1075       | –        | –        | 0   | 0 page, 1 data |
+| Slow 4G | on  | Tap Resume         | 1062       | –        | –        | 3   | 0 page, 1 data |
+| Slow 4G | on  | Tap Asides         | 1050       | –        | –        | 0   | 0 page, 1 data |
+| Slow 4G | on  | Return visit: home | 605        | 608      | 608      | 0   |                |
+| Slow 4G | off | First visit: home  | 1775       | 688      | 708      | 112 |                |
+| Slow 4G | off | Tap Writing        | 743        | 672      | 676      | 20  | 1 page, 0 data |
+| Slow 4G | off | Tap Resume         | 1378       | 672      | 696      | 33  | 1 page, 0 data |
+| Slow 4G | off | Tap Asides         | 750        | 684      | 696      | 20  | 1 page, 0 data |
+| Slow 4G | off | Return visit: home | 598        | 600      | 600      | 0   |                |
+| 3G      | on  | First visit: home  | 6971       | 2384     | 2412     | 180 |                |
+| 3G      | on  | Tap Writing        | 2525       | –        | –        | 0   | 0 page, 1 data |
+| 3G      | on  | Tap Resume         | 2548       | –        | –        | 3   | 0 page, 1 data |
+| 3G      | on  | Tap Asides         | 2482       | –        | –        | 10  | 0 page, 1 data |
+| 3G      | on  | Return visit: home | 2041       | 2048     | 2048     | 0   |                |
+| 3G      | off | First visit: home  | 6253       | 2364     | 2428     | 112 |                |
+| 3G      | off | Tap Writing        | 2480       | 2364     | 2400     | 20  | 1 page, 0 data |
+| 3G      | off | Tap Resume         | 4716       | 2380     | 2440     | 33  | 1 page, 0 data |
+| 3G      | off | Tap Asides         | 2488       | 2396     | 2396     | 20  | 1 page, 0 data |
+| 3G      | off | Return visit: home | 2053       | 2060     | 2060     | 0   |                |
+
 ## Real-world log
 
 Add a row whenever you try the site on a slow connection. Time from tap until the page is readable, by stopwatch or by feel.

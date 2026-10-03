@@ -97,6 +97,8 @@ html {
   - Not preloaded: on Slow 4G and 3G a preload competed with the CSS and delayed the first paint ([performance.md](performance.md)). `font-display: swap`; while Newsreader loads, text is in "Newsreader Fallback", Georgia scaled to Newsreader's metrics (Capsize), so the swap barely moves it.
   - Share cards (`og.ts`) and the print note still read `@fontsource/newsreader` directly.
 
+**CSS delivery (#117):** all CSS is inlined into each page's HTML (`inlineStyleThreshold: Infinity` in `vite.config.ts`), so nothing blocks the first paint. Tailwind reads `src/` only (`@import 'tailwindcss' source('../')`): class names in the docs, CMS or skill files never reach the site.
+
 ## Breakpoints
 
 | Range        | Layout                                                                                       |
