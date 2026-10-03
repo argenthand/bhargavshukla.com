@@ -5,6 +5,7 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Icon from '$lib/components/Icon.svelte';
+	import NavProgress from '$lib/components/NavProgress.svelte';
 	import Shortcuts from '$lib/components/Shortcuts.svelte';
 	import PalettePicker from '$lib/components/PalettePicker.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
@@ -87,6 +88,8 @@
 	/>
 </svelte:head>
 
+<NavProgress />
+
 <!-- Bottom padding keeps the footer clear of the fixed tab bar below md. -->
 <div
 	class={[
@@ -112,7 +115,11 @@
 			</a>
 			<div class="flex items-center gap-4">
 				{#if nav.length > 0}
-					<nav aria-label="Primary" class="hidden items-center gap-2 md:flex">
+					<nav
+						aria-label="Primary"
+						data-sveltekit-preload-code="viewport"
+						class="hidden items-center gap-2 md:flex"
+					>
 						{#each nav as item (item.href)}
 							<!-- eslint-disable svelte/no-navigation-without-resolve -- nav hrefs are plain strings from site.ts; resolve() needs route literals -->
 							<a
@@ -179,6 +186,7 @@
 {#if nav.length > 0}
 	<nav
 		aria-label="Primary"
+		data-sveltekit-preload-code="viewport"
 		style:view-transition-name="site-tabs"
 		class="fixed inset-x-0 bottom-0 z-20 grid auto-cols-fr grid-flow-col bar-bottom pb-[env(safe-area-inset-bottom)] md:hidden print:hidden"
 	>
