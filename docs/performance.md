@@ -89,7 +89,7 @@ Tapping a tab with JS on, the median of Writing, Resume and Asides:
 
 ### Production after #108 (https://bhargavshukla.com)
 
-The reference for the real-world log below.
+Superseded as the reference by [Production after #110](#production-after-110-httpsbhargavshuklacom).
 
 | Network | JS  | Step               | Total (ms) | FCP (ms) | LCP (ms) | KB  | Requests       |
 | ------- | --- | ------------------ | ---------- | -------- | -------- | --- | -------------- |
@@ -124,7 +124,7 @@ The reference for the real-world log below.
 | 3G      | off | Tap Asides         | 2224       | 2164     | 2164     | 7   | 1 page, 0 data |
 | 3G      | off | Return visit: home | 2189       | 2192     | 2192     | 8   |                |
 
-### Self-hosted fonts (#110, measured before deploy)
+### Self-hosted fonts (#110)
 
 Both columns are local builds under `wrangler dev`, measured the same way: the #108 branch with Google Fonts, and #110 with self-hosted, slimmed fonts (no preload). Compare local with local: a local build paints about 0.25 s sooner than production on Slow 4G whatever the fonts, because it skips the real network to Cloudflare.
 
@@ -172,6 +172,52 @@ Both columns are local builds under `wrangler dev`, measured the same way: the #
 | 3G      | off | Tap Resume         | 4438       | 2076     | 2112     | 19  | 1 page, 0 data |
 | 3G      | off | Tap Asides         | 2185       | 2108     | 2108     | 6   | 1 page, 0 data |
 | 3G      | off | Return visit: home | 2057       | 2060     | 2060     | 0   |                |
+
+#### Production after #110 (https://bhargavshukla.com)
+
+The current reference for the real-world log. Against production after #108 (Google Fonts), measured the same day:
+
+| First visit, home                 | Google Fonts   | Self-hosted    |
+| --------------------------------- | -------------- | -------------- |
+| KB, JS on / off                   | 289 / 217      | 189 / 116      |
+| First paint, Slow 4G, on / off    | 1.72 / 1.34 s  | 1.71 / 1.33 s  |
+| First paint, 3G, on / off         | 5.86 / 4.53 s  | 5.88 / 4.50 s  |
+| Fully loaded, JS on, Slow 4G / 3G | 3.53 / 12.29 s | 2.93 / 10.24 s |
+
+The same picture as the local builds: 100 KB less, fully loaded about 17% sooner, and first paint unchanged in the simulation. Whether a real phone paints sooner without the two Google connections is a question for the real-world log.
+
+| Network | JS  | Step               | Total (ms) | FCP (ms) | LCP (ms) | KB  | Requests       |
+| ------- | --- | ------------------ | ---------- | -------- | -------- | --- | -------------- |
+| Fast 4G | on  | First visit: home  | 931        | 544      | 544      | 189 |                |
+| Fast 4G | on  | Tap Writing        | 699        | –        | –        | 1   | 0 page, 1 data |
+| Fast 4G | on  | Tap Resume         | 248        | –        | –        | 3   | 0 page, 1 data |
+| Fast 4G | on  | Tap Asides         | 233        | –        | –        | 1   | 0 page, 1 data |
+| Fast 4G | on  | Return visit: home | 208        | 212      | 212      | 7   |                |
+| Fast 4G | off | First visit: home  | 432        | 452      | 452      | 116 |                |
+| Fast 4G | off | Tap Writing        | 253        | 204      | 204      | 6   | 1 page, 0 data |
+| Fast 4G | off | Tap Resume         | 433        | 208      | 208      | 20  | 1 page, 0 data |
+| Fast 4G | off | Tap Asides         | 265        | 208      | 208      | 6   | 1 page, 0 data |
+| Fast 4G | off | Return visit: home | 197        | 204      | 204      | 7   |                |
+| Slow 4G | on  | First visit: home  | 2933       | 1712     | 1712     | 189 |                |
+| Slow 4G | on  | Tap Writing        | 1071       | –        | –        | 1   | 0 page, 1 data |
+| Slow 4G | on  | Tap Resume         | 1065       | –        | –        | 3   | 0 page, 1 data |
+| Slow 4G | on  | Tap Asides         | 1047       | –        | –        | 1   | 0 page, 1 data |
+| Slow 4G | on  | Return visit: home | 631        | 632      | 632      | 7   |                |
+| Slow 4G | off | First visit: home  | 1308       | 1332     | 1332     | 116 |                |
+| Slow 4G | off | Tap Writing        | 672        | 620      | 620      | 6   | 1 page, 0 data |
+| Slow 4G | off | Tap Resume         | 1330       | 652      | 652      | 20  | 1 page, 0 data |
+| Slow 4G | off | Tap Asides         | 671        | 616      | 616      | 6   | 1 page, 0 data |
+| Slow 4G | off | Return visit: home | 626        | 632      | 632      | 7   |                |
+| 3G      | on  | First visit: home  | 10243      | 5880     | 5880     | 189 |                |
+| 3G      | on  | Tap Writing        | 2540       | –        | –        | 1   | 0 page, 1 data |
+| 3G      | on  | Tap Resume         | 2563       | –        | –        | 3   | 0 page, 1 data |
+| 3G      | on  | Tap Asides         | 2479       | –        | –        | 11  | 0 page, 1 data |
+| 3G      | on  | Return visit: home | 2192       | 2192     | 2192     | 7   |                |
+| 3G      | off | First visit: home  | 4482       | 4504     | 4504     | 116 |                |
+| 3G      | off | Tap Writing        | 2224       | 2168     | 2168     | 6   | 1 page, 0 data |
+| 3G      | off | Tap Resume         | 4521       | 2256     | 2256     | 20  | 1 page, 0 data |
+| 3G      | off | Tap Asides         | 2219       | 2164     | 2164     | 6   | 1 page, 0 data |
+| 3G      | off | Return visit: home | 2186       | 2188     | 2188     | 7   |                |
 
 ## Real-world log
 
