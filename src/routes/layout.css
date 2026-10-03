@@ -211,6 +211,28 @@
 			opacity: 0;
 		}
 	}
+	/* The loading bar (#108): after a short wait, it grows toward 90% while a page loads, slowing
+	   down as it goes; NavProgress.svelte fills and fades it when the page arrives. With reduced
+	   motion it just appears, full width, after the same wait. */
+	--delay-progress: 150ms; /* no bar for navigations quicker than this */
+	--duration-progress: 8s;
+	--animate-progress: progress var(--duration-progress) var(--delay-progress) var(--ease-motion)
+		both;
+	--animate-progress-still: progress-still 0s var(--delay-progress) both;
+
+	@keyframes progress {
+		from {
+			scale: 0 1;
+		}
+		to {
+			scale: 0.9 1;
+		}
+	}
+	@keyframes progress-still {
+		from {
+			opacity: 0;
+		}
+	}
 	/* The headshot's wink (#63): a quick tilt and back. */
 	--animate-wink: wink calc(var(--duration-motion) * 3) var(--ease-motion);
 

@@ -34,15 +34,18 @@ Publishing any post purges `type:post`, which clears every page that shows posts
 
 1. `cacheTags` sets `event.locals.cacheTags = new Set()`.
 2. **Bypass** (plain `resolve`, `x-edge-cache: BYPASS`) when there's no `platform.caches` (`vite dev`), the method isn't `GET`/`HEAD`, the path starts with `/api/`, or the `__preview` cookie is present.
-3. **Cache key** = `origin + /__edge + pathname` + only these params, in this order: `cat`, `kind`, `page`, `q`, `tag`, `x-sveltekit-invalidated`, `x-sveltekit-trailing-slash`. Tracking params (`utm_*`, `fbclid`, …) are dropped, so they share the page.
+3. **Cache key** = `origin + /__edge/<build version> + pathname` + only these params, in this order: `cat`, `kind`, `page`, `q`, `tag`, `x-sveltekit-invalidated`, `x-sveltekit-trailing-slash`. Tracking params (`utm_*`, `fbclid`, …) are dropped, so they share the page.
+   - Built from the **request's** URL, not `event.url`: SvelteKit strips `/__data.json`, `x-sveltekit-invalidated` and `x-sveltekit-trailing-slash` from `event.url` before hooks run. Keyed on `event.url`, a page and its client-navigation data shared one entry, so taps got HTML instead of JSON and fell back to full reloads (#108).
+   - The build `version` (`$app/environment`) means a deploy never serves a cached page that points at assets it removed; old entries just age out.
    - The filters are in the key because `/blog` and `/asides` render their filtered results on the server (no-JS and shareable links).
-   - The `/__edge/` prefix matters: the adapter's own worker looks up the **raw request URL** in `caches.default` before SvelteKit runs, and must never find one of our entries (it would serve it as-is, `Cache-Tag` and 10-minute `Cache-Control` included).
+   - The `/__edge/` prefix matters: the adapter's own worker looks up the **raw request URL** in `caches.default` before SvelteKit runs, and must never find one of our entries (it would serve it as-is, `Cache-Tag` and day-long `Cache-Control` included).
 4. `hit = await caches.default.match(key)`. A hit is returned with `x-edge-cache: HIT` (a `HEAD` gets the headers without the body).
 5. On a miss, `response = await resolve(event)`.
-6. Stored only for a `GET` whose response is `200`, has ≥ 1 tag, has no `Set-Cookie`, and whose `Cache-Control` isn't `no-store`/`private`. A load opts out with `setHeaders({ 'cache-control': 'no-store' })`; the home page does this when Strapi is unreachable, so the page without posts isn't kept for the TTL. The stored copy gets `Cache-Control: public, max-age=${EDGE_TTL}` and `Cache-Tag: <tags>`, written with `ctx.waitUntil(cache.put(key, …))`.
+6. Stored only for a `GET` whose response is `200`, has ≥ 1 tag, has no `Set-Cookie`, and whose `Cache-Control` isn't `no-store`/`private`. A load opts out with `locals.noStore = true` (not `setHeaders`, which SvelteKit leaves off `__data.json`); the home page does this when Strapi is unreachable, so the page without posts isn't kept for the TTL.
+   - **Page data** (`__data.json`, what a client-side navigation fetches) always comes from SvelteKit as `private, no-store`, so the header can't decide. It's stored when it's `application/json`, a `data` answer, and none of its nodes is an `error` (a 404 or a failed Strapi call arrives as a 200 with an error node; a redirect as `type: 'redirect'`). Same tags, TTL and purge as pages (#108). The stored copy gets `Cache-Control: public, max-age=${EDGE_TTL}` and `Cache-Tag: <tags>`, written with `ctx.waitUntil(cache.put(key, …))`.
 7. Browsers always get `x-edge-cache: MISS|HIT`, no `Cache-Tag`, and `Cache-Control: no-cache`. `no-cache` (rather than `max-age=0, must-revalidate`) also stops the adapter's worker from storing the response itself.
 
-`EDGE_TTL = 600` (10 minutes). It only bounds staleness if a purge fails; raise it once purging has proven reliable.
+`EDGE_TTL = 86400` (a day; 10 minutes until #108). Purges clear content changes and the version in the key clears deploys, so the TTL only bounds staleness if a purge fails. The Cache API is per data center, and a short TTL meant most visits to a quiet site missed and waited on Strapi.
 
 ### Draft preview (#57) — `src/lib/server/preview.ts`
 
