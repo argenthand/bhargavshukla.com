@@ -13,6 +13,7 @@ Planning and reference docs for bhargavshukla.com.
 | [infrastructure.md](infrastructure.md)       | DNS, Cloudflare Workers, VPS, tunnel, media, backups                        |
 | [performance.md](performance.md)             | Slow-network timings: how to measure (`pnpm perf`), results, real-world log |
 | [view-counts.md](view-counts.md)             | Read counts: options, decisions and what was built (#82, #87)               |
+| [contact.md](contact.md)                     | The contact card: checks, spam, delivery, the printed email, setup (#135)   |
 | [roadmap.md](roadmap.md)                     | Phases, milestones and tickets (GitHub issues)                              |
 
 Work happens one ticket at a time: each issue gets a branch off an up-to-date `main` and a PR that is merged before the next issue starts.

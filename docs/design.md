@@ -140,6 +140,7 @@ Components never name a Tailwind colour (#81). They use the **roles** below (`te
 | `accent`                   | Links, labels, markers, focus ring, quote marks, ring                    | hue-700  | hue-400  |
 | `accent-hover`             | Link hover                                                               | hue-800  | hue-300  |
 | `accent-print`             | Ink on paper: the resume's printed bullets (#102)                        | hue-700  | hue-700  |
+| `danger`                   | Form errors: outline and message (#135); red in every palette            | red-700  | red-400  |
 
 Posts use the same roles: `prose-roles` points the typography plugin's colours at them. Fixed on purpose: print (black on white), dialog backdrops (black), share cards (Newsprint), Shiki's token colours, the NES controller (drawn as the hardware: `--color-pad-*`; #111). 8-bit mode (#111) is a sixth set of roles, Night, never in the picker: see [Easter eggs](#easter-eggs).
 
@@ -262,6 +263,7 @@ One `@utility` per role in `layout.css`. Change it there and every use follows.
 | Aside              | `label-accent` kind · `meta link-quiet` date › title: `list-title` (stream) or `page-title` (its page) › body: `Prose` for every kind; a quote is `body-copy italic quote-marks` (red curly quotes, no rules), `meta` attribution                                                                                                                                                                                                                                                 |
 | Tag link           | `meta tap-target link-quiet italic` + `aria-[current=true]:` red `decoration-2`                                                                                                                                                                                                                                                                                                                                                                                                   |
 | Tag filter bar     | `flex min-h-13 items-center justify-between gap-3 surface pl-4 pr-2` (`role="status"`) › `body-copy` text, `link-cta` Clear                                                                                                                                                                                                                                                                                                                                                       |
+| Contact card       | `ContactCard.svelte` (#135, [contact.md](contact.md)), above the footer on every page but the error page, `print:hidden`: `surface p-5 md:p-7` › `h2` "Send me a message", `field` inputs and a `field-area` textarea with `label-muted` labels, errors in `text-danger`; Send: `rounded-full bg-accent text-page`, `aria-disabled:opacity-40`, `data-nes-cta`                                                                                                                    |
 | Error page         | `page max-w-3xl` › `max-w-140 flex flex-col gap-4` › `label-accent` status (`404 · Not found`), `page-title`, `body-copy`, `link-cta` links in a row                                                                                                                                                                                                                                                                                                                              |
 
 ## Motion
@@ -366,7 +368,8 @@ For people who go looking (#63). Each one stays invisible otherwise and never ge
 
 ## Resume print
 
-- `print:hidden` on the top bar, header, tab bar, footer, preview banner and the Save as PDF button.
+- `print:hidden` on the top bar, header, tab bar, footer, preview banner, the contact card, "Send a message" and the Save as PDF button.
+- The email prints first in the contact list, on paper only: fetched after load, never in the page (#135, [contact.md](contact.md#the-printed-email)).
 - `print:bg-white print:text-black`; all rules black 1px; links print as plain text with full URLs (bhargavshukla.com, linkedin.com/in/…, github.com/…).
 - `break-inside-avoid` on every job; `break-after-avoid` on section headings; `@page { size: letter; margin: 0.6in 0.75in }`.
 - Target: page 1 = header, summary, all experience; page 2 = skills and education.

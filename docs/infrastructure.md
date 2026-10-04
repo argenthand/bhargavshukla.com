@@ -428,6 +428,10 @@ Before merging #87 (the Worker refuses to deploy with a binding to a database th
 3. **Merge.** Counting starts with the deploy.
 4. **Check:** read a post for 10 seconds, then `pnpm exec wrangler d1 execute bs-reads --remote --command "SELECT * FROM views"` shows it with a count of 1. The page shows no number until 5.
 
+### Contact form (#135)
+
+Resend, Turnstile, the D1 table and two secrets (`RESEND_API_KEY`, `TURNSTILE_SECRET`): steps in [contact.md → Setup](contact.md#setup-production).
+
 ### Automated CMS deploys (#48)
 
 Every push to `main` that touches `cms/**` (or the workflow) builds the image, then the `deploy` job in [`cms-image.yml`](../.github/workflows/cms-image.yml) runs [`cms/deploy/deploy.sh`](../cms/deploy/deploy.sh) on the VPS for that exact commit:

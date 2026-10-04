@@ -45,6 +45,9 @@ src/
     api/preview/+server.ts        Strapi "Open preview" → checks the signed link, sets the signed preview cookie (#57)
     api/preview/exit/+server.ts   preview banner "Exit" → clears the cookie
     api/views/+server.ts          read counts (#87): GET counts for some pages, POST the 10-second beacon
+    api/print-contact/+server.ts  the printed resume's email, encoded (#135)
+
+Every page route's +page.server.ts also exports `actions = { contact }`: the contact card's form (#135, contact.md).
 ```
 
 ## Conventions

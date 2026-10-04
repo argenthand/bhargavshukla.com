@@ -131,6 +131,7 @@
 	--role-accent: var(--hue-700); /* links, labels, markers, focus */
 	--role-accent-hover: var(--hue-800);
 	--role-accent-print: var(--hue-700); /* ink on paper: the light accent in either theme (#102) */
+	--role-danger: var(--color-red-700); /* form errors (#135): red in every palette */
 
 	@variant dark {
 		--role-page: var(--grey-950);
@@ -146,6 +147,7 @@
 		--role-line: var(--grey-800);
 		--role-accent: var(--hue-400);
 		--role-accent-hover: var(--hue-300);
+		--role-danger: var(--color-red-400);
 	}
 }
 
@@ -163,6 +165,7 @@
 	--color-line: var(--role-line);
 	--color-accent: var(--role-accent);
 	--color-accent-hover: var(--role-accent-hover);
+	--color-danger: var(--role-danger);
 	--color-accent-print: var(--role-accent-print);
 }
 
@@ -401,6 +404,15 @@
 }
 @utility field {
 	@apply flex pill focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent;
+	/* An input with an error (#135): the danger outline, focused or not. */
+	&:has([aria-invalid='true']) {
+		outline: 2px solid var(--color-danger);
+		outline-offset: 2px;
+	}
+}
+/* `field` for a textarea (#135). */
+@utility field-area {
+	@apply field rounded-2xl py-3;
 }
 @utility select-field {
 	@apply h-11 w-full appearance-none rounded-full border-0 bg-fill bg-none py-0 pr-10 pl-4 text-lg focus:ring-0;
@@ -548,6 +560,7 @@
 		--role-line: var(--nes-edge);
 		--role-accent: var(--nes-red);
 		--role-accent-hover: var(--nes-orange);
+		--role-danger: var(--nes-red);
 		/* Square corners; circles stay round. */
 		--radius-sm: 0;
 		--radius-md: 0;
@@ -577,6 +590,10 @@
 		font-weight: 400;
 		letter-spacing: 0;
 		line-height: 1.6;
+	}
+	/* The contact card's inputs match its square message box (#135). */
+	:root[data-nes] #contact .field {
+		border-radius: 0;
 	}
 	/* Calls to action (the home page's Resume link, All posts…, Save as PDF) become red blocks
 	   with a hard shadow, pressed in when tapped. */

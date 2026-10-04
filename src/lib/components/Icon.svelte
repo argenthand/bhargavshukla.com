@@ -21,7 +21,9 @@
 		| 'monitor'
 		| 'note'
 		| 'volume'
-		| 'volume-off';
+		| 'volume-off'
+		| 'check'
+		| 'alert';
 </script>
 
 <script lang="ts">
@@ -87,6 +89,16 @@
 			y1="18"
 			x2="3.01"
 			y2="18"
+		/>
+	{:else if name === 'check'}
+		<polyline points="20 6 9 17 4 12" />
+	{:else if name === 'alert'}
+		<!-- Feather: alert-circle -->
+		<circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line
+			x1="12"
+			y1="16"
+			x2="12.01"
+			y2="16"
 		/>
 	{:else if name === 'close'}
 		<!-- Feather: x -->

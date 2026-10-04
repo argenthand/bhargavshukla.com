@@ -7,6 +7,7 @@
 	import { onNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import ContactCard from '$lib/components/ContactCard.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import NavProgress from '$lib/components/NavProgress.svelte';
 	import NesBanner from '$lib/components/NesBanner.svelte';
@@ -210,6 +211,13 @@
 	<main class="flex-1">
 		{@render children()}
 	</main>
+
+	<!-- The contact card (#135): every page but the error page, which has no form action. -->
+	{#if !page.error}
+		<div class="mx-auto w-full max-w-3xl px-5 pb-8 md:px-8 print:hidden">
+			<ContactCard />
+		</div>
+	{/if}
 
 	<footer class="print:hidden">
 		<div

@@ -3,8 +3,10 @@
 	// ("Save as PDF") that reads cleanly in applicant tracking systems: standard headings, no icons.
 	// Content comes from the Strapi Resume; the header is the shared ProfileHeader (#99) from the Profile.
 	import { page } from '$app/state';
+	import { tick } from 'svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import ProfileHeader, { profileContacts } from '$lib/components/ProfileHeader.svelte';
+	import { decodeContact } from '$lib/contact';
 	import Seo from '$lib/components/Seo.svelte';
 	import { formatMonth } from '$lib/format';
 	import { site } from '$lib/site';
@@ -17,6 +19,31 @@
 	const profile = $derived(data.profile);
 
 	const contacts = $derived(profileContacts(profile, { website: page.url.origin }));
+
+	// The email, on paper only (#135): never in the page or its data, so it's fetched after load.
+	// Save as PDF waits for it; the browser's own Print gets it once it's here.
+	let printEmail = $state<string | null>(null);
+	let emailReady: Promise<void> | undefined;
+	let emailLoaded = false;
+	$effect(() => {
+		emailReady = fetch('/api/print-contact')
+			.then((response) => response.json() as Promise<{ e: string | null }>)
+			.then(({ e }) => {
+				if (e) printEmail = decodeContact(e);
+			})
+			.catch((err) => console.warn('Print contact unavailable', err))
+			.finally(() => (emailLoaded = true));
+	});
+
+	async function savePdf() {
+		// Print straight from the tap when the email is already here (the usual case); otherwise wait
+		// up to 2 s for it, then print with or without it.
+		if (!emailLoaded) {
+			await Promise.race([emailReady, new Promise((resolve) => setTimeout(resolve, 2000))]);
+			await tick();
+		}
+		window.print();
+	}
 
 	// The printed note (#102) in the current palette. Only that palette's image loads; it follows
 	// the palette picker. Without JavaScript the page is in Newsprint, the default.
@@ -137,19 +164,14 @@
 				Last updated <time datetime={resume.updatedAt}>{formatMonth(resume.updatedAt)}</time>
 			</p>
 			<!-- Needs JavaScript; without it, the browser's own Print works just as well. -->
-			<button
-				type="button"
-				onclick={() => window.print()}
-				data-nes-cta
-				class="hidden pill js:inline-flex"
-			>
+			<button type="button" onclick={savePdf} data-nes-cta class="hidden pill js:inline-flex">
 				<Icon name="printer" size={18} />Save as PDF
 			</button>
 		</div>
 	{/if}
 
 	<div class="space-y-14 md:space-y-16 print:space-y-4">
-		<ProfileHeader {profile} {contacts} printNote={resume?.location} />
+		<ProfileHeader {profile} {contacts} printNote={resume?.location} {printEmail} />
 
 		{#if !resume}
 			<p class="body-copy">The full resume is on its way.</p>
