@@ -132,7 +132,7 @@ Reading a post adds 2 read-count calls. So a typical visit from a shared link (l
 - **Read counts:** about 3 D1 rows per counted read stays inside the 50 M included rows up to roughly 30 M visits a month. Beyond that, D1 costs more than the cache: 100 M visits ≈ $100 of row writes.
 - **Strapi and the VPS** don't feel popularity: only misses reach them, and with Workers Cache those are a handful per publish.
 - **If traffic ever gets there:**
-  - The lever is the 27 JS files on a first visit. Merging Vite's small chunks would cut them to a handful, which also helps first-visit speed on slow networks.
+  - The lever is the number of static files on a first visit (18 JS files on home). Merging them is a small Vite setting (Rolldown `codeSplitting.groups` for the client build only; the server build breaks on the share cards' WebAssembly). Tried 2026-10-03: 18 → 7 files, but 49.8 → 61.0 KB gzip, because the merged chunk carries every page's code. Taps were unchanged, and first-visit "fully loaded" was a little slower (Slow 4G 1.99 → 2.07 s, 3G 6.97 → 7.33 s). HTTP/2 already fetches the small files in parallel. So it only pays for itself as a billing measure at millions of visits a month; not worth it before then.
   - Rate limits and a spending alert on the Cloudflare account are cheap insurance.
   - Neither is worth doing at today's traffic.
 
