@@ -393,7 +393,17 @@ Return visits now revalidate: the browser asks whether the page changed and gets
 | 3G      | on  | 2487 ms, 23 KB | 2084 ms, 2 KB |
 | 3G      | off | 2490 ms, 23 KB | 2076 ms, 2 KB |
 
-- **It's still one round trip:** a 304 can't skip the request, it only skips the body. On slow links that body was most of the wait after the round trip itself (0.4 s on 3G).
+- **It's still one round trip:** a 304 can't skip the request, it only skips the body. A return visit costs about one round trip plus size ÷ bandwidth, so the time saved is the 21 KB no longer downloaded:
+
+  | Network | Bandwidth   | Expected saving | Measured     |
+  | ------- | ----------- | --------------- | ------------ |
+  | Fast 4G | 8.1 Mbit/s  | ~21 ms          | 6 ms (noise) |
+  | Slow 4G | 1.44 Mbit/s | ~117 ms         | 98 ms        |
+  | 3G      | 0.4 Mbit/s  | ~420 ms         | 403 ms       |
+
+  On Fast 4G the 165 ms round trip dominates and 21 KB barely registers; the bytes matter on slow links.
+
+- **Real networks likely save more:** DevTools throttling only adds a fixed delay and caps bandwidth. A new real connection sends about 14 KB in its first round trip (TCP slow start; QUIC is similar), so the 23 KB page needed a second round trip and the 2 KB 304 doesn't. On real 4G that's worth about a round trip (~165 ms), not 21 ms. The emulation can't show it.
 - **Everything else matches #123 within noise:** first visits and taps are unchanged.
 
 ## Real-world log
