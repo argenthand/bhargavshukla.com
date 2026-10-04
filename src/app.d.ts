@@ -17,8 +17,12 @@ declare global {
 		// interface PageData {}
 		// interface PageState {}
 		interface Platform {
-			/** Bindings from wrangler.jsonc. `READS` is D1 (#87); `vite dev` gets a local copy. */
-			env: { READS?: ReadsDb };
+			/** Bindings from wrangler.jsonc. `READS` is D1 (#87); `vite dev` gets a local copy.
+			 *  `CONTACT_RATE` limits contact-form sends per IP (#135). */
+			env: {
+				READS?: ReadsDb;
+				CONTACT_RATE?: { limit(options: { key: string }): Promise<{ success: boolean }> };
+			};
 		}
 	}
 }

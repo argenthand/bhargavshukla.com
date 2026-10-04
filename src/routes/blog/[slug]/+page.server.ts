@@ -3,7 +3,8 @@ import { resolveImage } from '$lib/server/image';
 import { renderMarkdown } from '$lib/server/markdown';
 import { getPost, listPosts, pickNextUp } from '$lib/server/posts';
 import { mediaUrl } from '$lib/server/strapi';
-import type { PageServerLoad } from './$types';
+import { contact } from '$lib/server/contact';
+import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const drafts = locals.preview;
@@ -40,3 +41,6 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		nextUp
 	};
 };
+
+// The contact card's form (#135): the card is in the layout, and layouts can't have actions.
+export const actions = { contact } satisfies Actions;

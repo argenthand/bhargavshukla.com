@@ -1,6 +1,7 @@
 import { homePosts } from '$lib/server/posts';
 import { getProfile } from '$lib/server/profile';
-import type { PageServerLoad } from './$types';
+import { contact } from '$lib/server/contact';
+import type { Actions, PageServerLoad } from './$types';
 
 // The page must render even when Strapi is unreachable (or the profile isn't saved yet): the
 // intro then falls back to the name alone and the posts section is left out.
@@ -27,3 +28,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 	if (degraded) locals.noStore = true;
 	return { profile, home, degraded };
 };
+
+// The contact card's form (#135): the card is in the layout, and layouts can't have actions.
+export const actions = { contact } satisfies Actions;

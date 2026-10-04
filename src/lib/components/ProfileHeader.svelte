@@ -1,18 +1,28 @@
 <script lang="ts" module>
 	import type { IconName } from './Icon.svelte';
 
-	export type Contact = { href: string; text: string; icon: IconName; external?: boolean };
+	export type Contact = {
+		href: string;
+		text: string;
+		icon: IconName;
+		external?: boolean;
+		/** Left off paper: "Send a message" means nothing there. */
+		screenOnly?: boolean;
+	};
 
 	/** Link text without the scheme: "linkedin.com/in/…". It prints as-is, so it doubles as the URL. */
 	const bare = (url: string) => url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/+$/, '');
 
-	/** Email, the site (when given: the resume lists it, home is it), LinkedIn, GitHub; only those set. */
+	/**
+	 * "Send a message" (the contact card, #135: the email is never on the page), the site (when
+	 * given: the resume lists it, home is it), LinkedIn, GitHub; only those set.
+	 */
 	export function profileContacts(
-		profile: { email: string | null; linkedin: string | null; github: string | null } | undefined,
+		profile: { linkedin: string | null; github: string | null } | undefined,
 		{ website }: { website?: string } = {}
 	): Contact[] {
 		return [
-			profile?.email && { href: `mailto:${profile.email}`, text: profile.email, icon: 'mail' },
+			{ href: '#contact', text: 'Send a message', icon: 'mail', screenOnly: true },
 			website && { href: website, text: bare(website), icon: 'globe' },
 			profile?.linkedin && {
 				href: profile.linkedin,
@@ -45,8 +55,10 @@
 		headingId?: string;
 		/** Printed after the contacts, e.g. the resume's location. */
 		printNote?: string | null;
+		/** Printed first, in place of "Send a message": the resume's email (#135), fetched after load. */
+		printEmail?: string | null;
 	};
-	let { profile, contacts, headingId, printNote }: Props = $props();
+	let { profile, contacts, headingId, printNote, printEmail }: Props = $props();
 
 	// The headshot's easter egg (#63): five quick clicks swap in the profile's alternate photo (and
 	// back); without one, the photo winks instead (not with reduced motion).
@@ -99,13 +111,18 @@
 			{/if}
 		</div>
 	</div>
-	{#if contacts.length > 0 || printNote}
+	{#if contacts.length > 0 || printNote || printEmail}
 		<ul
 			class="flex flex-wrap gap-x-4 text-sm md:shrink-0 md:flex-col print:flex-col print:gap-y-0.5"
 		>
+			{#if printEmail}
+				<li class="hidden print:block">
+					<a href="mailto:{printEmail}" class="text-accent-print">{printEmail}</a>
+				</li>
+			{/if}
 			{#each contacts as contact (contact.href)}
-				<li>
-					<!-- eslint-disable svelte/no-navigation-without-resolve -- mailto:, the site's origin and external profiles -->
+				<li class={contact.screenOnly ? 'print:hidden' : undefined}>
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- #contact, the site's origin and external profiles -->
 					<a
 						href={contact.href}
 						target={contact.external ? '_blank' : undefined}

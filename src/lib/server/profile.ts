@@ -18,9 +18,13 @@ export function firstParagraph(markdown: string, max = 160): string {
 	return `${/\s/.test(text[max - 1]) ? cut.trimEnd() : cut.replace(/\s+\S*$/, '')}…`;
 }
 
+/**
+ * The profile for pages. Never the email (#135): pages show the contact card instead, and the
+ * address is only fetched for the printed resume (`/api/print-contact`) and the form's own mail.
+ */
 export async function getProfile(locals: App.Locals) {
-	const profile = await strapi(locals).get<Profile>('profile', {
-		fields: ['name', 'tagline', 'bio', 'email', 'linkedin', 'github'],
+	const profile = await strapi(locals).get<Omit<Profile, 'email'>>('profile', {
+		fields: ['name', 'tagline', 'bio', 'linkedin', 'github'],
 		populate: {
 			photo: { fields: ['url', 'alternativeText', 'width', 'height', 'formats'] },
 			photoAlt: { fields: ['url', 'alternativeText', 'width', 'height', 'formats'] }
@@ -36,4 +40,12 @@ export async function getProfile(locals: App.Locals) {
 		bioHtml: renderMarkdown(bio ?? '').html,
 		bioSummary: firstParagraph(bio ?? '')
 	};
+}
+
+/** The profile's email (#135): where contact-form mail goes, and the printed resume's address. */
+export async function getContactEmail(locals: App.Locals): Promise<string | null> {
+	const profile = await strapi(locals).get<Pick<Profile, 'email'>>('profile', {
+		fields: ['email']
+	});
+	return profile?.email ?? null;
 }

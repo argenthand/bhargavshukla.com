@@ -1,6 +1,7 @@
 import { listPosts } from '$lib/server/posts';
 import type { Category } from '$lib/types/content';
-import type { PageServerLoad } from './$types';
+import { contact } from '$lib/server/contact';
+import type { Actions, PageServerLoad } from './$types';
 
 // Every published post; search and the category filter run in the browser (docs/design.md → Routes).
 export const load: PageServerLoad = async ({ locals }) => {
@@ -22,3 +23,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 		categories: [...categories.values()].sort((a, b) => a.name.localeCompare(b.name))
 	};
 };
+
+// The contact card's form (#135): the card is in the layout, and layouts can't have actions.
+export const actions = { contact } satisfies Actions;
