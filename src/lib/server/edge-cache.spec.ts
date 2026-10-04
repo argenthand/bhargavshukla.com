@@ -4,6 +4,7 @@ import {
 	EDGE_CACHE_CONTROL,
 	bypass,
 	edgeCache,
+	etagFor,
 	isCacheable,
 	isCacheableData,
 	shouldBypass,
@@ -98,6 +99,21 @@ describe('withCacheHeaders', () => {
 		expect(res.headers.get('vary')).toBe('Accept-Encoding, Cookie');
 	});
 
+	it('dates a cacheable response with Last-Modified (#126), and nothing else', () => {
+		const when = new Date('2026-10-04T18:00:00Z');
+		const kept = withCacheHeaders(new Response('ok'), tags, true, () => when);
+		expect(kept.headers.get('last-modified')).toBe('Sun, 04 Oct 2026 18:00:00 GMT');
+		const own = new Response('ok', {
+			headers: { 'last-modified': 'Thu, 01 Oct 2026 00:00:00 GMT' }
+		});
+		expect(withCacheHeaders(own, tags, true).headers.get('last-modified')).toBe(
+			'Thu, 01 Oct 2026 00:00:00 GMT'
+		);
+		expect(withCacheHeaders(new Response('no'), tags, false).headers.has('last-modified')).toBe(
+			false
+		);
+	});
+
 	it('tells Cloudflare never to store anything else', () => {
 		const res = withCacheHeaders(
 			new Response('nope', { status: 404, headers: { 'cache-tag': 'type:post' } }),
@@ -107,6 +123,14 @@ describe('withCacheHeaders', () => {
 		expect(res.headers.get('cloudflare-cdn-cache-control')).toBe('no-store');
 		expect(res.headers.get('cache-tag')).toBeNull();
 		expect(res.headers.get('cache-control')).toBe('no-cache');
+	});
+});
+
+describe('etagFor (#126)', () => {
+	it('is a quoted hash that changes with the body', () => {
+		expect(etagFor('{"type":"data"}')).toMatch(/^"[0-9a-z]+"$/);
+		expect(etagFor('a')).toBe(etagFor('a'));
+		expect(etagFor('a')).not.toBe(etagFor('b'));
 	});
 });
 
@@ -157,7 +181,18 @@ describe('edgeCache', () => {
 		);
 		expect(res.headers.get('cloudflare-cdn-cache-control')).toBe(EDGE_CACHE_CONTROL);
 		expect(res.headers.get('cache-control')).toBe('no-cache');
+		expect(res.headers.get('etag')).toBe(etagFor(data));
 		expect(await res.text()).toBe(data);
+	});
+
+	it('gives page data with an error no ETag (#126)', async () => {
+		const data = '{"type":"data","nodes":[{"type":"error","status":404}]}';
+		const res = await run(
+			'GET',
+			'/blog/x/__data.json?x-sveltekit-invalidated=01',
+			() => new Response(data, { headers: { 'content-type': 'application/json' } })
+		);
+		expect(res.headers.has('etag')).toBe(false);
 	});
 
 	it('never stores errors, untagged pages or a load that opted out', async () => {
