@@ -1,7 +1,8 @@
 # Edge cache and webhook purge
 
 > Misses and what to do about them: [edge-cache-misses.md](edge-cache-misses.md) (#120).
-> Goal: near-static speed, with content changes live within seconds and no frontend redeploy.
+
+Goal: near-static speed, with content changes live within seconds and no frontend redeploy.
 
 ## Constraints (from Cloudflare docs, checked 2026-09-28)
 
