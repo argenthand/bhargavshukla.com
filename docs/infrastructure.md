@@ -63,6 +63,7 @@ These must survive the move. `scripts/check-dns.sh` holds the same list.
 
 - **Where:** dashboard → Analytics & Logs → Web Analytics → `bhargavshukla.com`. Page views, page paths, referrers, countries, browsers and devices, plus Core Web Vitals (LCP, INP, CLS) per page.
 - **Setup: automatic, no code.** Cloudflare injects the beacon (`static.cloudflareinsights.com/beacon.min.js`) into HTML responses as they leave the zone, after the Worker, so it is not in the repo, never in `vite dev` or `wrangler dev`, and never stored in our edge cache (pages are stored before injection; each response gets it once). SPA tracking is on (`"spa"` in `data-cf-beacon`), so client-side navigations count. The beacon reports to `bhargavshukla.com/cdn-cgi/rum`, which Cloudflare answers before the Worker.
+- **Validators:** injecting the beacon rewrites the HTML, so Cloudflare drops the page's `ETag` for browser requests; `Last-Modified` gives them the 304 instead ([caching.md](caching.md#validators-126)).
 - **Privacy:** no cookies and no localStorage (checked on a fresh visit), so no consent banner. RUM is set to **exclude visitors in the EU**: their visits are not counted.
 - **Checking it:** requests without a browser `Accept: text/html` header get no beacon. Ad blockers and DNS blocklists (Pi-hole and the like) block `static.cloudflareinsights.com`, so those visits don't show up; on such a network, test with another resolver (for example Chromium's `--host-resolver-rules`).
 
