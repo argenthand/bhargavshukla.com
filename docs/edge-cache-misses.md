@@ -82,13 +82,15 @@ What changes from today ([caching.md](caching.md)):
 - After a **day**, a page is served stale while it refreshes, so nobody waits.
 - **Simultaneous misses** for one page render once.
 
-## Spikes before building
+## Spikes (run in #123, 2026-10-03, on a preview version)
 
-Each is a short check on a preview deploy ("Previews cache independently of production"), done at the start of the build ticket:
+All three passed on `cache-spike-bs-blog.mrshukla-b.workers.dev` (a version uploaded with `wrangler versions upload`, not deployed; its cache is separate from production's):
 
-1. **Data requests:** does `Cloudflare-CDN-Cache-Control` make `__data.json` cacheable even though SvelteKit sends `Cache-Control: private, no-store` on it? If not, the hook rewrites `Cache-Control` for the edge and a response header transform restores `no-cache` for browsers. Confirm with `cf-cache-status`.
-2. **Preview:** do ordinary visitors send any `Cookie` header on bhargavshukla.com (Bot Fight Mode's `__cf_bm`, anything else)? With `Vary: Cookie` (option A), a preview request must miss, and a cookieless request must hit.
-3. **Purge and warm from SvelteKit:** is `ctx.cache` reachable as `event.platform.ctx.cache` through `adapter-cloudflare`? Does a purge clear both tiers within seconds? Does a loopback request (`ctx.exports`) fill the cache, so warming after a purge is possible?
+1. **Page data:** `Cloudflare-CDN-Cache-Control` makes `__data.json` cacheable despite SvelteKit's `private, no-store`: second request `HIT`. A copy filled in Toronto was a `HIT` in Montréal (upper tier). Browsers still get `Cache-Control: no-cache`; `Cache-Tag` and `Cloudflare-CDN-Cache-Control` don't reach them.
+2. **Preview:** the site and Cloudflare set no cookies on bhargavshukla.com, so ordinary visitors send none and share one copy. A request with a `__preview` cookie got `BYPASS`: it reached the Worker. A 404 → `BYPASS` both times.
+3. **Purge and repopulate:** `ctx.cache` and `ctx.exports` are reachable through `adapter-cloudflare` as `platform.ctx` (`enable_ctx_exports` is on by default since 2025-11-17). A webhook-style call purged `type:resume`. Within seconds `/resume` and its page data were `HIT` again with an `age` matching the purge, without any visitor request, so the loopback refill landed in the same keys visitors use. Pages that don't read the resume kept their older copies.
+
+Also seen: a tracking parameter makes its own entry (`MISS`), as documented; `HEAD` is answered from a `GET` fill.
 
 ## Decisions (2026-10-03, build ticket #123)
 

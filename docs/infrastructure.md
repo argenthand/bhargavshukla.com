@@ -38,7 +38,7 @@ These must survive the move. `scripts/check-dns.sh` holds the same list.
 ## Frontend: Cloudflare Workers
 
 - `@sveltejs/adapter-cloudflare` is set in `vite.config.ts` (this scaffold configures the adapter there — there is no `svelte.config.js`). `wrangler` is a dev dependency; `pnpm-workspace.yaml` allows `workerd`'s install script.
-- [`wrangler.jsonc`](../wrangler.jsonc) names the Worker `bs-blog`, points `main` and the `ASSETS` binding at the adapter output in `.svelte-kit/cloudflare`, and claims `bhargavshukla.com` as a custom domain (Cloudflare creates its DNS record and certificate on deploy). `vars` are added by the tickets that need them: `STRAPI_URL` in #9/#15, `CF_ZONE_ID` in #17.
+- [`wrangler.jsonc`](../wrangler.jsonc) names the Worker `bs-blog`, points `main` and the `ASSETS` binding at the adapter output in `.svelte-kit/cloudflare`, and claims `bhargavshukla.com` as a custom domain (Cloudflare creates its DNS record and certificate on deploy). `vars` are added by the tickets that need them: `STRAPI_URL` in #9/#15 (`CF_ZONE_ID`, added in #17, went away with the zone purge in #123). `"cache": { "enabled": true }` turns on Workers Cache (#123).
 - Node and pnpm versions for the build come from `.node-version` and `packageManager` in `package.json`.
 - **Test before merging, locally:** `pnpm build && pnpm exec wrangler dev --env-file .env` serves the production build in the Workers runtime at http://localhost:8787. Add `--ip 0.0.0.0` and open `http://<this machine's LAN IP>:8787` to check the layout on a phone. `pnpm exec wrangler deploy --dry-run` shows the bundle size.
 - **Workers Builds** (dashboard → Workers & Pages → Create → Import a repository) deploys `main` to production:
@@ -364,26 +364,28 @@ Merging deploys both halves on their own: the Worker in about a minute, the CMS 
 2. **Content:** Content Manager → Single Types → Profile → Photo → upload a roughly square photo with your face centred (it's cropped to a circle) → Save. Saving purges the home page (#17). No token change: the photo comes with the Profile.
 3. To remove it, clear the field and Save; the intro falls back to the name and tagline alone.
 
-### Edge cache and purge (#16, #17)
+### Edge cache and purge (#16, #17, #123)
 
-Pages are cached at the edge for up to 10 minutes and purged by content type when Strapi changes them ([caching.md](caching.md)). Set up the purge in this order:
+Pages are cached by Workers Cache (`"cache": { "enabled": true }` in [`wrangler.jsonc`](../wrangler.jsonc)) for a day, then served stale for up to a week while they refresh. They're purged by content type when Strapi changes them, and the key pages are refetched at once ([caching.md](caching.md)). The purge runs inside the Worker, so it needs no Cloudflare API token.
 
-1. **Cloudflare API token:** My Profile → API Tokens → Create Token → Custom token. Name `bs-blog-purge`; Permissions **Zone → Cache Purge → Purge**; Zone Resources **Include → Specific zone → bhargavshukla.com**; no expiry. Copy the token.
-2. **Worker secrets:** Workers & Pages → `bs-blog` → Settings → Variables and Secrets → Add, type **Secret**:
-   - `CF_PURGE_TOKEN`: the token from step 1.
-   - `PURGE_SECRET`: a fresh random value, made on your machine with `openssl rand -base64 32 | tr -d '\n' | pbcopy` and pasted straight in. Keep it in the clipboard for step 4 only.
-3. **Merge** the #17 PR. `CF_ZONE_ID` is already a plain var in [`wrangler.jsonc`](../wrangler.jsonc) (the zone's Overview page → API → Zone ID; not a secret). The secrets must exist first, or every purge answers 500.
-4. **Strapi webhook:** production admin → Settings → Webhooks → Create new webhook. Name `purge edge cache`; URL `https://bhargavshukla.com/api/purge`; header `Authorization` = `Bearer <PURGE_SECRET>`; events **Entry**: create, update, delete, publish, unpublish (leave Media off) → Save. **Trigger** must answer 200: a test event purges nothing, but proves the secret matches (a 401 means it doesn't).
+Setup (done for #17; unchanged by #123):
+
+1. **Worker secret:** Workers & Pages → `bs-blog` → Settings → Variables and Secrets → Add, type **Secret**: `PURGE_SECRET`, a fresh random value made on your machine with `openssl rand -base64 32 | tr -d '\n' | pbcopy` and pasted straight in. Keep it in the clipboard for step 2 only. (Cloudflare doesn't show it again; the Strapi webhook's header has a copy.)
+2. **Strapi webhook:** production admin → Settings → Webhooks → Create new webhook. Name `purge edge cache`; URL `https://bhargavshukla.com/api/purge`; header `Authorization` = `Bearer <PURGE_SECRET>`; events **Entry**: create, update, delete, publish, unpublish (leave Media off) → Save. **Trigger** must answer 200: a test event purges nothing, but proves the secret matches (a 401 means it doesn't).
+
+**After #123 merges** (cleanup): the Worker secret `CF_PURGE_TOKEN` and the Cloudflare API token `bs-blog-purge` (My Profile → API Tokens) are no longer used. Delete both.
 
 Checks:
 
-- `curl -s -D - -o /dev/null https://bhargavshukla.com/blog` twice → `x-edge-cache: MISS`, then `HIT`.
-- Edit and publish a post: Workers & Pages → `bs-blog` → Observability (or `pnpm exec wrangler tail`) shows `Purge: purged type:post`; the next `curl` is a `MISS` with the new content.
+- `curl -s -D - -o /dev/null https://bhargavshukla.com/blog` twice → `cf-cache-status: HIT` with an `age` on the second (the first may be `MISS`).
+- Edit and publish a post: Workers & Pages → `bs-blog` → Observability (or `pnpm exec wrangler tail`) shows `Purge: purged type:post` and `Repopulate: …`; `curl` `/blog` → `HIT` with an `age` of a few seconds and the new content.
 - `curl -s -o /dev/null -w '%{http_code}' -X POST -H 'content-type: application/json' -H 'authorization: Bearer nope' -d '{}' https://bhargavshukla.com/api/purge` → 401.
 
-**Purge everything by hand:** the same request with the real secret and `-d '{"all":true}'` (or dashboard → Caching → Configuration → Purge Everything).
+**Purge everything by hand:** the same request with the real secret and `-d '{"all":true}'`. The dashboard's Purge Everything doesn't reach Workers Cache.
 
-**If a purge fails** (`Purge: failed …` in the logs; Strapi doesn't retry), pages stay stale for at most 10 minutes. A 403 from Cloudflare means the API token is wrong or expired: replace `CF_PURGE_TOKEN`. To rotate `PURGE_SECRET`, change it on the Worker and in the webhook header together.
+**If a purge fails** (`Purge: failed …` in the logs; Strapi doesn't retry), pages stay stale for up to a day, until they expire, or until the next deploy (a deploy starts with an empty cache). Purge everything by hand to fix it at once. To rotate `PURGE_SECRET`, change it on the Worker and in the webhook header together.
+
+**Testing cache changes:** `pnpm wrangler versions upload --preview-alias <name>` uploads a version without deploying it; Preview URLs are on (bs-blog → Settings → Domains & Routes), and a preview's cache is separate from production's.
 
 ### Draft preview (#57)
 
