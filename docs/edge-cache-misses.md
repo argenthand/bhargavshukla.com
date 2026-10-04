@@ -122,12 +122,12 @@ Reading a post adds 2 read-count calls. So a typical visit from a shared link (l
 - **Today:** 4 billable requests (page, data, 2 read-count calls).
 - **With Workers Cache:** 31 billable requests.
 
-| Visits a month | Today (Cache API)                              | Workers Cache            | Workers Cache with fewer JS files (~10 requests a visit) |
-| -------------- | ---------------------------------------------- | ------------------------ | -------------------------------------------------------- |
-| 10 k           | $5                                             | $5                       | $5                                                       |
-| 100 k          | $5                                             | $5                       | $5                                                       |
-| 1 M            | $5                                             | **$11** (31 M requests)  | $5                                                       |
-| 10 M           | **$16** (40 M requests + CPU on every request) | **$95** (310 M requests) | **$32**                                                  |
+| Visits a month | Today (Cache API)                              | Workers Cache            | Workers Cache with merged JS (~14 requests a visit) |
+| -------------- | ---------------------------------------------- | ------------------------ | --------------------------------------------------- |
+| 10 k           | $5                                             | $5                       | $5                                                  |
+| 100 k          | $5                                             | $5                       | $5                                                  |
+| 1 M            | $5                                             | **$11** (31 M requests)  | $6                                                  |
+| 10 M           | **$16** (40 M requests + CPU on every request) | **$95** (310 M requests) | **$44**                                             |
 
 - **Read counts:** about 3 D1 rows per counted read stays inside the 50 M included rows up to roughly 30 M visits a month. Beyond that, D1 costs more than the cache: 100 M visits ≈ $100 of row writes.
 - **Strapi and the VPS** don't feel popularity: only misses reach them, and with Workers Cache those are a handful per publish.
