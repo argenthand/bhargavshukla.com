@@ -46,7 +46,7 @@
 	onclick={toTop}
 	tabindex={shown ? 0 : -1}
 	class={[
-		'fixed right-5 bottom-[calc(var(--spacing)*18+env(safe-area-inset-bottom))] z-20 hidden size-14 items-center justify-center rounded-full bg-raised text-ink shadow-lg transition-fade duration-(--duration-motion) ease-(--ease-motion) motion-reduce:transition-none md:right-8 md:bottom-8 js:not-print:flex',
+		'fixed right-5 bottom-[calc(var(--spacing-tab-bar)+var(--spacing)*4+env(safe-area-inset-bottom))] z-20 hidden size-14 items-center justify-center rounded-full bg-raised text-ink shadow-lg transition-fade duration-(--duration-motion) ease-(--ease-motion) motion-reduce:transition-none md:right-8 md:bottom-8 js:not-print:flex',
 		!shown && 'pointer-events-none invisible opacity-0'
 	]}
 >

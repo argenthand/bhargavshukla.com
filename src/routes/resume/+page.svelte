@@ -137,7 +137,12 @@
 				Last updated <time datetime={resume.updatedAt}>{formatMonth(resume.updatedAt)}</time>
 			</p>
 			<!-- Needs JavaScript; without it, the browser's own Print works just as well. -->
-			<button type="button" onclick={() => window.print()} class="hidden pill js:inline-flex">
+			<button
+				type="button"
+				onclick={() => window.print()}
+				data-nes-cta
+				class="hidden pill js:inline-flex"
+			>
 				<Icon name="printer" size={18} />Save as PDF
 			</button>
 		</div>

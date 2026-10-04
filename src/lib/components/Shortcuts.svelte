@@ -1,19 +1,19 @@
 <script lang="ts">
 	// Keyboard shortcuts and the Konami code (#63, F-shortcuts-*): `?` opens this panel, `g` then a
-	// letter goes to a live section, `/` searches on Writing. Nothing fires while typing in a field
-	// or with Ctrl/⌘/Alt held, so browser and screen reader shortcuts keep working.
+	// letter goes to a live section, `/` searches on Writing, and ↑↑↓↓←→←→BA starts 8-bit mode
+	// (#111). Nothing fires while typing in a field or with Ctrl/⌘/Alt held, so browser and screen
+	// reader shortcuts keep working. It also shows the easter eggs' toast.
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Icon from '$lib/components/Icon.svelte';
 	import { isTyping, konamiMatcher } from '$lib/easter-eggs';
-	import { reducedMotion } from '$lib/motion';
+	import { unlock } from '$lib/nes.svelte';
 	import { nav } from '$lib/site';
+	import { toast } from '$lib/toast.svelte';
 
 	/** How long `g` waits for its second key. */
 	const SEQUENCE_MS = 1500;
-	/** How long the Konami message stays up. */
-	const TOAST_MS = 3000;
 
 	const destinations = [
 		{ key: 'h', href: resolve('/'), label: 'Home' },
@@ -22,25 +22,14 @@
 	const onWriting = $derived(page.route.id === '/blog');
 
 	let dialog = $state<HTMLDialogElement>();
-	let toast = $state('');
 	let waitingForG = false;
 	let gTimer: ReturnType<typeof setTimeout>;
-	let toastTimer: ReturnType<typeof setTimeout>;
 	const konami = konamiMatcher();
-
-	async function celebrate() {
-		toast = '↑↑↓↓←→←→BA. You found it.';
-		clearTimeout(toastTimer);
-		toastTimer = setTimeout(() => (toast = ''), TOAST_MS);
-		if (reducedMotion()) return;
-		const { confetti } = await import('$lib/confetti');
-		confetti();
-	}
 
 	function onkeydown(event: KeyboardEvent) {
 		if (event.defaultPrevented || event.isComposing || isTyping(event.target)) return;
 		if (event.ctrlKey || event.metaKey || event.altKey) return;
-		if (konami(event.key)) return void celebrate();
+		if (konami(event.key)) return void unlock();
 
 		if (waitingForG) {
 			waitingForG = false;
@@ -130,12 +119,12 @@
 	</div>
 </dialog>
 
-<!-- The Konami code's message; also what screen readers hear. -->
+<!-- The easter eggs' message (toast.svelte.ts); also what screen readers hear. -->
 <p
 	role="status"
-	class={toast
-		? 'pointer-events-none fixed inset-x-0 bottom-20 z-50 mx-auto w-fit animate-confirm bg-ink px-4 py-2 text-page motion-reduce:animate-none md:bottom-8 print:hidden'
+	class={toast.message
+		? 'pointer-events-none fixed inset-x-0 bottom-20 z-50 mx-auto w-fit animate-confirm bg-ink px-4 py-2 text-page motion-reduce:animate-none md:bottom-8 print:hidden nes:font-pixel nes:text-xs nes:leading-relaxed'
 		: 'sr-only'}
 >
-	{toast}
+	{toast.message}
 </p>

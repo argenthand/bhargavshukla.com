@@ -12,7 +12,7 @@ export function isTyping(target: EventTarget | null): boolean {
 	);
 }
 
-const KONAMI = [
+export const KONAMI = [
 	'arrowup',
 	'arrowup',
 	'arrowdown',
@@ -35,6 +35,40 @@ export function konamiMatcher() {
 		return done;
 	};
 }
+
+/** How each Konami key shows on the controller's strip (#111). */
+export const KEY_SYMBOLS: Record<string, string> = {
+	arrowup: '↑',
+	arrowdown: '↓',
+	arrowleft: '←',
+	arrowright: '→',
+	b: 'B',
+	a: 'A'
+};
+
+/**
+ * Counts quick taps (#111: three on the © line, five on the current tab): returns true on the tap
+ * that makes `count` within `windowMs`, then starts over.
+ */
+export function tapCounter(count: number, windowMs: number, now = () => Date.now()) {
+	let taps: number[] = [];
+	return () => {
+		const t = now();
+		taps = [...taps.filter((tap) => t - tap < windowMs), t];
+		if (taps.length < count) return false;
+		taps = [];
+		return true;
+	};
+}
+
+/** The palette disco (#111): every other palette in picker order, ending back on the current one. */
+export function discoOrder<T>(palettes: readonly T[], current: T): T[] {
+	const i = Math.max(palettes.indexOf(current), 0);
+	return [...palettes.slice(i + 1), ...palettes.slice(0, i), palettes[i]];
+}
+
+/** Under the footer, only where the page bounces past its end (iOS and macOS Safari). */
+export const ABYSS_LINE = 'Welcome to the abyss.';
 
 /** The 404 page's extra line. Draft copy: edit freely. */
 export const NOT_FOUND_LINES = [

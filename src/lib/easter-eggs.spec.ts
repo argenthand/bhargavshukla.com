@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { konamiMatcher, NOT_FOUND_LINES, notFoundLine } from './easter-eggs';
+import {
+	discoOrder,
+	konamiMatcher,
+	NOT_FOUND_LINES,
+	notFoundLine,
+	tapCounter
+} from './easter-eggs';
 
 const CODE = [
 	'ArrowUp',
@@ -41,5 +47,44 @@ describe('notFoundLine', () => {
 	it('varies between paths', () => {
 		const lines = new Set(['/a', '/b', '/c', '/d', '/e', '/f', '/g', '/h'].map(notFoundLine));
 		expect(lines.size).toBeGreaterThan(1);
+	});
+});
+
+describe('tapCounter (#111)', () => {
+	it('fires on the third quick tap, then starts over', () => {
+		let t = 0;
+		const tap = tapCounter(3, 1000, () => t);
+		expect(tap()).toBe(false);
+		t = 300;
+		expect(tap()).toBe(false);
+		t = 600;
+		expect(tap()).toBe(true);
+		t = 700;
+		expect(tap()).toBe(false);
+	});
+
+	it('forgets taps older than the window', () => {
+		let t = 0;
+		const tap = tapCounter(3, 1000, () => t);
+		tap();
+		t = 900;
+		tap();
+		t = 1200; // the first tap is now too old
+		expect(tap()).toBe(false);
+		t = 1300;
+		expect(tap()).toBe(true);
+	});
+});
+
+describe('discoOrder (#111)', () => {
+	const ids = ['newsprint', 'harbour', 'sage', 'plum', 'ochre'];
+
+	it('plays every other palette and ends on the current one', () => {
+		expect(discoOrder(ids, 'sage')).toEqual(['plum', 'ochre', 'newsprint', 'harbour', 'sage']);
+		expect(discoOrder(ids, 'newsprint')).toEqual(['harbour', 'sage', 'plum', 'ochre', 'newsprint']);
+	});
+
+	it('treats an unknown current palette as the first', () => {
+		expect(discoOrder(ids, 'nes').at(-1)).toBe('newsprint');
 	});
 });

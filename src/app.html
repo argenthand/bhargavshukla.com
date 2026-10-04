@@ -30,6 +30,10 @@
 					if (['newsprint', 'harbour', 'sage', 'plum', 'ochre'].indexOf(palette) !== -1)
 						root.dataset.palette = palette;
 				} catch (e) {}
+				// 8-bit mode (#111): this visit only, over the saved palette. Keep in step with src/lib/nes.svelte.ts.
+				try {
+					if (sessionStorage.getItem('nes') === '1') root.setAttribute('data-nes', '');
+				} catch (e) {}
 				// While on System, follow the OS live.
 				system.addEventListener('change', apply);
 			})();

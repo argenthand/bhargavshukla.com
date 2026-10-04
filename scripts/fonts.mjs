@@ -8,6 +8,7 @@
 // - Each text style is split by unicode-range: a core file (ASCII and the punctuation the site
 //   uses) and the rest of Latin, which a browser only downloads for a page that needs it.
 // - Space Mono (code, every palette): 400 and 700, Latin. It has no other weights.
+// - Press Start 2P and Pixelify Sans: 8-bit mode only (#111).
 // - "<Family> Fallback": Georgia or Arial scaled to the face's metrics (Capsize), so the swap from
 //   the system font moves the text as little as possible.
 //
@@ -187,6 +188,30 @@ for (const weight of [400, 700]) {
 		codes: expand(LATIN)
 	});
 }
+
+// 8-bit mode (#111): Press Start 2P for headings and UI, Pixelify Sans to read. Only pages in that
+// mode use them, so nobody else downloads them. One Latin file each; no fallback metrics.
+// Neither has ← or →, so the arrows (↑↓ included, so the four match) come from the system font.
+const PIXEL = expand(LATIN).filter((c) => c < 0x2190 || c > 0x2193);
+const pressStart = readFileSync(
+	'node_modules/@fontsource/press-start-2p/files/press-start-2p-latin-400-normal.woff2'
+);
+await write(
+	'press-start-2p',
+	await subsetFont(pressStart, text(PIXEL), { targetFormat: 'woff2' }),
+	{ family: 'Press Start 2P', style: 'normal', weight: '400', codes: PIXEL }
+);
+const pixelify = readFileSync(
+	'node_modules/@fontsource-variable/pixelify-sans/files/pixelify-sans-latin-wght-normal.woff2'
+);
+await write(
+	'pixelify-sans',
+	await subsetFont(pixelify, text(PIXEL), {
+		targetFormat: 'woff2',
+		variationAxes: { wght: { min: 400, max: 600 } }
+	}),
+	{ family: 'Pixelify Sans', style: 'normal', weight: '400 600', codes: PIXEL }
+);
 
 writeFileSync(`${OUT}/fonts.css`, css.join('\n\n') + '\n');
 console.log(`${OUT}/fonts.css · ${(total / 1024).toFixed(0)} KB of fonts in all`);

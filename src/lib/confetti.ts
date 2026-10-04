@@ -1,6 +1,7 @@
-// The Konami code's reward (#63): one short burst of confetti in the visitor's palette (#81) and
-// theme (#80). Loaded with a dynamic import only when someone types the code, so neither this nor
-// canvas-confetti costs anything otherwise. The caller skips it under reduced motion.
+// Confetti for the easter eggs (#63, #111): by default a burst in the visitor's palette (#81) and
+// theme (#80); 8-bit mode passes its NES colours, the palette disco a shorter burst per palette.
+// Loaded with a dynamic import only when an egg fires, so neither this nor canvas-confetti costs
+// anything otherwise. Callers skip it under reduced motion.
 
 import canvasConfetti from 'canvas-confetti';
 
@@ -29,14 +30,17 @@ function resolveColors(vars: string[]): string[] {
 	return colors;
 }
 
-export function confetti() {
+export function confetti({
+	vars,
+	durationMs = DURATION_MS
+}: { vars?: string[]; durationMs?: number } = {}) {
 	// The inline script in app.html sets data-theme before first paint; fall back to the system.
 	const theme =
 		document.documentElement.dataset.theme ??
 		(matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-	const colors = resolveColors(SHADES[theme === 'dark' ? 'dark' : 'light']);
+	const colors = resolveColors(vars ?? SHADES[theme === 'dark' ? 'dark' : 'light']);
 
-	const end = Date.now() + DURATION_MS;
+	const end = Date.now() + durationMs;
 	const shoot = () => {
 		const options = { particleCount: 6, spread: 70, startVelocity: 55, colors, zIndex: 50 };
 		canvasConfetti({ ...options, angle: 60, origin: { x: 0, y: 0.8 } });
