@@ -1,0 +1,52 @@
+/*
+ * Motion (#60, docs/design.md → Motion): short, transform/opacity or paint only, and none at all
+ * with reduced motion (the layout also skips view transitions then).
+ */
+
+/* Page transitions: a quick cross-fade of the page (root); titles that share a view-transition-name
+   move between pages a little more slowly, so the move reads. */
+::view-transition-group(*),
+::view-transition-old(*),
+::view-transition-new(*) {
+	animation-duration: var(--duration-title);
+	animation-timing-function: var(--ease-motion);
+}
+::view-transition-group(root),
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation-duration: var(--duration-motion);
+}
+/* Between two list pages (home → Writing) titles don't move; the layout sets this for that navigation. */
+:root[data-plain-transition] [data-title-transition] {
+	view-transition-name: none !important;
+}
+
+@layer base {
+	/* Every link and button eases its hover changes: colour, background, border, underline colour
+	   and thickness (Chrome doesn't interpolate thickness, so it steps there). */
+	:where(a, button) {
+		transition-property:
+			color, background-color, border-color, text-decoration-color, text-decoration-thickness;
+		transition-duration: var(--duration-hover);
+		transition-timing-function: var(--ease-motion);
+	}
+
+	/* Arrows in links and buttons nudge in their direction on hover and keyboard focus. */
+	svg[data-icon='arrow-right'],
+	svg[data-icon='arrow-left'] {
+		transition: translate var(--duration-motion) var(--ease-motion);
+	}
+	:is(a, button):is(:hover, :focus-visible) svg[data-icon='arrow-right'] {
+		translate: var(--distance-nudge) 0;
+	}
+	:is(a, button):is(:hover, :focus-visible) svg[data-icon='arrow-left'] {
+		translate: calc(var(--distance-nudge) * -1) 0;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		:where(a, button),
+		svg[data-icon='arrow-right'],
+		svg[data-icon='arrow-left'] {
+			transition: none;
+		}
+	}
+}

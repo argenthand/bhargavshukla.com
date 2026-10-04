@@ -1,7 +1,7 @@
 <script lang="ts">
 	// Light / Dark / System (#80, TA-* on the canvas): one button showing all three; each press moves
 	// to the next (light → dark → system) and the highlight slides there. Its position and the
-	// selected icon come from `data-theme-pref` on <html> (theme-toggle-* in layout.css), which the
+	// selected icon come from `data-theme-pref` on <html> (theme-toggle-* in src/styles/utilities.css), which the
 	// inline script sets before the first paint, so it's right from the start. JavaScript only.
 	import Icon from '$lib/components/Icon.svelte';
 	import { isTheme, nextTheme, setTheme, THEMES, type ThemePref } from '$lib/theme';

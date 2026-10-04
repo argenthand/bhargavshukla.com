@@ -1,0 +1,108 @@
+/*
+ * Colour (#81). A palette is a grey family and an accent hue; `data-palette` on <html> picks one
+ * (the inline script in app.html sets it before the first paint; Newsprint is the default and the
+ * brand). Components never name a Tailwind colour: they use the roles below (`text-ink`,
+ * `bg-fill`, `text-accent`…), which follow both the palette and light/dark, so there are no
+ * `dark:` colour pairs in markup. See docs/design.md → Colour roles.
+ *
+ * Each palette also has its own typeface (#114): `--palette-font`, used as `--font-sans` (the
+ * site's one text face, serif or sans). A browser downloads only the current palette's font.
+ */
+:root,
+:root[data-palette='newsprint'] {
+	--palette-font: 'Newsreader', 'Newsreader Fallback', ui-serif, Georgia, serif;
+	--grey-50: var(--color-neutral-50);
+	--grey-100: var(--color-neutral-100);
+	--grey-200: var(--color-neutral-200);
+	--grey-300: var(--color-neutral-300);
+	--grey-400: var(--color-neutral-400);
+	--grey-500: var(--color-neutral-500);
+	--grey-600: var(--color-neutral-600);
+	--grey-700: var(--color-neutral-700);
+	--grey-800: var(--color-neutral-800);
+	--grey-900: var(--color-neutral-900);
+	--grey-950: var(--color-neutral-950);
+	--hue-300: var(--color-red-300);
+	--hue-400: var(--color-red-400);
+	--hue-500: var(--color-red-500);
+	--hue-700: var(--color-red-700);
+	--hue-800: var(--color-red-800);
+}
+:root[data-palette='harbour'] {
+	--palette-font:
+		'Instrument Sans', 'Instrument Sans Fallback', ui-sans-serif, system-ui, sans-serif;
+	--grey-50: var(--color-slate-50);
+	--grey-100: var(--color-slate-100);
+	--grey-200: var(--color-slate-200);
+	--grey-300: var(--color-slate-300);
+	--grey-400: var(--color-slate-400);
+	--grey-500: var(--color-slate-500);
+	--grey-600: var(--color-slate-600);
+	--grey-700: var(--color-slate-700);
+	--grey-800: var(--color-slate-800);
+	--grey-900: var(--color-slate-900);
+	--grey-950: var(--color-slate-950);
+	--hue-300: var(--color-blue-300);
+	--hue-400: var(--color-blue-400);
+	--hue-500: var(--color-blue-500);
+	--hue-700: var(--color-blue-700);
+	--hue-800: var(--color-blue-800);
+}
+:root[data-palette='sage'] {
+	--palette-font: 'Literata', 'Literata Fallback', ui-serif, Georgia, serif;
+	--grey-50: var(--color-stone-50);
+	--grey-100: var(--color-stone-100);
+	--grey-200: var(--color-stone-200);
+	--grey-300: var(--color-stone-300);
+	--grey-400: var(--color-stone-400);
+	--grey-500: var(--color-stone-500);
+	--grey-600: var(--color-stone-600);
+	--grey-700: var(--color-stone-700);
+	--grey-800: var(--color-stone-800);
+	--grey-900: var(--color-stone-900);
+	--grey-950: var(--color-stone-950);
+	--hue-300: var(--color-emerald-300);
+	--hue-400: var(--color-emerald-400);
+	--hue-500: var(--color-emerald-500);
+	--hue-700: var(--color-emerald-700);
+	--hue-800: var(--color-emerald-800);
+}
+:root[data-palette='plum'] {
+	--palette-font:
+		'Schibsted Grotesk', 'Schibsted Grotesk Fallback', ui-sans-serif, system-ui, sans-serif;
+	--grey-50: var(--color-zinc-50);
+	--grey-100: var(--color-zinc-100);
+	--grey-200: var(--color-zinc-200);
+	--grey-300: var(--color-zinc-300);
+	--grey-400: var(--color-zinc-400);
+	--grey-500: var(--color-zinc-500);
+	--grey-600: var(--color-zinc-600);
+	--grey-700: var(--color-zinc-700);
+	--grey-800: var(--color-zinc-800);
+	--grey-900: var(--color-zinc-900);
+	--grey-950: var(--color-zinc-950);
+	--hue-300: var(--color-violet-300);
+	--hue-400: var(--color-violet-400);
+	--hue-500: var(--color-violet-500);
+	--hue-700: var(--color-violet-700);
+	--hue-800: var(--color-violet-800);
+}
+:root[data-palette='ochre'] {
+	--palette-font: 'Work Sans', 'Work Sans Fallback', ui-sans-serif, system-ui, sans-serif;
+	--grey-50: var(--color-stone-50);
+	--grey-100: var(--color-stone-100);
+	--grey-200: var(--color-stone-200);
+	--grey-300: var(--color-stone-300);
+	--grey-400: var(--color-stone-400);
+	--grey-500: var(--color-stone-500);
+	--grey-600: var(--color-stone-600);
+	--grey-700: var(--color-stone-700);
+	--grey-800: var(--color-stone-800);
+	--grey-900: var(--color-stone-900);
+	--grey-950: var(--color-stone-950);
+	--hue-300: var(--color-amber-300);
+	--hue-400: var(--color-amber-400);
+	--hue-500: var(--color-amber-500);
+	--hue-700: var(--color-amber-700);
+	--hue-800: var(--color-amber-800);
+}

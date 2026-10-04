@@ -1,0 +1,114 @@
+/* Tailwind's theme: the dark variant and the design tokens (fonts, sizes, spacing, motion). */
+
+/*
+ * Dark mode (#80) follows `data-theme` on <html>, which the inline script in app.html sets before
+ * the first paint from the visitor's choice (Light, Dark, System). Without JavaScript there's no
+ * `data-theme`, and the system setting applies as before.
+ */
+@custom-variant dark {
+	&:where([data-theme='dark'], [data-theme='dark'] *) {
+		@slot;
+	}
+	@media (prefers-color-scheme: dark) {
+		&:where(:root:not([data-theme]), :root:not([data-theme]) *) {
+			@slot;
+		}
+	}
+}
+
+@theme {
+	--font-sans: var(--palette-font); /* the palette's typeface (#114) */
+	--font-mono: 'Space Mono', ui-monospace, monospace; /* code, in every palette (#114) */
+	--font-pixel:
+		'Press Start 2P', ui-monospace, monospace; /* 8-bit mode and its controller (#111) */
+
+	/* Layout tokens (#66): named sizes built from the default scale, never raw values in markup. */
+	--container-article: var(--container-2xl); /* a post's text column: max-w-article */
+	--spacing-toc: calc(var(--spacing) * 56); /* the ToC sidebar at lg: w-toc */
+	--spacing-article-gap: calc(var(--spacing) * 16); /* between the text column and the ToC */
+	--container-article-wide: calc(
+		var(--container-article) + var(--spacing-article-gap) + var(--spacing-toc)
+	); /* header and cover span text + ToC: max-w-article-wide */
+	--spacing-resume-label: calc(var(--spacing) * 36); /* the resume's skill-group label column */
+	--spacing-tab-bar: calc(var(--spacing) * 15); /* the phone tab bar, above the safe area */
+
+	/* Quiet (#77): faint shadows instead of the lines under the sticky phone header and above the
+	   tab bar: shadow-bar-down, shadow-bar-up. */
+	--shadow-bar-down: 0 1px 0 rgb(0 0 0 / 0.03), 0 2px 8px rgb(0 0 0 / 0.05);
+	--shadow-bar-up: 0 -2px 10px rgb(0 0 0 / 0.06);
+
+	/* Motion tokens (#60, docs/design.md → Motion): every animation uses these. */
+	--duration-motion: 200ms; /* fades, nudges, the tab marker, the page cross-fade */
+	--duration-title: 300ms; /* a title moving between a list and its page */
+	--duration-hover: 300ms; /* link and button colours, underlines */
+	--ease-motion: var(--ease-out);
+	--distance-nudge: calc(var(--spacing) * 0.5); /* how far an arrow moves on hover */
+	/* A confirmation appearing (#61): the Copy button's check, "Link copied". */
+	--animate-confirm: confirm-in var(--duration-motion) var(--ease-motion);
+
+	@keyframes confirm-in {
+		from {
+			opacity: 0;
+			scale: 0.5;
+		}
+	}
+	/* A read count arriving (#87). */
+	--animate-appear: appear var(--duration-motion) var(--ease-motion);
+
+	@keyframes appear {
+		from {
+			opacity: 0;
+		}
+	}
+	/* The loading bar (#108): after a short wait, it grows toward 90% while a page loads, slowing
+	   down as it goes; NavProgress.svelte fills and fades it when the page arrives. With reduced
+	   motion it just appears, full width, after the same wait. */
+	--delay-progress: 150ms; /* no bar for navigations quicker than this */
+	--duration-progress: 8s;
+	--animate-progress: progress var(--duration-progress) var(--delay-progress) var(--ease-motion)
+		both;
+	--animate-progress-still: progress-still 0s var(--delay-progress) both;
+
+	@keyframes progress {
+		from {
+			scale: 0 1;
+		}
+		to {
+			scale: 0.9 1;
+		}
+	}
+	@keyframes progress-still {
+		from {
+			opacity: 0;
+		}
+	}
+	/* The headshot's wink (#63): a quick tilt and back. */
+	--animate-wink: wink calc(var(--duration-motion) * 3) var(--ease-motion);
+
+	@keyframes wink {
+		30% {
+			rotate: -8deg;
+			scale: 1.04;
+		}
+		65% {
+			rotate: 5deg;
+		}
+	}
+	/* The NES controller sliding up (#111). */
+	--animate-slide-up: slide-up calc(var(--duration-motion) * 1.5) var(--ease-motion);
+
+	@keyframes slide-up {
+		from {
+			translate: 0 100%;
+		}
+	}
+
+	/* The NES controller (#111) is drawn as the hardware: the same in every palette and theme. */
+	--color-pad-body: var(--color-neutral-300);
+	--color-pad-face: var(--color-neutral-900);
+	--color-pad-key: var(--color-neutral-700);
+	--color-pad-button: var(--color-red-700);
+	--color-pad-label: var(--color-red-500); /* 5:1 on the face */
+	--text-pixel-xs: 0.375rem; /* the controller's Select and Start, printed small as on the pad */
+	--text-pixel-sm: 0.5625rem; /* its B and A */
+}

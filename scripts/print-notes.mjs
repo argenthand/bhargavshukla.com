@@ -18,24 +18,24 @@ const SIZE = 12; // px: the footer's text-xs
 const WIDTH = 640; // wider than the text; the SVG is cropped to it below
 
 const theme = readFileSync('node_modules/tailwindcss/theme.css', 'utf8');
-const layout = readFileSync('src/routes/layout.css', 'utf8');
+const palettes = readFileSync('src/styles/palettes.css', 'utf8');
 
-/** A palette's family for `--grey-500` or `--hue-700`, from its block in layout.css. */
+/** A palette's family for `--grey-500` or `--hue-700`, from its block in src/styles/palettes.css. */
 function family(palette, role) {
-	const block = layout.match(new RegExp(`\\[data-palette='${palette}'\\]\\s*\\{([^}]*)\\}`))?.[1];
+	const block = palettes.match(new RegExp(`\\[data-palette='${palette}'\\]\\s*\\{([^}]*)\\}`))?.[1];
 	const name = block?.match(new RegExp(`--${role}:\\s*var\\(--color-([a-z]+)-`))?.[1];
-	if (!name) throw new Error(`No --${role} for ${palette} in layout.css`);
+	if (!name) throw new Error(`No --${role} for ${palette} in src/styles/palettes.css`);
 	return name;
 }
 
 /** A palette's typeface (#114): the first family in its `--palette-font`, as Fontsource's static
  *  400 woff (satori reads woff, not woff2). */
 function typeface(palette) {
-	const block = layout.match(
+	const block = palettes.match(
 		new RegExp(`(?:\\[data-palette='${palette}'\\])\\s*\\{([^}]*)\\}`)
 	)?.[1];
 	const name = block?.match(/--palette-font:\s*'([^']+)'/)?.[1];
-	if (!name) throw new Error(`No --palette-font for ${palette} in layout.css`);
+	if (!name) throw new Error(`No --palette-font for ${palette} in src/styles/palettes.css`);
 	const slug = name.toLowerCase().replaceAll(' ', '-');
 	return {
 		name,

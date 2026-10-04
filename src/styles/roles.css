@@ -1,0 +1,53 @@
+/* The roles, light then dark. */
+:root {
+	--role-page: white;
+	--role-ink: var(--grey-900); /* headings, primary text */
+	--role-body: var(--grey-700); /* running text */
+	--role-muted: var(--grey-600); /* dates, captions, inactive nav, icons */
+	--role-faint: var(--grey-500); /* section labels, placeholders */
+	--role-fill: var(--grey-100); /* fields, pills, the toggle */
+	--role-chip: var(--grey-100); /* keys, the Draft badge, hover on panels */
+	--role-panel: var(--grey-50); /* code, Next up, the tag bar */
+	--role-raised: white; /* sticky bars, dialogs, Back to top */
+	--role-thumb: white; /* the theme toggle's highlight */
+	--role-line: var(--grey-200); /* the few lines left: ToC track, quiet underlines, ring track */
+	--role-accent: var(--hue-700); /* links, labels, markers, focus */
+	--role-accent-hover: var(--hue-800);
+	--role-accent-print: var(--hue-700); /* ink on paper: the light accent in either theme (#102) */
+	--role-danger: var(--color-red-700); /* form errors (#135): red in every palette */
+
+	@variant dark {
+		--role-page: var(--grey-950);
+		--role-ink: var(--grey-100);
+		--role-body: var(--grey-300);
+		--role-muted: var(--grey-400);
+		--role-faint: var(--grey-400);
+		--role-fill: var(--grey-900);
+		--role-chip: var(--grey-800);
+		--role-panel: var(--grey-900);
+		--role-raised: var(--grey-900);
+		--role-thumb: var(--grey-700);
+		--role-line: var(--grey-800);
+		--role-accent: var(--hue-400);
+		--role-accent-hover: var(--hue-300);
+		--role-danger: var(--color-red-400);
+	}
+}
+
+@theme inline {
+	--color-page: var(--role-page);
+	--color-ink: var(--role-ink);
+	--color-body: var(--role-body);
+	--color-muted: var(--role-muted);
+	--color-faint: var(--role-faint);
+	--color-fill: var(--role-fill);
+	--color-chip: var(--role-chip);
+	--color-panel: var(--role-panel);
+	--color-raised: var(--role-raised);
+	--color-thumb: var(--role-thumb);
+	--color-line: var(--role-line);
+	--color-accent: var(--role-accent);
+	--color-accent-hover: var(--role-accent-hover);
+	--color-danger: var(--role-danger);
+	--color-accent-print: var(--role-accent-print);
+}

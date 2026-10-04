@@ -30,7 +30,7 @@ export function setTheme(pref: ThemePref) {
 }
 
 /**
- * Colour palettes (#81): a grey family and an accent hue each, defined in layout.css under
+ * Colour palettes (#81): a grey family and an accent hue each, defined in src/styles/palettes.css under
  * `:root[data-palette=…]`. Newsprint is the default and the brand (share cards use it). `swatch`
  * shows the palette's own accent in the picker, whatever palette the page is in.
  */
