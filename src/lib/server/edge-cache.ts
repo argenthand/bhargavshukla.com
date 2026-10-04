@@ -2,6 +2,12 @@
 // Cloudflare answers without running it. This hook only says what may be kept and for how long:
 // `Cloudflare-CDN-Cache-Control` for Cloudflare, `Cache-Control` for browsers, and `Cache-Tag`
 // (the content types a page read) so the Strapi webhook can purge by tag (#17).
+//
+// Validators (#126), so a browser's revalidation (it always revalidates: `no-cache`) can come back
+// as `304 Not Modified` instead of the whole page. Pages already get an `ETag` from SvelteKit (a
+// hash of the HTML); page data gets one here. Cacheable responses also get `Last-Modified`, the
+// time they were rendered: the zone's HTML features drop the page `ETag` (docs/caching.md →
+// Validators), and Cloudflare answers `If-Modified-Since` from the cached copy just the same.
 
 import type { Handle, RequestEvent } from '@sveltejs/kit';
 
@@ -16,6 +22,14 @@ export const PREVIEW_COOKIE = '__preview';
 
 /** What Cloudflare keeps a cacheable response for: a day fresh, then a week served stale. */
 export const EDGE_CACHE_CONTROL = `max-age=${EDGE_MAX_AGE}, stale-while-revalidate=${EDGE_STALE}`;
+
+/** A strong `ETag` for a body: the same 32-bit hash SvelteKit uses for page ETags. */
+export function etagFor(body: string): string {
+	let hash = 5381;
+	let i = body.length;
+	while (i) hash = (hash * 33) ^ body.charCodeAt(--i);
+	return `"${(hash >>> 0).toString(36)}"`;
+}
 
 /** Requests the hook leaves alone: their own headers stand (API routes set theirs). */
 export function shouldBypass(event: Pick<RequestEvent, 'request' | 'url' | 'cookies'>): boolean {
@@ -57,11 +71,17 @@ export function isCacheableData(response: Response, body: string, tags: Set<stri
  * on their next load. Cloudflare keeps a cacheable one, varied on `Cookie` so a request carrying
  * the preview cookie never gets the public copy; anything else it never stores.
  */
-export function withCacheHeaders(response: Response, tags: Set<string>, cacheable: boolean) {
+export function withCacheHeaders(
+	response: Response,
+	tags: Set<string>,
+	cacheable: boolean,
+	now = () => new Date()
+) {
 	const out = new Response(response.body, response);
 	out.headers.set('cache-control', 'no-cache');
 	if (cacheable) {
 		out.headers.set('cloudflare-cdn-cache-control', EDGE_CACHE_CONTROL);
+		if (!out.headers.has('last-modified')) out.headers.set('last-modified', now().toUTCString());
 		out.headers.set('cache-tag', [...tags].join(','));
 		out.headers.append('vary', 'Cookie');
 	} else {
@@ -91,7 +111,10 @@ export const edgeCache: Handle = async ({ event, resolve }) => {
 	if (event.isDataRequest) {
 		const body = await response.text();
 		const data = new Response(body, response);
-		return withCacheHeaders(data, tags, isCacheableData(data, body, tags));
+		const cacheable = isCacheableData(data, body, tags);
+		// SvelteKit answers a matching If-None-Match with a 304 once the hook returns.
+		if (cacheable) data.headers.set('etag', etagFor(body));
+		return withCacheHeaders(data, tags, cacheable);
 	}
 	return withCacheHeaders(response, tags, isCacheable(response, tags));
 };

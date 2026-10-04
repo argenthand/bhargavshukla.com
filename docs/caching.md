@@ -48,6 +48,17 @@ Publishing any post purges `type:post`, which clears every page that shows posts
 
 `EDGE_MAX_AGE` (a day) and `EDGE_STALE` (a week) are in `edge-cache.ts`. Purges clear content changes and deploys start fresh, so `max-age` only bounds staleness if a purge fails; `stale-while-revalidate` means expiry never makes a visitor wait.
 
+#### Validators (#126)
+
+Browsers revalidate every page (`no-cache`); a validator lets that come back as `304 Not Modified` (a few hundred bytes) instead of the page (~23 KB compressed).
+
+- **Pages** get `ETag: "<hash of the HTML>"` from SvelteKit itself (any page that doesn't stream).
+- **Page data** (`__data.json`) gets the same kind of `ETag` from `edgeCache` (`etagFor`), when it's cacheable.
+- **Both** get `Last-Modified`: when they were rendered (`withCacheHeaders`, cacheable responses only).
+- **Who answers the 304:** on a cache hit, Cloudflare compares the request's `If-None-Match` / `If-Modified-Since` with the stored copy, without running the Worker. On a miss, SvelteKit answers a matching `If-None-Match` itself (`respond.js`, after the hooks), so the body isn't sent either.
+- **Purges and deploys** render a new copy, with a new hash and a later date, so a browser holding the old one gets a 200 with the new page.
+- **Found in #126:** production HTML reached browsers without its `ETag`, even on `BYPASS`. Static assets and local `wrangler dev` keep theirs. Cloudflare removes `ETag`s from HTML when the zone's Email Obfuscation, Automatic HTTPS Rewrites or "Replace insecure JavaScript libraries" may rewrite it (a Cache Rule with **Respect Strong ETags** turns those off for what it matches). `Last-Modified` covers pages while that's open; page data is JSON, which those features leave alone.
+
 Tracking parameters (`?utm_source=…`) make a separate entry: the key can't be normalised for visitor requests. The first visitor from each tracked link renders the page; content is unaffected.
 
 ### Draft preview (#57) — `src/lib/server/preview.ts`
