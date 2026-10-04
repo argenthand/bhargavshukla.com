@@ -322,7 +322,7 @@
 	@apply underline decoration-line underline-offset-4 hover:text-ink hover:decoration-current;
 }
 @utility filter-button {
-	@apply tap-target px-2.5 text-lg whitespace-nowrap text-muted hover:text-ink aria-[current=true]:text-ink aria-[current=true]:underline aria-[current=true]:decoration-accent aria-[current=true]:decoration-2 aria-[current=true]:underline-offset-8;
+	@apply tap-target px-2.5 text-lg whitespace-nowrap text-muted hover:text-ink aria-current:text-ink aria-current:underline aria-current:decoration-accent aria-current:decoration-2 aria-current:underline-offset-8;
 }
 /* The sticky phone header and the tab bar (#77): a faint shadow where they meet the page; in dark
    mode, where shadows don't show, a slightly lighter background instead. */

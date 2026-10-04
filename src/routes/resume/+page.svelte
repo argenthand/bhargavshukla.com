@@ -33,13 +33,15 @@
 		return () => observer.disconnect();
 	});
 
-	// No browser headers or footers on paper (#129): browsers only print theirs (date, title, URL,
+	// No browser headers or footers on paper (#129): Chrome only prints its own (date, title, URL,
 	// page numbers) when the page margin has room. So the margin moves onto the resume, repeated on
 	// every printed page by `clone`; the values are the @page margin in layout.css. Safari can't
-	// repeat it and keeps that margin. Inline, because the CSS build widens this @supports test to
-	// the -webkit- property, which Safari has. `!important`: this comes before layout.css's @page,
-	// and Chrome lets the later rule win even over a named page.
-	const printSheet = `<style>@supports (box-decoration-break: clone) {
+	// repeat it, and Firefox draws its headers at the paper's edge whatever the margin (on Android
+	// it also ignores the @page margin, so the padding added a page): both keep that margin.
+	// Inline, because the CSS build widens this @supports test to the -webkit- property, which
+	// Safari has. `!important`: this comes before layout.css's @page, and Chrome lets the later
+	// rule win even over a named page.
+	const printSheet = `<style>@supports (box-decoration-break: clone) and (not (-moz-appearance: none)) {
 	@page resume { margin: 0 !important }
 	@media print { .print-sheet { page: resume; padding: 0.6in 0.75in; box-decoration-break: clone } }
 }</style>`;
