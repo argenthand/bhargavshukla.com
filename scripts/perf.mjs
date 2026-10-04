@@ -7,6 +7,7 @@
 //   pnpm perf                                  # https://bhargavshukla.com, 3 runs
 //   pnpm perf http://localhost:8788 --runs 5   # a local build under `wrangler dev`
 //   pnpm perf --network 3G                     # one preset only
+//   pnpm perf --palette harbour                # a visitor who picked another palette (#114)
 //
 // The edge cache is warmed first, so these are cache HITs; a cold edge cache adds a Strapi trip.
 
@@ -32,6 +33,8 @@ const base = (args.find((a) => /^https?:\/\//.test(a)) ?? 'https://bhargavshukla
 );
 const runsAt = args.indexOf('--runs');
 const runs = runsAt === -1 ? 3 : Number(args[runsAt + 1]);
+const paletteAt = args.indexOf('--palette');
+const palette = paletteAt === -1 ? null : args[paletteAt + 1];
 const networkAt = args.indexOf('--network');
 const networks = networkAt === -1 ? Object.keys(NETWORKS) : [args[networkAt + 1]];
 if (!networks.every((n) => n in NETWORKS))
@@ -72,6 +75,7 @@ async function settle(page) {
 
 async function run(browser, network, js) {
 	const context = await browser.newContext({ ...devices['Pixel 7'], javaScriptEnabled: js });
+	if (palette) await context.addInitScript((p) => localStorage.setItem('palette', p), palette);
 	const page = await context.newPage();
 	const cdp = await context.newCDPSession(page);
 	await cdp.send('Network.enable');
@@ -135,7 +139,9 @@ for (const path of ['/', ...TABS.map(([, p]) => p)])
 	for (let i = 0; i < 4; i++) await fetch(`${base}${path}`);
 
 const fmt = (v, unit = '') => (v == null ? '–' : `${Math.round(v)}${unit}`);
-console.log(`Target: ${base} · ${new Date().toISOString().slice(0, 10)} · ${runs} runs, medians\n`);
+console.log(
+	`Target: ${base}${palette ? ` · palette ${palette}` : ''} · ${new Date().toISOString().slice(0, 10)} · ${runs} runs, medians\n`
+);
 console.log('| Network | JS | Step | Total (ms) | FCP (ms) | LCP (ms) | KB | Requests |');
 console.log('| --- | --- | --- | --- | --- | --- | --- | --- |');
 for (const network of networks) {

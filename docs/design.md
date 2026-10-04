@@ -52,8 +52,8 @@ Tailwind CSS v4 with the typography plugin. Default theme apart from the fonts b
 @plugin '@tailwindcss/typography';
 
 @theme {
-	--font-sans: 'Newsreader', ui-serif, Georgia, serif;
-	--font-mono: 'JetBrains Mono', ui-monospace, monospace;
+	--font-sans: var(--palette-font); /* each palette's typeface, see Fonts */
+	--font-mono: 'Space Mono', ui-monospace, monospace;
 }
 
 @page {
@@ -89,13 +89,25 @@ html {
 
 ## Fonts
 
-- **Newsreader** (400–600, italic 400; optical sizing on) for every piece of text.
-- **JetBrains Mono** (400–500) for code only.
-- **Self-hosted** (#110): `src/lib/fonts/`, made by `pnpm fonts` (`scripts/fonts.mjs`) from the Fontsource variable fonts and imported by the layout, so the files are hashed and cached for a year. No requests to Google.
-  - Only what the site uses: weight 400–600 (italic 400) and optical size 12–48 (`text-xs` to the largest heading). A size or weight outside those ranges renders at the nearest one; widen the range in the script if the design needs it.
-  - Each Newsreader style is two files by `unicode-range`: core (ASCII plus the site's punctuation, about 55 KB roman and 36 KB italic) and the rest of Latin, which only downloads for a page that uses it. A first visit loads about 91 KB of fonts, down from about 195 KB.
-  - Not preloaded: on Slow 4G and 3G a preload competed with the CSS and delayed the first paint ([performance.md](performance.md)). `font-display: swap`; while Newsreader loads, text is in "Newsreader Fallback", Georgia scaled to Newsreader's metrics (Capsize), so the swap barely moves it.
-  - Share cards (`og.ts`) and the print note still read `@fontsource/newsreader` directly.
+Each colour palette brings its own typeface (#114); code is Space Mono everywhere. `--palette-font` in each palette's block in `layout.css` sets it, and `--font-sans` uses it, so one class (`font-sans`, the default) follows the palette.
+
+| Palette                    | Typeface                                             | Core download (roman + italic)                        |
+| -------------------------- | ---------------------------------------------------- | ----------------------------------------------------- |
+| Newsprint (default, brand) | **Newsreader**, serif, optical sizing                | 91 KB                                                 |
+| Harbour                    | **Instrument Sans**, sans                            | 32 KB                                                 |
+| Sage                       | **Literata**, serif, optical sizing                  | 60 KB                                                 |
+| Plum                       | **Schibsted Grotesk**, sans                          | 44 KB                                                 |
+| Ochre                      | **Work Sans**, sans                                  | 32 KB                                                 |
+| Code, every palette        | **Space Mono** 400 and 700 (it has no other weights) | 15 KB per weight, only on pages with code or key caps |
+
+- **Self-hosted** (#110): `src/lib/fonts/`, made by `pnpm fonts` (`scripts/fonts.mjs`) from Fontsource and imported by the layout, so the files are hashed and cached for a year. No requests to Google. Mockups: canvas rows "Fonts per palette (#114)" and "Code font (#114)".
+  - Only what the site uses: weight 400–600 (italic 400) and, for Newsreader and Literata, optical size 12–48 (`text-xs` to the largest heading). A size or weight outside those ranges renders at the nearest one; widen the range in the script if the design needs it.
+  - Each text style is two files by `unicode-range`: core (ASCII plus the site's punctuation) and the rest of Latin, which only downloads for a page that uses it.
+  - A browser downloads only the current palette's faces: an `@font-face` nobody uses is never fetched. Visitors who stay on Newsprint download exactly what they did before #114; the other palettes' rules add under 1 KB to the compressed page (timed on Cloudflare: no difference, [performance.md](performance.md)).
+  - Not preloaded: on Slow 4G and 3G a preload competed with the CSS and delayed the first paint. `font-display: swap`; while a face loads, text is in "<Family> Fallback", Georgia (serifs) or Arial (sans) scaled to that face's metrics with Capsize, so the swap barely moves it.
+  - Without JavaScript the palette can't be applied (it's set by the inline script), so those visitors always get Newsprint and Newsreader.
+  - Share cards (`og.ts`) stay in Newsreader, the brand. The printed resume uses the palette's typeface, and its outlined print note is drawn in it too (`pnpm print-notes`); every palette still prints on 2 pages with the same extracted text.
+  - Changing a palette's font: edit `TEXT_FACES` in `scripts/fonts.mjs` and `--palette-font` in `layout.css`, add the Fontsource packages (variable for the site, static for the print note), run `pnpm fonts` and `pnpm print-notes`.
 
 **CSS delivery (#117):** all CSS is inlined into each page's HTML (`inlineStyleThreshold: Infinity` in `vite.config.ts`), so nothing blocks the first paint. Tailwind reads `src/` only (`@import 'tailwindcss' source('../')`): class names in the docs, CMS or skill files never reach the site.
 

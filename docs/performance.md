@@ -368,6 +368,20 @@ The current reference for the real-world log.
 | 3G      | off | Tap Asides         | 2517       | 2464     | 2464     | 22  | 1 page, 0 data |
 | 3G      | off | Return visit: home | 2490       | 2492     | 2492     | 23  |                |
 
+### Fonts per palette (#114)
+
+Each palette now has its own typeface; code moved to Space Mono. Measured 2026-10-04, `pnpm perf --palette <id>` (new flag) on a local build, Slow 4G, JS on, first visit:
+
+| Palette                   | KB on a first visit | First paint |
+| ------------------------- | ------------------- | ----------- |
+| Newsprint (Newsreader)    | 180                 | 0.70 s      |
+| Harbour (Instrument Sans) | 122                 | 0.70 s      |
+| Sage (Literata)           | 150                 | 0.70 s      |
+
+- **Newsprint visitors:** the same font files as before. The other palettes' `@font-face` rules make the compressed page about 0.6 KB bigger.
+- **A false alarm, documented so it isn't chased again:** locally, a Newsprint first visit took 2.33 s to fully load against `main`'s 2.00 s. Builds with the extra rules present but inactive were just as slow, so it was the page bytes, not the rules. On Cloudflare (preview versions of `main` and the branch, timed back to back) the two were identical: Slow 4G 2.14–2.15 s vs 2.15–2.17 s, 3G 7.48 s both. The local `wrangler dev` setup exaggerates it.
+- **Comparing against a `workers.dev` preview:** don't time a preview against production. The preview served the same JavaScript as 73 KB against production's 27 KB, so compare two previews instead.
+
 ## Real-world log
 
 Add a row whenever you try the site on a slow connection. Time from tap until the page is readable, by stopwatch or by feel.

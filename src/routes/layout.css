@@ -12,9 +12,13 @@
  * brand). Components never name a Tailwind colour: they use the roles below (`text-ink`,
  * `bg-fill`, `text-accent`…), which follow both the palette and light/dark, so there are no
  * `dark:` colour pairs in markup. See docs/design.md → Colour roles.
+ *
+ * Each palette also has its own typeface (#114): `--palette-font`, used as `--font-sans` (the
+ * site's one text face, serif or sans). A browser downloads only the current palette's font.
  */
 :root,
 :root[data-palette='newsprint'] {
+	--palette-font: 'Newsreader', 'Newsreader Fallback', ui-serif, Georgia, serif;
 	--grey-50: var(--color-neutral-50);
 	--grey-100: var(--color-neutral-100);
 	--grey-200: var(--color-neutral-200);
@@ -33,6 +37,8 @@
 	--hue-800: var(--color-red-800);
 }
 :root[data-palette='harbour'] {
+	--palette-font:
+		'Instrument Sans', 'Instrument Sans Fallback', ui-sans-serif, system-ui, sans-serif;
 	--grey-50: var(--color-slate-50);
 	--grey-100: var(--color-slate-100);
 	--grey-200: var(--color-slate-200);
@@ -51,6 +57,7 @@
 	--hue-800: var(--color-blue-800);
 }
 :root[data-palette='sage'] {
+	--palette-font: 'Literata', 'Literata Fallback', ui-serif, Georgia, serif;
 	--grey-50: var(--color-stone-50);
 	--grey-100: var(--color-stone-100);
 	--grey-200: var(--color-stone-200);
@@ -69,6 +76,8 @@
 	--hue-800: var(--color-emerald-800);
 }
 :root[data-palette='plum'] {
+	--palette-font:
+		'Schibsted Grotesk', 'Schibsted Grotesk Fallback', ui-sans-serif, system-ui, sans-serif;
 	--grey-50: var(--color-zinc-50);
 	--grey-100: var(--color-zinc-100);
 	--grey-200: var(--color-zinc-200);
@@ -87,6 +96,7 @@
 	--hue-800: var(--color-violet-800);
 }
 :root[data-palette='ochre'] {
+	--palette-font: 'Work Sans', 'Work Sans Fallback', ui-sans-serif, system-ui, sans-serif;
 	--grey-50: var(--color-stone-50);
 	--grey-100: var(--color-stone-100);
 	--grey-200: var(--color-stone-200);
@@ -173,8 +183,8 @@
 }
 
 @theme {
-	--font-sans: 'Newsreader', 'Newsreader Fallback', ui-serif, Georgia, serif;
-	--font-mono: 'JetBrains Mono', ui-monospace, monospace;
+	--font-sans: var(--palette-font); /* the palette's typeface (#114) */
+	--font-mono: 'Space Mono', ui-monospace, monospace; /* code, in every palette (#114) */
 
 	/* Layout tokens (#66): named sizes built from the default scale, never raw values in markup. */
 	--container-article: var(--container-2xl); /* a post's text column: max-w-article */

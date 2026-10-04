@@ -35,7 +35,7 @@
 
 	/** "Apr 2021 – Present". */
 	const dates = (start: string, end: string | null) =>
-		`${formatMonth(start)} – ${end ? formatMonth(end) : 'Present'}`;
+		`${formatMonth(start)} - ${end ? formatMonth(end) : 'Present'}`;
 
 	const sectionHeading = 'section-heading mb-4 break-after-avoid print:mb-2 print:text-black';
 	const datesClass = 'meta whitespace-nowrap tabular-nums print:text-black';

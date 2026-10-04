@@ -3,9 +3,10 @@
 // "Printed in <Palette> from bhargavshukla.com/resume. Thanks for reading it on paper."
 // Drawn as outlines (satori turns text into paths), so readers see it on paper and in the PDF
 // while ATS parsers, which read the PDF's text, never do. The palette's name is in its light-mode
-// accent (-700) and the rest in its grey-500, the same colours the page prints with.
+// accent (-700) and the rest in its grey-500, the same colours the page prints with, in the
+// palette's own typeface (#114).
 //
-//   pnpm print-notes     # after changing the wording, a palette or its colours
+//   pnpm print-notes     # after changing the wording, a palette, its colours or its font
 
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import satori from 'satori';
@@ -16,9 +17,6 @@ const OUT = 'static/print-notes';
 const SIZE = 12; // px: the footer's text-xs
 const WIDTH = 640; // wider than the text; the SVG is cropped to it below
 
-const font = readFileSync(
-	'node_modules/@fontsource/newsreader/files/newsreader-latin-400-normal.woff'
-);
 const theme = readFileSync('node_modules/tailwindcss/theme.css', 'utf8');
 const layout = readFileSync('src/routes/layout.css', 'utf8');
 
@@ -28,6 +26,21 @@ function family(palette, role) {
 	const name = block?.match(new RegExp(`--${role}:\\s*var\\(--color-([a-z]+)-`))?.[1];
 	if (!name) throw new Error(`No --${role} for ${palette} in layout.css`);
 	return name;
+}
+
+/** A palette's typeface (#114): the first family in its `--palette-font`, as Fontsource's static
+ *  400 woff (satori reads woff, not woff2). */
+function typeface(palette) {
+	const block = layout.match(
+		new RegExp(`(?:\\[data-palette='${palette}'\\])\\s*\\{([^}]*)\\}`)
+	)?.[1];
+	const name = block?.match(/--palette-font:\s*'([^']+)'/)?.[1];
+	if (!name) throw new Error(`No --palette-font for ${palette} in layout.css`);
+	const slug = name.toLowerCase().replaceAll(' ', '-');
+	return {
+		name,
+		data: readFileSync(`node_modules/@fontsource/${slug}/files/${slug}-latin-400-normal.woff`)
+	};
 }
 
 /** Tailwind's oklch value → sRGB hex (satori doesn't read oklch). */
@@ -71,11 +84,12 @@ for (const { id, label } of PALETTES) {
 	const grey = hex(`${family(id, 'grey-500')}-500`);
 	const accent = hex(`${family(id, 'hue-700')}-700`);
 	const host = new URL(site.url).host;
+	const font = typeface(id);
 	const svg = await satori(
 		{
 			type: 'div',
 			props: {
-				style: { display: 'flex', fontFamily: 'Newsreader', fontSize: SIZE, lineHeight: 1.5 },
+				style: { display: 'flex', fontFamily: font.name, fontSize: SIZE, lineHeight: 1.5 },
 				children: [
 					span('Printed in ', grey),
 					span(label, accent),
@@ -86,7 +100,7 @@ for (const { id, label } of PALETTES) {
 		{
 			width: WIDTH,
 			height: SIZE * 1.5,
-			fonts: [{ name: 'Newsreader', data: font, weight: 400, style: 'normal' }]
+			fonts: [{ name: font.name, data: font.data, weight: 400, style: 'normal' }]
 		}
 	);
 	// Crop the canvas to the drawn text, so the image's own width is the text's.
@@ -96,5 +110,7 @@ for (const { id, label } of PALETTES) {
 		.replace(`width="${WIDTH}"`, `width="${width}"`)
 		.replace(`viewBox="0 0 ${WIDTH} `, `viewBox="0 0 ${width} `);
 	writeFileSync(`${OUT}/${id}.svg`, `${cropped}\n`);
-	console.log(`${OUT}/${id}.svg  ${width}×${SIZE * 1.5}  ${label} ${accent} on ${grey}`);
+	console.log(
+		`${OUT}/${id}.svg  ${width}×${SIZE * 1.5}  ${label} in ${font.name}, ${accent} on ${grey}`
+	);
 }
