@@ -149,6 +149,16 @@ Warm means re-requesting a page so the cache always has a fresh copy. The set is
   - Visitors elsewhere still get a lower-tier miss on their first visit. It's answered from the upper tier, without the Worker or Strapi.
 - **UptimeRobot already requests the home page every 5 minutes** ([infrastructure.md](infrastructure.md)), so home stays warm from its locations at no extra cost. The warming schedule lives in the repo either way (a Cron Trigger), so it doesn't depend on a monitoring account.
 
+## Results in production (2026-10-04, after #124 deployed)
+
+- **Pages, page data, RSS, sitemap, share card:** the first request after the deploy was a `MISS` (0.66–1.08 s); every request after that was a `HIT` (0.07–0.12 s), including from the other data centre (Toronto filled, Montréal hit).
+- **Analytics:** a cached page requested as a browser (`Accept: text/html`) still carries the Web Analytics beacon: Cloudflare adds it after the cache. Page views keep counting.
+- **Preview:** a request with the `__preview` cookie → `BYPASS` (the Worker runs). Any other cookie → its own entry (`MISS`), as designed.
+- **Never stored:** 404s → `BYPASS`. `/api/views` → `HIT` within its 60 s. `Cache-Tag` and `Cloudflare-CDN-Cache-Control` don't reach browsers.
+- **Purge endpoint:** a wrong token → 401. The purge and repopulate path passed on the preview version. In production it runs on the next publish; check `Purge:` and `Repopulate:` in Workers Logs then.
+- **Speed:** Lighthouse 100 (FCP/LCP 1.12 s, median of 5); `pnpm perf` unchanged from #117 ([performance.md](performance.md#workers-cache-123)).
+- **Worker metrics** in the dashboard drop: hits don't run the Worker. Workers Observability shows `cf-cache-status` per request.
+
 ## How we'll know it worked
 
 - `cf-cache-status` on production: `HIT` from the lower or upper tier, `UPDATING` / `STALE` while refreshing, `MISS` only after a deploy or a purge.
