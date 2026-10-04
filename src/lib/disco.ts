@@ -1,7 +1,7 @@
 // The palette disco (#111, EGG-palette-disco on the canvas): every palette in turn, 0.4 s each,
 // with a burst of confetti in each (not with reduced motion), then back to where it started with a
 // line at the bottom. Nothing is saved; a tap anywhere stops it early. PalettePicker.svelte loads
-// this when a long press on the dot completes, so it costs nothing otherwise.
+// this on the fifth quick tap on the dot, so it costs nothing otherwise.
 
 import { discoOrder } from '$lib/easter-eggs';
 import { reducedMotion } from '$lib/motion';

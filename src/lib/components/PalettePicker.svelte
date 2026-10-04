@@ -5,17 +5,16 @@
 	// JavaScript only; the inline script in app.html applies the saved palette before the first paint.
 	//
 	// In 8-bit mode (#111) the dot shows NES colours, and choosing a palette leaves the mode.
-	// The palette disco (#111, src/lib/disco.ts): press and hold the dot (a ring fills) and every
-	// palette plays in turn, then it lands back where it was.
+	// The palette disco (#111, src/lib/disco.ts): five quick taps on the dot and every palette plays
+	// in turn, then it lands back where it was. Each tap before that opens or closes the menu as usual.
+	import { tapCounter } from '$lib/easter-eggs';
 	import { nes, setNes } from '$lib/nes.svelte';
 	import { isPalette, PALETTES, setPalette, type PaletteId } from '$lib/theme';
 
 	let current = $state<PaletteId>('newsprint');
 	let button = $state<HTMLButtonElement>();
 	let menu = $state<HTMLElement>();
-	let holding = $state(false);
-	let holdTimer: ReturnType<typeof setTimeout>;
-	let held = false;
+	const taps = tapCounter(5, 2000);
 
 	$effect(() => {
 		const saved = document.documentElement.dataset.palette;
@@ -38,34 +37,12 @@
 		if (nes.on) setNes(false);
 	}
 
-	function startHold(event: PointerEvent) {
-		if (nes.on || event.button !== 0) return;
-		held = false;
-		holding = true;
-		holdTimer = setTimeout(() => {
-			holding = false;
-			held = true;
-			void import('$lib/disco').then(({ disco }) => disco(current));
-		}, holdMs());
-	}
-
-	function endHold() {
-		clearTimeout(holdTimer);
-		holding = false;
-	}
-
-	/** `--duration-hold` in ms: the ring and the timer share it. */
-	function holdMs() {
-		return parseFloat(
-			getComputedStyle(document.documentElement).getPropertyValue('--duration-hold')
-		);
-	}
-
-	/** After a long press, the click that follows mustn't open the menu. */
+	/** The fifth quick tap starts the disco instead of toggling the menu. Not in 8-bit mode. */
 	function onclick(event: MouseEvent) {
-		if (!held) return;
-		held = false;
+		if (!taps() || nes.on) return;
 		event.preventDefault();
+		menu?.hidePopover();
+		void import('$lib/disco').then(({ disco }) => disco(current));
 	}
 </script>
 
@@ -75,13 +52,8 @@
 	popovertarget="palette-menu"
 	aria-label="Colour: {label}"
 	title="Colour: {label}"
-	onpointerdown={startHold}
-	onpointerup={endHold}
-	onpointerleave={endHold}
-	onpointercancel={endHold}
 	{onclick}
-	oncontextmenu={(event) => event.preventDefault()}
-	class="relative hidden size-11 shrink-0 touch-manipulation items-center justify-center rounded-full bg-fill select-none js:flex"
+	class="hidden size-11 shrink-0 touch-manipulation items-center justify-center rounded-full bg-fill select-none js:flex"
 >
 	{#if nes.on}
 		<span aria-hidden="true" class="grid size-4.5 grid-cols-2 overflow-hidden rounded-full">
@@ -90,19 +62,6 @@
 		</span>
 	{:else}
 		<span aria-hidden="true" class="size-4.5 rounded-full bg-accent"></span>
-	{/if}
-	{#if holding}
-		<svg viewBox="0 0 48 48" aria-hidden="true" class="absolute inset-0 -rotate-90">
-			<circle
-				cx="24"
-				cy="24"
-				r="22.5"
-				fill="none"
-				pathLength="100"
-				stroke-dasharray="100"
-				class="animate-hold stroke-accent stroke-3 motion-reduce:animate-none"
-			/>
-		</svg>
 	{/if}
 </button>
 

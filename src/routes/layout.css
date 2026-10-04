@@ -260,18 +260,6 @@
 			rotate: 5deg;
 		}
 	}
-	/* The palette disco's long press (#111): a ring fills around the dot while it's held. */
-	--duration-hold: 600ms;
-	--animate-hold: hold var(--duration-hold) linear forwards;
-
-	@keyframes hold {
-		from {
-			stroke-dashoffset: 100;
-		}
-		to {
-			stroke-dashoffset: 0;
-		}
-	}
 	/* The NES controller sliding up (#111). */
 	--animate-slide-up: slide-up calc(var(--duration-motion) * 1.5) var(--ease-motion);
 
