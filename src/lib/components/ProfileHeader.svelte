@@ -110,7 +110,7 @@
 						href={contact.href}
 						target={contact.external ? '_blank' : undefined}
 						rel={contact.external ? 'noopener noreferrer' : undefined}
-						class="tap-target gap-1.5 text-accent hover:text-accent-hover print:min-h-0 print:text-black"
+						class="tap-target gap-1.5 text-accent hover:text-accent-hover print:min-h-0 print:text-accent-print"
 					>
 						<Icon name={contact.icon} size={14} class="print:hidden" />{contact.text}
 						{#if contact.external}<span class="sr-only"> (opens in a new tab)</span>{/if}

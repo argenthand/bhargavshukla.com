@@ -40,8 +40,9 @@
 	const sectionHeading = 'section-heading mb-4 break-after-avoid print:mb-2 print:text-black';
 	const datesClass = 'meta whitespace-nowrap tabular-nums print:text-black';
 	// The bullets print in the palette's accent (#102): a small easter egg, and markers print as text.
+	// Links in the text print in it too (#109), like the contacts, so they read as clickable.
 	const highlights =
-		'body-copy print:text-sm/snug print:text-black print:marker:text-accent-print [&_li]:mb-1.5 print:[&_li]:mb-0.5';
+		'body-copy print:text-sm/snug print:text-black print:marker:text-accent-print print:[&_a]:text-accent-print [&_li]:mb-1.5 print:[&_li]:mb-0.5';
 </script>
 
 <Seo title="Resume" description={resume?.summary || profile?.bioSummary || site.description} />
