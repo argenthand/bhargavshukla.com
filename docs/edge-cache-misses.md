@@ -82,20 +82,72 @@ What changes from today ([caching.md](caching.md)):
 - After a **day**, a page is served stale while it refreshes, so nobody waits.
 - **Simultaneous misses** for one page render once.
 
-## Spikes before building
+## Spikes (run in #123, 2026-10-03, on a preview version)
 
-Each is a short check on a preview deploy ("Previews cache independently of production"), done at the start of the build ticket:
+All three passed on `cache-spike-bs-blog.mrshukla-b.workers.dev` (a version uploaded with `wrangler versions upload`, not deployed; its cache is separate from production's):
 
-1. **Data requests:** does `Cloudflare-CDN-Cache-Control` make `__data.json` cacheable even though SvelteKit sends `Cache-Control: private, no-store` on it? If not, the hook rewrites `Cache-Control` for the edge and a response header transform restores `no-cache` for browsers. Confirm with `cf-cache-status`.
-2. **Preview:** do ordinary visitors send any `Cookie` header on bhargavshukla.com (Bot Fight Mode's `__cf_bm`, anything else)? With `Vary: Cookie` (option A), a preview request must miss, and a cookieless request must hit.
-3. **Purge and warm from SvelteKit:** is `ctx.cache` reachable as `event.platform.ctx.cache` through `adapter-cloudflare`? Does a purge clear both tiers within seconds? Does a loopback request (`ctx.exports`) fill the cache, so warming after a purge is possible?
+1. **Page data:** `Cloudflare-CDN-Cache-Control` makes `__data.json` cacheable despite SvelteKit's `private, no-store`: second request `HIT`. A copy filled in Toronto was a `HIT` in Montréal (upper tier). Browsers still get `Cache-Control: no-cache`; `Cache-Tag` and `Cloudflare-CDN-Cache-Control` don't reach them.
+2. **Preview:** the site and Cloudflare set no cookies on bhargavshukla.com, so ordinary visitors send none and share one copy. A request with a `__preview` cookie got `BYPASS`: it reached the Worker. A 404 → `BYPASS` both times.
+3. **Purge and repopulate:** `ctx.cache` and `ctx.exports` are reachable through `adapter-cloudflare` as `platform.ctx` (`enable_ctx_exports` is on by default since 2025-11-17). A webhook-style call purged `type:resume`. Within seconds `/resume` and its page data were `HIT` again with an `age` matching the purge, without any visitor request, so the loopback refill landed in the same keys visitors use. Pages that don't read the resume kept their older copies.
 
-## Decisions for you
+Also seen: a tracking parameter makes its own entry (`MISS`), as documented; `HEAD` is answered from a `GET` fill.
 
-1. **Go with Workers Cache?** It's the recommendation, or stay on the Cache API.
-2. **Preview:** `Vary: Cookie` (A, simpler, depends on spike 2) or preview URLs (B).
-3. **After a publish:** purge (next visitor renders the new version) or invalidate (`ctx.cache.invalidate`: next visitor gets the old version instantly and the new one renders in the background)? I'd purge: a publish should show at once, and one render per page is cheap.
-4. **Warming:** skip for now, or warm home and the lists after each purge (only if spike 3 works)?
+## Decisions (2026-10-03, build ticket #123)
+
+1. **Workers Cache:** yes.
+2. **Preview:** never cached, and a preview request must never be answered from the public cache: the Worker has to run for it. `Vary: Cookie` if spike 2 shows ordinary visitors send no cookies; otherwise preview URLs.
+3. **On publish:** purge the touched tags, then **repopulate** the affected pages right away (home, the type's list, the entry's own page, RSS and the sitemap), so visitors get the new version from cache instead of the first one rendering it.
+4. **Warming:** keep home, resume, Writing and Asides warm (cost below).
+
+## What it costs if the blog gets very popular
+
+Prices on Workers Paid, checked 2026-10-03 ([Workers](https://developers.cloudflare.com/workers/platform/pricing/), [D1](https://developers.cloudflare.com/d1/platform/pricing/)):
+
+- **Base:** $5 a month, including 10 M requests ($0.30 per extra million) and 30 M CPU-ms ($0.02 per extra million).
+- **D1:** 50 M rows written included ($1.00 per extra million).
+- **Bandwidth:** Cloudflare doesn't charge for it.
+
+**What changes:** with the Cache API, the Worker runs on every page request, but static assets (`/_app/…`) are "free and unlimited". With Workers Cache, hits use no CPU, but "every request to your Worker is charged … including requests that are normally free: static asset requests".
+
+**One visit, measured** (phone, production, 2026-10-03):
+
+| Step         | Requests                                          |
+| ------------ | ------------------------------------------------- |
+| First visit  | 28: the page + 27 static files (JS chunks, fonts) |
+| Each tap     | 1 data request                                    |
+| Return visit | 1: the rest comes from the browser cache          |
+
+Reading a post adds 2 read-count calls. So a typical visit from a shared link (land on a post, read it, tap once) is:
+
+- **Today:** 4 billable requests (page, data, 2 read-count calls).
+- **With Workers Cache:** 31 billable requests.
+
+| Visits a month | Today (Cache API)                              | Workers Cache            | Workers Cache with merged JS (~14 requests a visit) |
+| -------------- | ---------------------------------------------- | ------------------------ | --------------------------------------------------- |
+| 10 k           | $5                                             | $5                       | $5                                                  |
+| 100 k          | $5                                             | $5                       | $5                                                  |
+| 1 M            | $5                                             | **$11** (31 M requests)  | $6                                                  |
+| 10 M           | **$16** (40 M requests + CPU on every request) | **$95** (310 M requests) | **$44**                                             |
+
+- **Read counts:** about 3 D1 rows per counted read stays inside the 50 M included rows up to roughly 30 M visits a month. Beyond that, D1 costs more than the cache: 100 M visits ≈ $100 of row writes.
+- **Strapi and the VPS** don't feel popularity: only misses reach them, and with Workers Cache those are a handful per publish.
+- **If traffic ever gets there:**
+  - The lever is the number of static files on a first visit (18 JS files on home). Merging them is a small Vite setting (Rolldown `codeSplitting.groups` for the client build only; the server build breaks on the share cards' WebAssembly). Tried 2026-10-03: 18 → 7 files, but 49.8 → 61.0 KB gzip, because the merged chunk carries every page's code. Taps were unchanged, and first-visit "fully loaded" was a little slower (Slow 4G 1.99 → 2.07 s, 3G 6.97 → 7.33 s). HTTP/2 already fetches the small files in parallel. So it only pays for itself as a billing measure at millions of visits a month; not worth it before then.
+  - Rate limits and a spending alert on the Cloudflare account are cheap insurance.
+  - Neither is worth doing at today's traffic.
+
+## What keeping pages warm costs
+
+Warm means re-requesting a page so the cache always has a fresh copy. The set is home, resume, Writing and Asides, each as the page and as its page data: 8 requests.
+
+- **Hourly:** 8 × 24 × 30 = 5,760 requests a month, under 0.1% of the 10 M included.
+  - Most of those are hits that use no CPU. A page re-renders only when its copy passes `max-age` (a day): about 8 renders and 16 Strapi calls a day.
+  - Cost: **$0**.
+- **On publish:** the repopulate step is about 10–20 requests per publish. Also **$0**.
+- **Where warming helps:**
+  - A warm request fills the shared upper tier, which every data centre asks on a miss, and the lower tier of the data centre it runs in.
+  - Visitors elsewhere still get a lower-tier miss on their first visit. It's answered from the upper tier, without the Worker or Strapi.
+- **UptimeRobot already requests the home page every 5 minutes** ([infrastructure.md](infrastructure.md)), so home stays warm from its locations at no extra cost. The warming schedule lives in the repo either way (a Cron Trigger), so it doesn't depend on a monitoring account.
 
 ## How we'll know it worked
 

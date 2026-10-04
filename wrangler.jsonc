@@ -4,6 +4,9 @@
 	"main": ".svelte-kit/cloudflare/_worker.js",
 	"compatibility_date": "2026-09-30",
 	"compatibility_flags": ["nodejs_compat"],
+	// Workers Cache (#123, docs/caching.md): Cloudflare answers cached pages without running the
+	// Worker. The Worker version is part of the key, so a deploy never serves pages from the last one.
+	"cache": { "enabled": true },
 	"assets": { "binding": "ASSETS", "directory": ".svelte-kit/cloudflare" },
 	"routes": [{ "pattern": "bhargavshukla.com", "custom_domain": true }],
 	"observability": { "enabled": true },
@@ -16,10 +19,9 @@
 			"migrations_dir": "migrations"
 		}
 	],
-	// Secrets (dashboard → Variables and Secrets): STRAPI_TOKEN, PURGE_SECRET, CF_PURGE_TOKEN
-	// (docs/infrastructure.md). The zone ID isn't secret; the purge API needs it.
+	// Secrets (dashboard → Variables and Secrets): STRAPI_TOKEN, PURGE_SECRET, PREVIEW_SECRET
+	// (docs/infrastructure.md).
 	"vars": {
-		"STRAPI_URL": "https://cms.bhargavshukla.com",
-		"CF_ZONE_ID": "46d06175f04c750ead2291f34512ae4f"
+		"STRAPI_URL": "https://cms.bhargavshukla.com"
 	}
 }

@@ -4,18 +4,22 @@
 
 Goal: near-static speed, with content changes live within seconds and no frontend redeploy.
 
-## Constraints (from Cloudflare docs, checked 2026-09-28)
+## How it works (since #123)
 
-- `cache.delete()` only purges the **one data center** where the Worker runs, so it can't be used for global invalidation.
-- Purge by URL doesn't work for entries stored with the Cache API.
-- Purge by **`Cache-Tag`** does work on Cache API entries and is on the **Free plan**: 5 requests/min (bucket of 25), up to 100 tags per request, limits shared per account.
-- The Cache API only works on the **custom domain**, not `*.workers.dev`.
+Pages are cached by **[Workers Cache](https://developers.cloudflare.com/workers/cache/)**, a cache in front of the Worker. On a hit Cloudflare answers without running it; on a miss the Worker renders the page and Cloudflare keeps it according to the response's headers. It replaced a hand-built Cache API cache (#16–#108); [edge-cache-misses.md](edge-cache-misses.md) has why and the measurements.
+
+- **Two tiers:** a lower tier in the data centre closest to the visitor, and an upper tier every lower tier asks on a miss. One render anywhere serves everyone.
+- **`stale-while-revalidate`:** once a page is a day old, the next visitor still gets it at once while one request refreshes it in the background. Concurrent misses for one page render once.
+- **The key** is the path and the query string, verbatim and in order, plus the Worker version. A deploy starts with an empty cache, so a cached page never points at assets the deploy removed. The host and cookies aren't in the key; `Vary: Cookie` adds the Cookie header ([Draft preview](#draft-preview-57--srclibserverpreviewts)).
+- **Purge** only from inside the Worker (`ctx.cache.purge`). Zone-level purges (dashboard, API) don't reach it.
+- **Not emulated locally:** `vite dev` and `wrangler dev` render every request. Check caching on a preview version (`pnpm wrangler versions upload --preview-alias <name>`, Preview URLs on), whose cache is separate from production's.
+- **Billing:** every request is billed, hits and static assets included; hits use no CPU ([edge-cache-misses.md → cost](edge-cache-misses.md#what-it-costs-if-the-blog-gets-very-popular)).
 
 ## Tagging strategy
 
 Each page is tagged with the **content types it read**: `type:post`, `type:category`, `type:aside`, `type:tag`, `type:profile`, `type:resume`.
 
-Publishing any post purges `type:post`, which clears every page that shows posts: the post itself, `/blog`, `/`, RSS and sitemap. SvelteKit's `__data.json` (client-side navigation) is never cached: SvelteKit marks it `private, no-store`, so it always reads Strapi. A renamed slug can't leave a stale page behind. Per-document tags would add bookkeeping for no benefit at this scale.
+Publishing any post purges `type:post`, which clears every page that shows posts: the post itself, `/blog`, `/`, RSS and sitemap, and their page data (`__data.json`, what a client-side navigation fetches). A renamed slug can't leave a stale page behind. Per-document tags would add bookkeeping for no benefit at this scale.
 
 ## Implementation
 
@@ -32,40 +36,37 @@ Publishing any post purges `type:post`, which clears every page that shows posts
 
 ### 3. Hook — `src/hooks.server.ts` + `src/lib/server/edge-cache.ts`
 
-`handle = sequence(cacheTags, edgeCache)`:
+`handle = sequence(cacheTags, preview, edgeCache)`. `edgeCache` doesn't store anything itself; it sets the headers Workers Cache follows:
 
-1. `cacheTags` sets `event.locals.cacheTags = new Set()`.
-2. **Bypass** (plain `resolve`, `x-edge-cache: BYPASS`) when there's no `platform.caches` (`vite dev`), the method isn't `GET`/`HEAD`, the path starts with `/api/`, or the `__preview` cookie is present.
-3. **Cache key** = `origin + /__edge/<build version> + pathname` + only these params, in this order: `cat`, `kind`, `page`, `q`, `tag`, `x-sveltekit-invalidated`, `x-sveltekit-trailing-slash`. Tracking params (`utm_*`, `fbclid`, …) are dropped, so they share the page.
-   - Built from the **request's** URL, not `event.url`: SvelteKit strips `/__data.json`, `x-sveltekit-invalidated` and `x-sveltekit-trailing-slash` from `event.url` before hooks run. Keyed on `event.url`, a page and its client-navigation data shared one entry, so taps got HTML instead of JSON and fell back to full reloads (#108).
-   - The build `version` (`$app/environment`) means a deploy never serves a cached page that points at assets it removed; old entries just age out.
-   - The filters are in the key because `/blog` and `/asides` render their filtered results on the server (no-JS and shareable links).
-   - The `/__edge/` prefix matters: the adapter's own worker looks up the **raw request URL** in `caches.default` before SvelteKit runs, and must never find one of our entries (it would serve it as-is, `Cache-Tag` and day-long `Cache-Control` included).
-4. `hit = await caches.default.match(key)`. A hit is returned with `x-edge-cache: HIT` (a `HEAD` gets the headers without the body).
-5. On a miss, `response = await resolve(event)`.
-6. Stored only for a `GET` whose response is `200`, has ≥ 1 tag, has no `Set-Cookie`, and whose `Cache-Control` isn't `no-store`/`private`. A load opts out with `locals.noStore = true` (not `setHeaders`, which SvelteKit leaves off `__data.json`); the home page does this when Strapi is unreachable, so the page without posts isn't kept for the TTL.
-   - **Page data** (`__data.json`, what a client-side navigation fetches) always comes from SvelteKit as `private, no-store`, so the header can't decide. It's stored when it's `application/json`, a `data` answer, and none of its nodes is an `error` (a 404 or a failed Strapi call arrives as a 200 with an error node; a redirect as `type: 'redirect'`). Same tags, TTL and purge as pages (#108). The stored copy gets `Cache-Control: public, max-age=${EDGE_TTL}` and `Cache-Tag: <tags>`, written with `ctx.waitUntil(cache.put(key, …))`.
-7. Browsers always get `x-edge-cache: MISS|HIT`, no `Cache-Tag`, and `Cache-Control: no-cache`. `no-cache` (rather than `max-age=0, must-revalidate`) also stops the adapter's worker from storing the response itself.
+1. **Bypass** (`shouldBypass`): methods other than `GET`/`HEAD`, `/api/*`, and any request with the `__preview` cookie keep their own headers. Unless one says `public` (as `/api/views` does), it also gets `Cloudflare-CDN-Cache-Control: no-store`, because without any `Cache-Control` Workers Cache would keep a 200 for two hours by heuristic.
+2. **Cacheable** when the response is `200`, has ≥ 1 tag, has no `Set-Cookie`, isn't `no-store`/`private`, and the load didn't set `locals.noStore` (home does when Strapi is unreachable, so the page without posts isn't kept). `setHeaders` can't opt out: SvelteKit leaves it off `__data.json`.
+   - **Page data** always comes from SvelteKit as `private, no-store`, so the header can't decide. It's cacheable when it's `application/json`, a `data` answer, and none of its nodes is an `error` (a 404 or a failed Strapi call arrives as a 200 with an error node; a redirect as `type: 'redirect'`).
+3. **Headers** (`withCacheHeaders`):
+   - Cacheable: `Cloudflare-CDN-Cache-Control: max-age=86400, stale-while-revalidate=604800` (Cloudflare only; it outranks `Cache-Control` and isn't passed to browsers), `Cache-Tag: <tags>` (stripped before browsers), `Vary: Cookie`.
+   - Everything else: `Cloudflare-CDN-Cache-Control: no-store`.
+   - Browsers always get `Cache-Control: no-cache`: they revalidate every time, so a purge shows on their next load. It also keeps the adapter's own `caches.default` lookup from storing pages.
 
-`EDGE_TTL = 86400` (a day; 10 minutes until #108). Purges clear content changes and the version in the key clears deploys, so the TTL only bounds staleness if a purge fails. The Cache API is per data center, and a short TTL meant most visits to a quiet site missed and waited on Strapi.
+`EDGE_MAX_AGE` (a day) and `EDGE_STALE` (a week) are in `edge-cache.ts`. Purges clear content changes and deploys start fresh, so `max-age` only bounds staleness if a purge fails; `stale-while-revalidate` means expiry never makes a visitor wait.
+
+Tracking parameters (`?utm_source=…`) make a separate entry: the key can't be normalised for visitor requests. The first visitor from each tracked link renders the page; content is unaffected.
 
 ### Draft preview (#57) — `src/lib/server/preview.ts`
 
 1. **Link.** Strapi's **Open preview** (draft tab) calls `preview.config.handler` in [`cms/config/admin.ts`](../cms/config/admin.ts), which mints `https://bhargavshukla.com/api/preview?path=/blog/<slug>&exp=<now+5 min>&sig=<HMAC>` for posts, asides and the resume (other types get no button). The secret itself never appears in a URL. The published tab opens the live page.
 2. **Cookie.** `/api/preview` checks the signature (`crypto.subtle.verify`, constant time), that `path` is a site path (`/x`, never `//host`), and that `exp` is in the future but at most 10 minutes away. It then sets `__preview=<exp>.<HMAC>` (HttpOnly, Secure, SameSite=Lax, 2 hours) and redirects (303) to the page. A bad link gets 401.
 3. **Loads.** The `preview` hook verifies the cookie into `locals.preview`. A cookie made by hand, tampered with or expired is ignored. Page loads pass `{ drafts: locals.preview }`: lists merge each document's draft with the published list (`mergeDrafts`: published ones keep their publish date, the rest get `draft: true` and sort by last edit), and a post, aside or the resume is read with `status=draft`. **RSS and the sitemap never ask for drafts.**
-4. **Caching.** Any `__preview` cookie bypasses the edge cache (step 2 above). A preview response also gets `Cache-Control: private, no-store` and `X-Robots-Tag: noindex`.
+4. **Caching.** A preview is never stored, and never answered from the cache: cacheable pages carry `Vary: Cookie`, so a request with the `__preview` cookie has its own key and reaches the Worker. Cloudflare sets no cookies on this site, so ordinary visitors send none and share one cached copy (checked in #123). The hook marks any `__preview` request `no-store`, and a preview response also gets `Cache-Control: private, no-store` and `X-Robots-Tag: noindex`.
 5. **UI.** The layout shows "Preview mode: drafts are visible to you only" with **Exit** (`/api/preview/exit?path=…`, which clears the cookie and goes back to the page). Unpublished entries show "Not published" and the Draft badge.
 
 The CMS and the site share `PREVIEW_SECRET`; the signed text is `link\n<path>\n<exp>` for links and `cookie\n<exp>` for the cookie, so one can't stand in for the other. [`scripts/preview-link.mjs`](../scripts/preview-link.mjs) (`pnpm preview-link`, #98) mints the same links on localhost with the local secret; a test checks that `verifyLink` accepts them. Keep the three signers in step: `previewLink` in cms/config/admin.ts, `linkPayload` here, and the script.
 
 ### Share cards (#62)
 
-`/og/*.png` read Strapi through `strapi()` like pages, so they are stored and purged the same way: a post's card is tagged `type:post`, `type:category` and `type:profile` (for the headshot); an aside's `type:aside`, `type:tag` and `type:profile`; the default card `type:profile`. Pages link to them with `?v=<updatedAt>` so share sites that cache images by URL fetch a new card after an edit; `v` is not in the cache key, so it doesn't split the cache. A card rendered while the profile couldn't be loaded is `no-store`.
+`/og/*.png` read Strapi through `strapi()` like pages, so they are stored and purged the same way: a post's card is tagged `type:post`, `type:category` and `type:profile` (for the headshot); an aside's `type:aside`, `type:tag` and `type:profile`; the default card `type:profile`. Pages link to them with `?v=<updatedAt>` so share sites that cache images by URL fetch a new card after an edit; each `v` is its own cache entry. A card rendered while the profile couldn't be loaded is `no-store`.
 
 ### Read counts (#87)
 
-`/api/*` skips the edge cache. `GET /api/views` returns `Cache-Control: public, max-age=60`, so the **adapter's own worker** keeps it in `caches.default` for a minute, keyed by its URL, and answers repeats before SvelteKit runs (the same lookup the `/__edge/` prefix keeps away from pages). A popular page costs one D1 read a minute per data center. The beacon (`POST`) is never cached. Pages themselves don't change: the count is fetched after load.
+`/api/*` keeps its own headers. `GET /api/views` returns `Cache-Control: public, max-age=60`, so Workers Cache answers repeats for a minute without running the Worker. A popular page costs about one D1 read a minute. The beacon (`POST`) is never cached. Pages themselves don't change: the count is fetched after load.
 
 ### 4. Purge endpoint — `src/routes/api/purge/+server.ts` + `src/lib/server/purge.ts`
 
@@ -75,40 +76,41 @@ The CMS and the site share `PREVIEW_SECRET`; the signed text is `link\n<path>\n<
 
   | Event                                              | Action                                                                                                                                     |
   | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-  | `entry.publish`, `entry.unpublish`, `entry.delete` | purge `type:<model>`                                                                                                                       |
+  | `entry.publish`, `entry.unpublish`, `entry.delete` | purge `type:<model>`, then repopulate                                                                                                      |
   | `entry.create`, `entry.update`                     | purge only for models without Draft & Publish (`category`, `profile`, `tag`); otherwise it's a draft save that doesn't change live content |
   | `media.*`                                          | ignore                                                                                                                                     |
-  | body `{ "all": true }`                             | `purge_everything` (manual escape hatch)                                                                                                   |
+  | body `{ "all": true }`                             | purge everything, then repopulate (manual escape hatch)                                                                                    |
 
-- **Call:** `POST https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/purge_cache` with `{ "tags": [...] }` and `Authorization: Bearer ${CF_PURGE_TOKEN}`.
-- Respond 200 on success or when there's nothing to purge, 502 when Cloudflare fails, 500 when `CF_ZONE_ID`/`CF_PURGE_TOKEN` is missing, and log every outcome (`Purge: …` in `wrangler tail` and Workers Logs). Strapi doesn't retry webhooks, so failures must be visible.
-- The handler lives in `purge.ts` (`handlePurge(request, config, fetch)`) so it's tested without SvelteKit; `+server.ts` only passes the env in. `crypto.subtle.timingSafeEqual` is Workers-only: both sides are SHA-256 hashed first (equal lengths), with a constant-time loop in Node.
+- **Purge:** `ctx.cache.purge({ tags })`, or `{ purgeEverything: true }` for `{ "all": true }`. It propagates worldwide within seconds and uses the Free plan's purge rate limits, plenty for one purge per publish.
+- **Repopulate** (`src/lib/server/repopulate.ts`): after a successful purge, in the background (`ctx.waitUntil`), the endpoint requests the key pages again through the Worker's own cache (`ctx.exports.default.fetch`, a loopback request): home, Writing, Asides and the resume, each as the page and as its page data, then RSS and the sitemap, plus the published post or aside's own page (from `entry.slug`). The next visitor gets the new version from cache. Page data URLs are spelled as the SvelteKit client sends them (`dataUrl`): the key is the query string verbatim. Other pages render on their next visit. `Repopulate: n/m ok …` in the logs lists each URL with its `cf-cache-status`.
+- Respond 200 on success or when there's nothing to purge, 502 when the purge fails, 500 when Workers Cache isn't available (`cache.enabled` missing from `wrangler.jsonc`), and log every outcome (`Purge: …` in `wrangler tail` and Workers Logs). Strapi doesn't retry webhooks, so failures must be visible.
+- The handler lives in `purge.ts` (`handlePurge(request, secret, purge, repopulate)`) so it's tested without Workers; `+server.ts` passes in `ctx.cache.purge` and the repopulate step. `crypto.subtle.timingSafeEqual` is Workers-only: both sides are SHA-256 hashed first (equal lengths), with a constant-time loop in Node.
 
 ### 5. Configuration
 
-| Where                                 | Name                         | Value                                                                         |
-| ------------------------------------- | ---------------------------- | ----------------------------------------------------------------------------- |
-| Worker secret (`wrangler secret put`) | `STRAPI_TOKEN`               | Strapi read-only API token                                                    |
-| Worker secret                         | `PURGE_SECRET`               | random 32+ bytes, shared with the Strapi webhook                              |
-| Worker secret                         | `CF_PURGE_TOKEN`             | Cloudflare API token, permission _Zone → Cache Purge → Purge_, this zone only |
-| `wrangler.jsonc` `vars`               | `STRAPI_URL`                 | `https://cms.bhargavshukla.com`                                               |
-| `wrangler.jsonc` `vars`               | `CF_ZONE_ID`                 | the zone ID                                                                   |
-| local `.env`                          | `STRAPI_URL`, `STRAPI_TOKEN` | `http://localhost:1337` + a local token                                       |
+| Where                                 | Name                         | Value                                            |
+| ------------------------------------- | ---------------------------- | ------------------------------------------------ |
+| Worker secret (`wrangler secret put`) | `STRAPI_TOKEN`               | Strapi read-only API token                       |
+| Worker secret                         | `PURGE_SECRET`               | random 32+ bytes, shared with the Strapi webhook |
+| `wrangler.jsonc` `vars`               | `STRAPI_URL`                 | `https://cms.bhargavshukla.com`                  |
+| `wrangler.jsonc`                      | `cache`                      | `{ "enabled": true }` (Workers Cache)            |
+| local `.env`                          | `STRAPI_URL`, `STRAPI_TOKEN` | `http://localhost:1337` + a local token          |
 
-Read string config through `$env/dynamic/private` (populated from bindings by `adapter-cloudflare`); use `platform` for `caches` and `ctx`.
+Read string config through `$env/dynamic/private` (populated from bindings by `adapter-cloudflare`); use `platform.ctx` for `cache`, `exports` and `waitUntil`.
 
 **Strapi webhook** (Settings → Webhooks): URL `https://bhargavshukla.com/api/purge`, header `Authorization: Bearer <PURGE_SECRET>`, events Entry create / update / delete / publish / unpublish. Test with the admin's **Trigger** button.
 
 ### 6. Tests (Vitest, server project)
 
-- Cache key normalization and bypass rules.
-- "No tags → not cached" and "non-200 → not cached".
-- Webhook → tags mapping for every row in the table above.
-- Purge auth rejects a missing or wrong token.
+- Bypass rules, and what's cacheable (pages and page data), with the headers each gets.
+- "No tags → not stored", "non-200 → not stored", "preview → not stored".
+- Webhook → tags mapping for every row in the table above; purge auth; purge failure → 502 without repopulating.
+- Repopulate: the URL list (page data spelled like the client, untrusted slugs ignored) and its concurrency.
 
 ## Verifying in production
 
-1. `curl -s -D - -o /dev/null https://bhargavshukla.com/blog/<slug>` twice → `x-edge-cache: MISS`, then `HIT`. Use a GET: `curl -I` sends `HEAD`, which is answered from the cache but never stored.
-2. Edit and publish the post in Strapi; `pnpm wrangler tail` shows the purge of `type:post`.
-3. Next `curl` → `MISS` with the new content; `/`, `/blog` and `/rss.xml` also reflect it.
-4. A wrong bearer token on `/api/purge` → 401. `{ "all": true }` with the right token purges everything.
+1. `curl -s -D - -o /dev/null https://bhargavshukla.com/blog` twice → `cf-cache-status: MISS` (or `HIT` if someone was first), then `HIT`, with an `age`. The second data centre you land on may miss once in its lower tier and then hit.
+2. Page data: the same with `/blog/__data.json?x-sveltekit-invalidated=01`.
+3. Publish in Strapi; Workers Logs show `Purge: purged type:post` and `Repopulate: …`. Then `curl` `/` and `/blog` → `HIT` with an `age` of about the seconds since publishing, and the new content.
+4. A request with any `Cookie` header → never `HIT` for a page (a preview must reach the Worker). A 404 → `BYPASS`.
+5. A wrong bearer token on `/api/purge` → 401. `{ "all": true }` with the right token purges everything.

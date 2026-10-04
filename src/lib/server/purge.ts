@@ -1,6 +1,6 @@
-// Strapi webhook → Cloudflare purge by Cache-Tag (#17, docs/caching.md → Purge endpoint).
-// Pages are tagged `type:<model>` by the edge cache (#16); a content change purges every page
-// that read that model, worldwide, within seconds.
+// Strapi webhook → purge by Cache-Tag (#17, docs/caching.md → Purge endpoint), then repopulate
+// (#123). Pages are tagged `type:<model>` by the edge cache; a content change purges every page
+// that read that model, worldwide, within seconds, and the key pages are fetched again at once.
 
 import { MODELS, type Model } from './strapi';
 
@@ -68,62 +68,54 @@ export async function bearerMatches(header: string | null, secret: string): Prom
 	return diff === 0;
 }
 
-export interface PurgeConfig {
-	secret: string | undefined;
-	zoneId: string | undefined;
-	token: string | undefined;
-}
+/** Workers Cache's `ctx.cache.purge`, passed in so the endpoint can be tested without Workers. */
+export type CachePurge = (options: {
+	tags?: string[];
+	purgeEverything?: boolean;
+}) => Promise<{ success: boolean; errors?: unknown[] }>;
 
 const json = (body: unknown, status: number) => Response.json(body, { status });
 
 /**
  * The whole endpoint, kept here so it can be tested without SvelteKit: 401 on a bad token,
- * 200 when purged or nothing to purge, 502 when Cloudflare refuses. Every outcome is logged,
- * because Strapi doesn't retry webhooks and failures must show in Workers Logs.
+ * 200 when purged or nothing to purge, 502 when the purge fails, 500 without Workers Cache. After
+ * a purge, `repopulate` gets the plan and the webhook body (it runs in the background). Every
+ * outcome is logged, because Strapi doesn't retry webhooks and failures must show in Workers Logs.
  */
 export async function handlePurge(
 	request: Request,
-	config: PurgeConfig,
-	fetcher: typeof fetch = fetch
+	secret: string | undefined,
+	purge: CachePurge | undefined,
+	repopulate?: (plan: Exclude<PurgePlan, { action: 'ignore' }>, body: unknown) => void
 ): Promise<Response> {
-	if (
-		!config.secret ||
-		!(await bearerMatches(request.headers.get('authorization'), config.secret))
-	) {
+	if (!secret || !(await bearerMatches(request.headers.get('authorization'), secret))) {
 		console.warn('Purge: rejected, bad or missing token');
 		return json({ error: 'unauthorized' }, 401);
 	}
 
-	const plan = planPurge(await request.json().catch(() => null));
+	const body: unknown = await request.json().catch(() => null);
+	const plan = planPurge(body);
 	if (plan.action === 'ignore') {
 		console.log(`Purge: nothing to do (${plan.reason})`);
 		return json({ purged: false, reason: plan.reason }, 200);
 	}
 
-	if (!config.zoneId || !config.token) {
-		console.error('Purge: CF_ZONE_ID or CF_PURGE_TOKEN is not set');
+	if (!purge) {
+		console.error('Purge: Workers Cache is not available (cache.enabled in wrangler.jsonc?)');
 		return json({ error: 'purge is not configured' }, 500);
 	}
 
 	const what = plan.action === 'everything' ? 'everything' : plan.tags.join(',');
-	const res = await fetcher(
-		`https://api.cloudflare.com/client/v4/zones/${config.zoneId}/purge_cache`,
-		{
-			method: 'POST',
-			headers: { authorization: `Bearer ${config.token}`, 'content-type': 'application/json' },
-			body: JSON.stringify(
-				plan.action === 'everything' ? { purge_everything: true } : { tags: plan.tags }
-			)
-		}
-	).catch((err: unknown) => err as Error);
+	const result = await purge(
+		plan.action === 'everything' ? { purgeEverything: true } : { tags: plan.tags }
+	).catch((err: unknown) => ({ success: false, errors: [String(err)] }));
 
-	if (res instanceof Error || !res.ok) {
-		const detail =
-			res instanceof Error ? res.message : `${res.status} ${await res.text().catch(() => '')}`;
-		console.error(`Purge: failed for ${what}: ${detail}`);
+	if (!result.success) {
+		console.error(`Purge: failed for ${what}: ${JSON.stringify(result.errors ?? [])}`);
 		return json({ error: 'purge failed' }, 502);
 	}
 
 	console.log(`Purge: purged ${what}`);
+	repopulate?.(plan, body);
 	return json({ purged: what }, 200);
 }

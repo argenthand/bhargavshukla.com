@@ -1,45 +1,14 @@
-import { version } from '$app/environment';
 import type { RequestEvent } from '@sveltejs/kit';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-	EDGE_TTL,
-	cacheKey,
-	isCacheableData,
+	EDGE_CACHE_CONTROL,
+	bypass,
 	edgeCache,
 	isCacheable,
+	isCacheableData,
 	shouldBypass,
-	type PageCache
+	withCacheHeaders
 } from './edge-cache';
-
-describe('cacheKey', () => {
-	const key = (url: string, build = 'v1') => cacheKey(new URL(url), build);
-
-	it('lives under /__edge/<build>/ and keeps only the params that change the page, sorted', () => {
-		expect(key('https://b.com/blog?utm_source=x&q=svelte&cat=tools&fbclid=1')).toBe(
-			'https://b.com/__edge/v1/blog?cat=tools&q=svelte'
-		);
-		expect(key('https://b.com/asides?page=2&tag=git&kind=')).toBe(
-			'https://b.com/__edge/v1/asides?page=2&tag=git'
-		);
-		expect(key('https://b.com/blog/__data.json?x-sveltekit-invalidated=01')).toBe(
-			'https://b.com/__edge/v1/blog/__data.json?x-sveltekit-invalidated=01'
-		);
-		expect(key('https://b.com/blog/post?ref=hn#top')).toBe('https://b.com/__edge/v1/blog/post');
-	});
-
-	it('keeps a page, its data and each invalidation mask apart (#108)', () => {
-		const keys = [
-			key('https://b.com/blog'),
-			key('https://b.com/blog/__data.json?x-sveltekit-invalidated=01'),
-			key('https://b.com/blog/__data.json?x-sveltekit-invalidated=11')
-		];
-		expect(new Set(keys).size).toBe(3);
-	});
-
-	it('changes with every build', () => {
-		expect(key('https://b.com/blog', 'v1')).not.toBe(key('https://b.com/blog', 'v2'));
-	});
-});
 
 /** Like SvelteKit, `event.url` drops `/__data.json` and its params; the request keeps them. */
 function event(method: string, path: string, cookies: Record<string, string> = {}) {
@@ -108,108 +77,103 @@ describe('isCacheableData', () => {
 	});
 });
 
+describe('withCacheHeaders', () => {
+	const tags = new Set(['type:post', 'type:category']);
+
+	it('lets Cloudflare keep a cacheable page, tagged and varied on Cookie; browsers revalidate', () => {
+		const res = withCacheHeaders(new Response('<h1>post</h1>'), tags, true);
+		expect(res.headers.get('cloudflare-cdn-cache-control')).toBe(EDGE_CACHE_CONTROL);
+		expect(EDGE_CACHE_CONTROL).toBe('max-age=86400, stale-while-revalidate=604800');
+		expect(res.headers.get('cache-tag')).toBe('type:post,type:category');
+		expect(res.headers.get('vary')).toBe('Cookie');
+		expect(res.headers.get('cache-control')).toBe('no-cache');
+	});
+
+	it('keeps an existing Vary', () => {
+		const res = withCacheHeaders(
+			new Response('ok', { headers: { vary: 'Accept-Encoding' } }),
+			tags,
+			true
+		);
+		expect(res.headers.get('vary')).toBe('Accept-Encoding, Cookie');
+	});
+
+	it('tells Cloudflare never to store anything else', () => {
+		const res = withCacheHeaders(
+			new Response('nope', { status: 404, headers: { 'cache-tag': 'type:post' } }),
+			tags,
+			false
+		);
+		expect(res.headers.get('cloudflare-cdn-cache-control')).toBe('no-store');
+		expect(res.headers.get('cache-tag')).toBeNull();
+		expect(res.headers.get('cache-control')).toBe('no-cache');
+	});
+});
+
+describe('bypass', () => {
+	it('keeps a response that asked to be public, as /api/views does', () => {
+		const res = bypass(new Response('{}', { headers: { 'cache-control': 'public, max-age=60' } }));
+		expect(res.headers.get('cloudflare-cdn-cache-control')).toBeNull();
+	});
+
+	it('stops the two-hour heuristic for everything else', () => {
+		expect(bypass(new Response('ok')).headers.get('cloudflare-cdn-cache-control')).toBe('no-store');
+		const preview = new Response('draft', { headers: { 'cache-control': 'private, no-store' } });
+		expect(bypass(preview).headers.get('cloudflare-cdn-cache-control')).toBe('no-store');
+	});
+});
+
 describe('edgeCache', () => {
-	function setup(page: (event: RequestEvent) => Response, tags = ['type:post']) {
-		const store = new Map<string, Response>();
-		const cache: PageCache = {
-			match: async (key) => store.get(key)?.clone(),
-			put: async (key, response) => void store.set(key, response)
-		};
-		const pending: Promise<unknown>[] = [];
-		const run = async (method: string, path: string, locals: Partial<App.Locals> = {}) => {
-			const e = {
-				...event(method, path),
+	const run = (
+		method: string,
+		path: string,
+		page: () => Response,
+		{ tags = ['type:post'], cookies = {}, noStore = false } = {}
+	) =>
+		edgeCache({
+			event: {
+				...event(method, path, cookies),
 				isDataRequest: path.includes('/__data.json'),
-				locals: { cacheTags: new Set(tags), ...locals },
-				platform: {
-					caches: { default: cache },
-					ctx: { waitUntil: (p: Promise<unknown>) => pending.push(p) }
-				}
-			} as unknown as RequestEvent;
-			const response = await edgeCache({ event: e, resolve: async () => page(e) });
-			await Promise.all(pending);
-			return response;
-		};
-		return { store, run };
-	}
+				locals: { cacheTags: new Set(tags), noStore }
+			} as unknown as RequestEvent,
+			resolve: async () => page()
+		});
 
-	it('misses, stores with tags and TTL, then hits; browsers never see Cache-Tag', async () => {
-		const resolve = vi.fn(
-			() => new Response('<h1>post</h1>', { headers: { 'content-type': 'text/html' } })
-		);
-		const { store, run } = setup(resolve, ['type:post', 'type:category']);
-
-		const first = await run('GET', '/blog/a?utm_source=x');
-		expect(first.headers.get('x-edge-cache')).toBe('MISS');
-		expect(first.headers.get('cache-tag')).toBeNull();
-		expect(first.headers.get('cache-control')).toBe('no-cache');
-		const [stored] = store.values();
-		expect(stored.headers.get('cache-tag')).toBe('type:post,type:category');
-		expect(stored.headers.get('cache-control')).toBe(`public, max-age=${EDGE_TTL}`);
-
-		const second = await run('GET', '/blog/a');
-		expect(second.headers.get('x-edge-cache')).toBe('HIT');
-		expect(second.headers.get('cache-tag')).toBeNull();
-		expect(await second.text()).toBe('<h1>post</h1>');
-		expect(resolve).toHaveBeenCalledTimes(1);
+	it('marks a page cacheable', async () => {
+		const res = await run('GET', '/blog/a', () => new Response('<h1>post</h1>'));
+		expect(res.headers.get('cloudflare-cdn-cache-control')).toBe(EDGE_CACHE_CONTROL);
+		expect(await res.text()).toBe('<h1>post</h1>');
 	});
 
-	it('does not store errors, untagged pages or HEAD responses', async () => {
-		const notFound = setup(() => new Response('nope', { status: 404 }));
-		await notFound.run('GET', '/blog/missing');
-		expect(notFound.store.size).toBe(0);
-
-		const untagged = setup(() => new Response('static'), []);
-		await untagged.run('GET', '/');
-		expect(untagged.store.size).toBe(0);
-
-		const head = setup(() => new Response(null));
-		await head.run('HEAD', '/blog/a');
-		expect(head.store.size).toBe(0);
-	});
-
-	it('stores page data apart from its page, though SvelteKit strips event.url (#108)', async () => {
+	it('marks page data cacheable despite SvelteKit’s private, no-store (#108)', async () => {
 		const data = '{"type":"data","nodes":[{"type":"data","data":[]}]}';
-		const { store, run } = setup((e) =>
-			e.isDataRequest
-				? // SvelteKit's own headers on __data.json.
-					new Response(data, {
-						headers: { 'content-type': 'application/json', 'cache-control': 'private, no-store' }
-					})
-				: new Response('<!doctype html>', { headers: { 'content-type': 'text/html' } })
+		const res = await run(
+			'GET',
+			'/blog/__data.json?x-sveltekit-invalidated=01',
+			() =>
+				new Response(data, {
+					headers: { 'content-type': 'application/json', 'cache-control': 'private, no-store' }
+				})
 		);
-		await run('GET', '/blog');
-		const first = await run('GET', '/blog/__data.json?x-sveltekit-invalidated=01');
-		expect(first.headers.get('x-edge-cache')).toBe('MISS');
-		expect(await first.text()).toBe(data);
-		expect([...store.keys()]).toContain(
-			`https://b.com/__edge/${encodeURIComponent(version)}/blog/__data.json?x-sveltekit-invalidated=01`
-		);
-		const second = await run('GET', '/blog/__data.json?x-sveltekit-invalidated=01');
-		expect(second.headers.get('x-edge-cache')).toBe('HIT');
-		expect(await second.text()).toBe(data);
-		expect(store.size).toBe(2); // the page's own entry is separate
+		expect(res.headers.get('cloudflare-cdn-cache-control')).toBe(EDGE_CACHE_CONTROL);
+		expect(res.headers.get('cache-control')).toBe('no-cache');
+		expect(await res.text()).toBe(data);
 	});
 
-	it('stores nothing when a load opted out', async () => {
-		const { store, run } = setup(() => new Response('<h1>home</h1>'));
-		const res = await run('GET', '/', { noStore: true });
-		expect(res.headers.get('x-edge-cache')).toBe('MISS');
-		expect(store.size).toBe(0);
+	it('never stores errors, untagged pages or a load that opted out', async () => {
+		const notFound = await run('GET', '/blog/x', () => new Response('nope', { status: 404 }));
+		expect(notFound.headers.get('cloudflare-cdn-cache-control')).toBe('no-store');
+		const untagged = await run('GET', '/', () => new Response('static'), { tags: [] });
+		expect(untagged.headers.get('cloudflare-cdn-cache-control')).toBe('no-store');
+		const optedOut = await run('GET', '/', () => new Response('home'), { noStore: true });
+		expect(optedOut.headers.get('cloudflare-cdn-cache-control')).toBe('no-store');
 	});
 
-	it('answers HEAD from the cache without a body', async () => {
-		const { run } = setup(() => new Response('<h1>post</h1>'));
-		await run('GET', '/blog/a');
-		const head = await run('HEAD', '/blog/a');
-		expect(head.headers.get('x-edge-cache')).toBe('HIT');
-		expect(head.body).toBeNull();
-	});
-
-	it('bypasses /api/ entirely', async () => {
-		const { store, run } = setup(() => new Response('ok'));
-		const res = await run('GET', '/api/purge');
-		expect(res.headers.get('x-edge-cache')).toBe('BYPASS');
-		expect(store.size).toBe(0);
+	it('never stores a preview', async () => {
+		const res = await run('GET', '/blog/a', () => new Response('draft'), {
+			cookies: { __preview: 'x' }
+		});
+		expect(res.headers.get('cloudflare-cdn-cache-control')).toBe('no-store');
+		expect(res.headers.get('cache-tag')).toBeNull();
 	});
 });

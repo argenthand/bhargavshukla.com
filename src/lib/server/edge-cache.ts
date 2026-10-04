@@ -1,51 +1,23 @@
-// Edge cache for rendered pages (#16, docs/caching.md). Pages go into Cloudflare's Cache API
-// tagged with the content types they read (`Cache-Tag: type:post,…`); the Strapi webhook (#17)
-// purges by tag, which works worldwide on the Free plan, unlike cache.delete().
+// Edge cache (#16, #123, docs/caching.md). Workers Cache sits in front of the Worker: on a hit
+// Cloudflare answers without running it. This hook only says what may be kept and for how long:
+// `Cloudflare-CDN-Cache-Control` for Cloudflare, `Cache-Control` for browsers, and `Cache-Tag`
+// (the content types a page read) so the Strapi webhook can purge by tag (#17).
 
-import { version } from '$app/environment';
 import type { Handle, RequestEvent } from '@sveltejs/kit';
 
-/**
- * Seconds a page stays cached: a day. Purges (#17) clear content changes and the build version in
- * the key clears deploys (#108), so this only bounds staleness if a purge fails.
- */
-export const EDGE_TTL = 86_400;
+/** Seconds a cached page is fresh. Purges handle content changes; deploys get fresh keys. */
+export const EDGE_MAX_AGE = 86_400;
 
-/**
- * Query params that change what the server renders; every other param is dropped from the key.
- * `page` for paging, the /blog and /asides filters (rendered on the server too), and SvelteKit's
- * own params on `__data.json`, which pick the loads that run during client-side navigation.
- */
-const KEY_PARAMS = [
-	'cat',
-	'kind',
-	'page',
-	'q',
-	'tag',
-	'x-sveltekit-invalidated',
-	'x-sveltekit-trailing-slash'
-];
+/** Seconds after that a stale copy is still served while one request refreshes it. */
+export const EDGE_STALE = 604_800;
 
-/** Cookie set by draft preview (backlog, #22); previews must never be cached or served cached. */
+/** Cookie set by draft preview (#57); previews must never be cached or served cached. */
 export const PREVIEW_COOKIE = '__preview';
 
-/**
- * The Cache API key, from the request's own URL: SvelteKit strips `/__data.json` and its params
- * from `event.url`, which would give a page and its data one key (#108). It lives under /__edge/
- * on purpose: the adapter's own worker looks up the raw request URL in caches.default before
- * SvelteKit runs, and must never find (and serve, Cache-Tag and all) one of these entries. The
- * build version keeps a deploy from serving pages that point at assets it removed.
- */
-export function cacheKey(url: URL, build: string): string {
-	const key = new URL(`/__edge/${encodeURIComponent(build)}${url.pathname}`, url.origin);
-	for (const name of KEY_PARAMS) {
-		for (const value of url.searchParams.getAll(name)) {
-			if (value !== '') key.searchParams.append(name, value);
-		}
-	}
-	return key.href;
-}
+/** What Cloudflare keeps a cacheable response for: a day fresh, then a week served stale. */
+export const EDGE_CACHE_CONTROL = `max-age=${EDGE_MAX_AGE}, stale-while-revalidate=${EDGE_STALE}`;
 
+/** Requests the hook leaves alone: their own headers stand (API routes set theirs). */
 export function shouldBypass(event: Pick<RequestEvent, 'request' | 'url' | 'cookies'>): boolean {
 	const { method } = event.request;
 	return (
@@ -80,56 +52,46 @@ export function isCacheableData(response: Response, body: string, tags: Set<stri
 	}
 }
 
-/** What browsers get: revalidate every time, so a purge is visible on the next load. */
-function forBrowser(response: Response, status: 'HIT' | 'MISS' | 'BYPASS'): Response {
+/**
+ * The response with its cache headers. Browsers always revalidate (`no-cache`), so a purge shows
+ * on their next load. Cloudflare keeps a cacheable one, varied on `Cookie` so a request carrying
+ * the preview cookie never gets the public copy; anything else it never stores.
+ */
+export function withCacheHeaders(response: Response, tags: Set<string>, cacheable: boolean) {
 	const out = new Response(response.body, response);
-	out.headers.delete('cache-tag');
-	// `no-cache` (not `max-age=0`) also keeps the adapter's worker from caching it again.
 	out.headers.set('cache-control', 'no-cache');
-	out.headers.set('x-edge-cache', status);
+	if (cacheable) {
+		out.headers.set('cloudflare-cdn-cache-control', EDGE_CACHE_CONTROL);
+		out.headers.set('cache-tag', [...tags].join(','));
+		out.headers.append('vary', 'Cookie');
+	} else {
+		out.headers.set('cloudflare-cdn-cache-control', 'no-store');
+		out.headers.delete('cache-tag');
+	}
 	return out;
 }
 
-/** The two Cache API calls used here, typed with the app's Request/Response (not workers-types'). */
-export interface PageCache {
-	match(key: string): Promise<Response | undefined>;
-	put(key: string, response: Response): Promise<void>;
+/**
+ * A bypassed response keeps its own headers, but Cloudflare stores nothing it wasn't told to:
+ * without a `Cache-Control`, Workers Cache would keep a 200 for two hours by heuristic.
+ */
+export function bypass(response: Response) {
+	if (/public/i.test(response.headers.get('cache-control') ?? '')) return response;
+	const out = new Response(response.body, response);
+	out.headers.set('cloudflare-cdn-cache-control', 'no-store');
+	return out;
 }
 
 export const edgeCache: Handle = async ({ event, resolve }) => {
-	// Missing in `vite dev` (no Workers runtime): pages then render uncached.
-	const cache = event.platform?.caches?.default as PageCache | undefined;
-	if (!cache || shouldBypass(event)) {
-		const response = await resolve(event);
-		if (cache) response.headers.set('x-edge-cache', 'BYPASS');
-		return response;
-	}
+	const response = await resolve(event);
+	if (shouldBypass(event)) return bypass(response);
 
-	const key = cacheKey(new URL(event.request.url), version);
-	const hit = await cache.match(key);
-	if (hit) {
-		const response = forBrowser(hit, 'HIT');
-		return event.request.method === 'HEAD' ? new Response(null, response) : response;
-	}
-
-	let response = await resolve(event);
 	const tags = event.locals.cacheTags;
-	// Only GETs are stored (a HEAD response has no body), and never when a load opted out.
-	if (event.request.method !== 'GET' || event.locals.noStore) return forBrowser(response, 'MISS');
-
-	let cacheable: boolean;
+	if (event.locals.noStore) return withCacheHeaders(response, tags, false);
 	if (event.isDataRequest) {
 		const body = await response.text();
-		response = new Response(body, response);
-		cacheable = isCacheableData(response, body, tags);
-	} else {
-		cacheable = isCacheable(response, tags);
+		const data = new Response(body, response);
+		return withCacheHeaders(data, tags, isCacheableData(data, body, tags));
 	}
-	if (cacheable) {
-		const stored = new Response(response.clone().body, response);
-		stored.headers.set('cache-control', `public, max-age=${EDGE_TTL}`);
-		stored.headers.set('cache-tag', [...tags].join(','));
-		event.platform!.ctx.waitUntil(cache.put(key, stored));
-	}
-	return forBrowser(response, 'MISS');
+	return withCacheHeaders(response, tags, isCacheable(response, tags));
 };
