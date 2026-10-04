@@ -103,7 +103,10 @@
 		if (!current(href) || !tabTaps() || reducedMotion() || !marker) return;
 		const at = (i: number, y = '0') => ({ translate: `${i * 100}% ${y}` });
 		const last = nav.length - 1;
-		marker.animate(
+		// In 8-bit mode the marker is the red key; the current tab's label is black only on it.
+		const tabs = marker.parentElement;
+		tabs?.toggleAttribute('data-lapping', true);
+		const lap = marker.animate(
 			[
 				{ ...at(currentTab), offset: 0 },
 				{ ...at(last), offset: 0.35 },
@@ -114,6 +117,7 @@
 			],
 			{ duration: 1400, easing: 'ease-in-out' }
 		);
+		lap.finished.finally(() => tabs?.removeAttribute('data-lapping'));
 	}
 </script>
 
@@ -132,7 +136,7 @@
 <div
 	class={[
 		'flex min-h-dvh flex-col bg-page print:block print:bg-transparent print:pb-0',
-		nav.length > 0 && 'pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0'
+		nav.length > 0 && 'pb-[calc(var(--spacing-tab-bar)+env(safe-area-inset-bottom))] md:pb-0'
 	]}
 >
 	<!-- One header: the slim sticky top bar below md, the full header with nav from md. -->
@@ -231,7 +235,9 @@
 	aria-hidden="true"
 	class={[
 		'fixed inset-x-0 -z-10 py-10 text-center meta print:hidden',
-		nav.length > 0 ? 'bottom-[calc(3.5rem+env(safe-area-inset-bottom))] md:bottom-0' : 'bottom-0'
+		nav.length > 0
+			? 'bottom-[calc(var(--spacing-tab-bar)+env(safe-area-inset-bottom))] md:bottom-0'
+			: 'bottom-0'
 	]}
 >
 	{ABYSS_LINE}
@@ -242,6 +248,7 @@
 	<nav
 		aria-label="Primary"
 		data-sveltekit-preload-code="viewport"
+		data-tabs
 		style:view-transition-name="site-tabs"
 		class="fixed inset-x-0 bottom-0 z-20 grid auto-cols-fr grid-flow-col bar-bottom pb-[env(safe-area-inset-bottom)] md:hidden print:hidden"
 	>
@@ -249,6 +256,7 @@
 		     centred over the tab, not a line across it (#77). -->
 		<span
 			bind:this={marker}
+			data-tab-marker
 			aria-hidden="true"
 			style:width="{100 / nav.length}%"
 			style:translate="{Math.max(currentTab, 0) * 100}% 0"
@@ -265,7 +273,7 @@
 				href={item.href}
 				aria-current={current(item.href)}
 				onclick={() => onTabClick(item.href)}
-				class="flex min-h-14 flex-col items-center justify-center gap-1 text-xs tracking-wide text-muted aria-[current=page]:font-semibold aria-[current=page]:text-accent"
+				class="relative flex min-h-tab-bar flex-col items-center justify-center gap-1 pt-1 text-xs tracking-wide text-muted aria-[current=page]:font-semibold aria-[current=page]:text-accent"
 			>
 				<Icon name={item.icon} size={22} />
 				<span>{item.label}</span>

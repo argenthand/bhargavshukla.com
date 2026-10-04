@@ -196,6 +196,7 @@
 		var(--container-article) + var(--spacing-article-gap) + var(--spacing-toc)
 	); /* header and cover span text + ToC: max-w-article-wide */
 	--spacing-resume-label: calc(var(--spacing) * 36); /* the resume's skill-group label column */
+	--spacing-tab-bar: calc(var(--spacing) * 15); /* the phone tab bar, above the safe area */
 
 	/* Quiet (#77): faint shadows instead of the lines under the sticky phone header and above the
 	   tab bar: shadow-bar-down, shadow-bar-up. */
@@ -538,6 +539,8 @@
 	--nes-orange: #fca044;
 	--nes-sky: #3cbcfc;
 	--nes-green: #00a800;
+	--nes-press: calc(var(--spacing) * 1); /* how far a block moves when pressed */
+	--nes-shadow: var(--nes-press) var(--nes-press) 0 var(--nes-white); /* hard, pixel-style */
 }
 @custom-variant nes (&:where([data-nes], [data-nes] *));
 @media screen {
@@ -586,6 +589,39 @@
 		font-weight: 400;
 		letter-spacing: 0;
 		line-height: 1.6;
+	}
+	/* Calls to action (the home page's Resume link, All posts…, Save as PDF) become red blocks
+	   with a hard shadow, pressed in when tapped. */
+	:root[data-nes] :is(.link-cta, [data-nes-cta]) {
+		border-radius: 0;
+		padding-inline: calc(var(--spacing) * 4);
+		background-color: var(--color-accent);
+		color: var(--color-page);
+		font-family: var(--font-pixel);
+		font-size-adjust: 0.4;
+		text-decoration: none;
+		box-shadow: var(--nes-shadow);
+		&:hover {
+			background-color: var(--color-accent-hover);
+			color: var(--color-page);
+		}
+		&:active {
+			translate: var(--nes-press) var(--nes-press);
+			box-shadow: none;
+		}
+	}
+	/* The phone tab bar: the current tab is a red key (the marker grows to fill it, so it still
+	   slides between tabs and runs the lap), with black icon and label. */
+	:root[data-nes] [data-tab-marker] {
+		height: var(--spacing-tab-bar);
+		& > span {
+			width: 100%;
+			height: 100%;
+			border-radius: 0;
+		}
+	}
+	:root[data-nes] [data-tabs]:not([data-lapping]) a[aria-current='page'] {
+		color: var(--color-page);
 	}
 	/* Code keeps Shiki's dark colours on the black page. */
 	:root[data-nes] :is(.shiki, .shiki span) {
