@@ -1,7 +1,8 @@
 <script lang="ts">
 	// The colour palette (#81, P-picker on the canvas): a dot in the current accent, next to the theme
 	// toggle; it opens a small menu of palettes. The menu is a native popover (Esc and a click outside
-	// close it) with radio buttons, so arrow keys move between palettes and each one applies at once.
+	// close it) with radio buttons, so arrow keys move between palettes and each one applies at once;
+	// a tap, click or Enter on one closes the menu.
 	// JavaScript only; the inline script in app.html applies the saved palette before the first paint.
 	//
 	// In 8-bit mode (#111) the dot shows NES colours, and choosing a palette leaves the mode.
@@ -30,6 +31,29 @@
 		menu.style.top = `${rect.bottom + 8}px`;
 		menu.style.right = `${document.documentElement.clientWidth - rect.right}px`;
 	}
+
+	/**
+	 * A tap or click on a palette closes the menu. Keyboard clicks (detail 0) come from the arrow
+	 * keys moving between palettes, so the menu stays open for those; Enter closes it.
+	 */
+	function closeAfterPick(event: MouseEvent) {
+		const onPalette = event.target instanceof Element && event.target.closest('label');
+		if (event.detail > 0 && onPalette) menu?.hidePopover();
+	}
+	function closeOnEnter(event: KeyboardEvent) {
+		if (event.key !== 'Enter') return;
+		// Focus goes back to the dot; without this, the same Enter would reopen the menu there.
+		event.preventDefault();
+		menu?.hidePopover();
+	}
+	$effect(() => {
+		menu?.addEventListener('click', closeAfterPick);
+		menu?.addEventListener('keydown', closeOnEnter);
+		return () => {
+			menu?.removeEventListener('click', closeAfterPick);
+			menu?.removeEventListener('keydown', closeOnEnter);
+		};
+	});
 
 	function choose(id: PaletteId) {
 		current = id;
