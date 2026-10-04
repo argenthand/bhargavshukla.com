@@ -19,7 +19,9 @@
 		| 'sun'
 		| 'moon'
 		| 'monitor'
-		| 'note';
+		| 'note'
+		| 'volume'
+		| 'volume-off';
 </script>
 
 <script lang="ts">
@@ -97,6 +99,19 @@
 		<circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path
 			d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
 		/>
+	{:else if name === 'volume'}
+		<!-- Feather: volume-2 -->
+		<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path
+			d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"
+		/>
+	{:else if name === 'volume-off'}
+		<!-- Feather: volume-x -->
+		<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><line
+			x1="23"
+			y1="9"
+			x2="17"
+			y2="15"
+		/><line x1="17" y1="9" x2="23" y2="15" />
 	{:else if name === 'arrow-left'}
 		<line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
 	{:else if name === 'arrow-up'}

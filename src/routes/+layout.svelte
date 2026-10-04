@@ -3,16 +3,19 @@
 	// bandwidth from the CSS and delayed the first paint (docs/performance.md).
 	import '$lib/fonts/fonts.css';
 	import './layout.css';
-	import { onMount } from 'svelte';
+	import { onMount, tick, type Component } from 'svelte';
 	import { onNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Icon from '$lib/components/Icon.svelte';
 	import NavProgress from '$lib/components/NavProgress.svelte';
+	import NesBanner from '$lib/components/NesBanner.svelte';
 	import Shortcuts from '$lib/components/Shortcuts.svelte';
 	import PalettePicker from '$lib/components/PalettePicker.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
-	import { consoleNote } from '$lib/easter-eggs';
+	import { ABYSS_LINE, consoleNote, tapCounter } from '$lib/easter-eggs';
+	import { reducedMotion } from '$lib/motion';
+	import { wake } from '$lib/nes-sound';
 	import { nav, site } from '$lib/site';
 
 	let { children, data } = $props();
@@ -74,6 +77,44 @@
 
 	// The phone tab bar's marker slides to the current tab (#60).
 	const currentTab = $derived(nav.findIndex((item) => current(item.href)));
+
+	// Easter eggs (#111). Three quick taps on the © line open the NES controller; five on the current
+	// tab send its marker round the bar and back (not with reduced motion).
+	// The controller loads on the first tap and opens on the third; the audio starts inside that
+	// tap, as iOS requires.
+	let Controller = $state<Component<Record<string, never>, { open: () => void }>>();
+	let controller = $state<{ open: () => void }>();
+	const copyrightTaps = tapCounter(3, 1000);
+
+	function onCopyrightTap() {
+		const loading = import('$lib/components/NesController.svelte');
+		if (!copyrightTaps()) return;
+		wake();
+		void loading.then(async (module) => {
+			Controller = module.default;
+			await tick();
+			controller?.open();
+		});
+	}
+	const tabTaps = tapCounter(5, 2000);
+	let marker = $state<HTMLElement>();
+
+	function onTabClick(href: string) {
+		if (!current(href) || !tabTaps() || reducedMotion() || !marker) return;
+		const at = (i: number, y = '0') => ({ translate: `${i * 100}% ${y}` });
+		const last = nav.length - 1;
+		marker.animate(
+			[
+				{ ...at(currentTab), offset: 0 },
+				{ ...at(last), offset: 0.35 },
+				{ ...at(0), offset: 0.75 },
+				{ ...at(currentTab), offset: 0.88 },
+				{ ...at(currentTab, '-0.25rem'), offset: 0.94 },
+				{ ...at(currentTab), offset: 1 }
+			],
+			{ duration: 1400, easing: 'ease-in-out' }
+		);
+	}
 </script>
 
 <svelte:head>
@@ -90,7 +131,7 @@
 <!-- Bottom padding keeps the footer clear of the fixed tab bar below md. -->
 <div
 	class={[
-		'flex min-h-dvh flex-col print:block print:pb-0',
+		'flex min-h-dvh flex-col bg-page print:block print:bg-transparent print:pb-0',
 		nav.length > 0 && 'pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0'
 	]}
 >
@@ -139,6 +180,8 @@
 		</div>
 	</header>
 
+	<NesBanner />
+
 	{#if data.preview}
 		<!-- Draft preview (#57, F-writing-* preview mode): only for whoever opened it from Strapi. -->
 		<div role="status" class="bg-panel meta print:hidden">
@@ -168,7 +211,9 @@
 		<div
 			class="mx-auto flex min-h-19 max-w-5xl items-center justify-between px-5 py-4 meta md:px-8"
 		>
-			<span>© {year} {site.name}</span>
+			<!-- The NES controller's way in (#111): a plain line, so it adds no tab stop. -->
+			<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+			<span class="select-none" onclick={onCopyrightTap}>© {year} {site.name}</span>
 			<!-- A server route, not a page: reload so the browser (or a feed reader) opens the XML. -->
 			<a href={resolve('/rss.xml')} data-sveltekit-reload class="tap-target gap-1.5 link-quiet">
 				<Icon name="rss" />RSS
@@ -178,6 +223,19 @@
 </div>
 
 <Shortcuts />
+{#if Controller}<Controller bind:this={controller} />{/if}
+
+<!-- Behind the page, so only a bounce past the end shows it (iOS and macOS Safari; #111). Above the
+     tab bar on phones. -->
+<p
+	aria-hidden="true"
+	class={[
+		'fixed inset-x-0 -z-10 py-10 text-center meta print:hidden',
+		nav.length > 0 ? 'bottom-[calc(3.5rem+env(safe-area-inset-bottom))] md:bottom-0' : 'bottom-0'
+	]}
+>
+	{ABYSS_LINE}
+</p>
 
 <!-- The same Primary nav as a bottom tab bar below md; the header's copy is hidden there. -->
 {#if nav.length > 0}
@@ -190,6 +248,7 @@
 		<!-- One marker for the current tab; it slides rather than jumping between tabs. A short bar
 		     centred over the tab, not a line across it (#77). -->
 		<span
+			bind:this={marker}
 			aria-hidden="true"
 			style:width="{100 / nav.length}%"
 			style:translate="{Math.max(currentTab, 0) * 100}% 0"
@@ -205,6 +264,7 @@
 			<a
 				href={item.href}
 				aria-current={current(item.href)}
+				onclick={() => onTabClick(item.href)}
 				class="flex min-h-14 flex-col items-center justify-center gap-1 text-xs tracking-wide text-muted aria-[current=page]:font-semibold aria-[current=page]:text-accent"
 			>
 				<Icon name={item.icon} size={22} />
