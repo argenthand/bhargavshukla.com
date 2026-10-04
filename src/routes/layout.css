@@ -457,6 +457,8 @@
 	transition-duration: var(--tw-duration, var(--default-transition-duration));
 }
 
+/* The printed resume repeats this margin as padding and sets the paper's to 0 (#129, see
+   routes/resume/+page.svelte). */
 @page {
 	size: letter;
 	margin: 0.6in 0.75in;
