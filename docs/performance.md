@@ -273,7 +273,7 @@ Local builds, before and after, measured the same way:
 
 #### Production after #117 (https://bhargavshukla.com)
 
-The current reference for the real-world log. Against production after #110, both with a warm edge cache:
+Against production after #110, both with a warm edge cache:
 
 | First visit, home                 | After #110    | After #117    |
 | --------------------------------- | ------------- | ------------- |
@@ -316,6 +316,57 @@ In production Lighthouse does credit it: LCP drops with FCP, unlike the local bu
 | 3G      | off | Tap Resume         | 4840       | 2580     | 2580     | 36  | 1 page, 0 data |
 | 3G      | off | Tap Asides         | 2526       | 2468     | 2468     | 22  | 1 page, 0 data |
 | 3G      | off | Return visit: home | 2498       | 2500     | 2500     | 23  |                |
+
+### Workers Cache (#123)
+
+Production right after the deploy, 2026-10-04, from Toronto/Montréal:
+
+| Request                        | Before #123 (Cache API)                              | After #123 (Workers Cache)                                                                          |
+| ------------------------------ | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Page, cache hit                | ~0.10 s                                              | 0.07–0.12 s, also from a data centre that hadn't seen the page (filled in Toronto, hit in Montréal) |
+| Page, miss                     | ~0.55 s, on each data centre's first visit and daily | 0.66–1.08 s, only the first request anywhere after a deploy or purge                                |
+| Lighthouse (median of 5, warm) | 100, FCP/LCP 1.04 s                                  | 100, FCP/LCP 1.12 s                                                                                 |
+
+`pnpm perf` matches production after #117 within noise: first paint on Slow 4G 0.78 s, on 3G 2.55 s; taps 1.07 / 2.54 s. Workers Cache doesn't make a hit faster; it makes misses rare ([edge-cache-misses.md](edge-cache-misses.md)).
+
+- **Return visits** download the whole page (about 23 KB with the inlined CSS, since #117): pages have no `ETag`, so the browser's revalidation can't get a `304 Not Modified`. A possible follow-up: an `ETag` on cached pages would cut a return visit to a few hundred bytes.
+
+#### Production after #123 (https://bhargavshukla.com)
+
+The current reference for the real-world log.
+
+| Network | JS  | Step               | Total (ms) | FCP (ms) | LCP (ms) | KB  | Requests       |
+| ------- | --- | ------------------ | ---------- | -------- | -------- | --- | -------------- |
+| Fast 4G | on  | First visit: home  | 562        | 248      | 248      | 187 |                |
+| Fast 4G | on  | Tap Writing        | 689        | –        | –        | 1   | 0 page, 1 data |
+| Fast 4G | on  | Tap Resume         | 648        | –        | –        | 13  | 0 page, 1 data |
+| Fast 4G | on  | Tap Asides         | 646        | –        | –        | 0   | 0 page, 1 data |
+| Fast 4G | on  | Return visit: home | 211        | 208      | 208      | 23  |                |
+| Fast 4G | off | First visit: home  | 526        | 264      | 264      | 114 |                |
+| Fast 4G | off | Tap Writing        | 260        | 204      | 204      | 22  | 1 page, 0 data |
+| Fast 4G | off | Tap Resume         | 441        | 212      | 212      | 36  | 1 page, 0 data |
+| Fast 4G | off | Tap Asides         | 258        | 208      | 208      | 22  | 1 page, 0 data |
+| Fast 4G | off | Return visit: home | 208        | 208      | 208      | 23  |                |
+| Slow 4G | on  | First visit: home  | 2155       | 780      | 780      | 187 |                |
+| Slow 4G | on  | Tap Writing        | 1065       | –        | –        | 1   | 0 page, 1 data |
+| Slow 4G | on  | Tap Resume         | 1065       | –        | –        | 3   | 0 page, 1 data |
+| Slow 4G | on  | Tap Asides         | 1047       | –        | –        | 0   | 0 page, 1 data |
+| Slow 4G | on  | Return visit: home | 717        | 716      | 716      | 23  |                |
+| Slow 4G | off | First visit: home  | 1859       | 768      | 768      | 114 |                |
+| Slow 4G | off | Tap Writing        | 772        | 716      | 716      | 22  | 1 page, 0 data |
+| Slow 4G | off | Tap Resume         | 1402       | 736      | 736      | 36  | 1 page, 0 data |
+| Slow 4G | off | Tap Asides         | 760        | 704      | 704      | 22  | 1 page, 0 data |
+| Slow 4G | off | Return visit: home | 717        | 716      | 716      | 23  |                |
+| 3G      | on  | First visit: home  | 7452       | 2548     | 2548     | 187 |                |
+| 3G      | on  | Tap Writing        | 2542       | –        | –        | 1   | 0 page, 1 data |
+| 3G      | on  | Tap Resume         | 2563       | –        | –        | 3   | 0 page, 1 data |
+| 3G      | on  | Tap Asides         | 2514       | –        | –        | 11  | 0 page, 1 data |
+| 3G      | on  | Return visit: home | 2487       | 2488     | 2488     | 23  |                |
+| 3G      | off | First visit: home  | 6434       | 2548     | 2548     | 114 |                |
+| 3G      | off | Tap Writing        | 2522       | 2460     | 2460     | 22  | 1 page, 0 data |
+| 3G      | off | Tap Resume         | 4847       | 2584     | 2584     | 36  | 1 page, 0 data |
+| 3G      | off | Tap Asides         | 2517       | 2464     | 2464     | 22  | 1 page, 0 data |
+| 3G      | off | Return visit: home | 2490       | 2492     | 2492     | 23  |                |
 
 ## Real-world log
 
