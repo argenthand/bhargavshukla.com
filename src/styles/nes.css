@@ -1,0 +1,115 @@
+/*
+ * 8-bit mode (#111, NES-A-* on the canvas): the Konami code's exclusive palette, Night. `data-nes`
+ * on <html> (src/lib/nes.svelte.ts; set before the first paint by app.html) swaps the roles for
+ * NES colours, one dark look whatever the theme, and the type for pixel fonts: Press Start 2P for
+ * headings and controls, Pixelify Sans to read. Screen only, so the resume prints in the palette
+ * underneath. Its fonts download only while it's on.
+ */
+:root {
+	--nes-black: #000000;
+	--nes-night: #141414;
+	--nes-shade: #242424;
+	--nes-edge: #3c3c3c;
+	--nes-grey: #bcbcbc;
+	--nes-white: #fcfcfc;
+	--nes-red: #f83800; /* 5.5:1 on black */
+	--nes-orange: #fca044;
+	--nes-sky: #3cbcfc;
+	--nes-green: #00a800;
+	--nes-press: calc(var(--spacing) * 1); /* how far a block moves when pressed */
+	--nes-shadow: var(--nes-press) var(--nes-press) 0 var(--nes-white); /* hard, pixel-style */
+}
+@custom-variant nes (&:where([data-nes], [data-nes] *));
+@media screen {
+	:root[data-nes] {
+		color-scheme: dark;
+		--palette-font: 'Pixelify Sans', ui-sans-serif, system-ui, sans-serif;
+		--role-page: var(--nes-black);
+		--role-ink: var(--nes-white);
+		--role-body: var(--nes-white);
+		--role-muted: var(--nes-grey);
+		--role-faint: var(--nes-grey);
+		--role-fill: var(--nes-shade);
+		--role-chip: var(--nes-edge);
+		--role-panel: var(--nes-night);
+		--role-raised: var(--nes-night);
+		--role-thumb: var(--nes-edge);
+		--role-line: var(--nes-edge);
+		--role-accent: var(--nes-red);
+		--role-accent-hover: var(--nes-orange);
+		--role-danger: var(--nes-red);
+		/* Square corners; circles stay round. */
+		--radius-sm: 0;
+		--radius-md: 0;
+		--radius-lg: 0;
+		--radius-xl: 0;
+		--radius-2xl: 0;
+	}
+	/* Press Start 2P is wide and tall: font-size-adjust brings it to the size of the text it
+	   replaces, so no layout needs its own sizes. */
+	:root[data-nes]
+		:is(
+			h1,
+			h2,
+			h3,
+			h4,
+			h5,
+			h6,
+			nav a,
+			button,
+			.label,
+			.label-accent,
+			.label-muted,
+			.section-heading
+		) {
+		font-family: var(--font-pixel);
+		font-size-adjust: 0.4;
+		font-weight: 400;
+		letter-spacing: 0;
+		line-height: 1.6;
+	}
+	/* The contact card's inputs match its square message box (#135). */
+	:root[data-nes] #contact .field {
+		border-radius: 0;
+	}
+	/* Calls to action (the home page's Resume link, All posts…, Save as PDF) become red blocks
+	   with a hard shadow, pressed in when tapped. */
+	:root[data-nes] :is(.link-cta, [data-nes-cta]) {
+		border-radius: 0;
+		padding-inline: calc(var(--spacing) * 4);
+		background-color: var(--color-accent);
+		color: var(--color-page);
+		font-family: var(--font-pixel);
+		font-size-adjust: 0.4;
+		text-decoration: none;
+		box-shadow: var(--nes-shadow);
+		&:hover {
+			background-color: var(--color-accent-hover);
+			color: var(--color-page);
+		}
+		&:active {
+			translate: var(--nes-press) var(--nes-press);
+			box-shadow: none;
+		}
+	}
+	/* The phone tab bar: the current tab is a red key (the marker grows to fill it, so it still
+	   slides between tabs and runs the lap), with black icon and label. */
+	:root[data-nes] [data-tab-marker] {
+		height: var(--spacing-tab-bar);
+		& > span {
+			width: 100%;
+			height: 100%;
+			border-radius: 0;
+		}
+	}
+	:root[data-nes] [data-tabs]:not([data-lapping]) a[aria-current='page'] {
+		color: var(--color-page);
+	}
+	/* Code keeps Shiki's dark colours on the black page. */
+	:root[data-nes] :is(.shiki, .shiki span) {
+		color: var(--shiki-dark) !important;
+	}
+	:root[data-nes] .shiki {
+		background-color: var(--nes-night) !important;
+	}
+}

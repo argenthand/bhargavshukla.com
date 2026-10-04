@@ -1,0 +1,206 @@
+/*
+ * One utility per role (#66, docs/design.md → Component classes). Elements that do the same job
+ * use the same class, so a change lands everywhere; every item in a list is styled alike.
+ */
+
+/* Page shell: horizontal gutters and the space above and below every page's content. */
+@utility page {
+	@apply mx-auto px-5 pt-8 pb-14 md:px-8 md:pt-12;
+}
+
+/* Text */
+@utility page-title {
+	@apply text-4xl font-medium tracking-tight text-balance;
+}
+@utility standfirst {
+	@apply text-xl text-muted italic;
+}
+@utility body-copy {
+	@apply text-lg/relaxed text-body;
+}
+@utility meta {
+	@apply text-sm text-muted;
+}
+@utility label {
+	@apply text-xs font-semibold tracking-widest uppercase;
+}
+@utility label-accent {
+	@apply label text-accent;
+}
+@utility label-muted {
+	@apply label text-muted;
+}
+@utility section-heading {
+	@apply label text-faint;
+}
+
+/* Lists of posts and asides: every item alike. */
+@utility list-entry {
+	@apply flex flex-col gap-2 py-5;
+}
+@utility list-title {
+	@apply text-xl/snug font-semibold text-balance md:text-2xl/snug;
+	/* The Writing list colours the title itself on hover, not its link. */
+	transition: color var(--duration-hover) var(--ease-motion);
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+@utility summary {
+	@apply line-clamp-2 text-lg text-muted;
+}
+
+/* Links and controls */
+@utility tap-target {
+	@apply inline-flex min-h-11 items-center;
+}
+@utility link-cta {
+	@apply tap-target gap-1.5 text-lg text-accent underline decoration-1 underline-offset-4 hover:text-accent-hover hover:decoration-2;
+}
+@utility link-quiet {
+	@apply underline decoration-line underline-offset-4 hover:text-ink hover:decoration-current;
+}
+@utility filter-button {
+	@apply tap-target px-2.5 text-lg whitespace-nowrap text-muted hover:text-ink aria-current:text-ink aria-current:underline aria-current:decoration-accent aria-current:decoration-2 aria-current:underline-offset-8;
+}
+/* The sticky phone header and the tab bar (#77): a faint shadow where they meet the page; in dark
+   mode, where shadows don't show, a slightly lighter background instead. */
+@utility bar-top {
+	@apply bg-raised shadow-bar-down dark:shadow-none;
+}
+@utility bar-bottom {
+	@apply bg-raised shadow-bar-up dark:shadow-none;
+}
+
+/* The theme toggle (#80): the highlight slides to the current choice; light → dark → system is
+   left → right. Driven by `data-theme-pref` on <html>, so it's in place before the first paint. */
+@utility theme-toggle-thumb {
+	@apply rounded-full bg-thumb shadow-sm transition-[translate] duration-(--duration-motion) ease-(--ease-motion) motion-reduce:transition-none;
+	:root[data-theme-pref='dark'] & {
+		translate: 100% 0;
+	}
+	:root[data-theme-pref='system'] & {
+		translate: 200% 0;
+	}
+}
+@utility theme-toggle-option {
+	@apply text-muted;
+	:root[data-theme-pref='light'] &[data-option='light'],
+	:root[data-theme-pref='dark'] &[data-option='dark'],
+	:root[data-theme-pref='system'] &[data-option='system'] {
+		@apply text-ink;
+	}
+}
+
+/* Rendered Markdown in the colour roles (#81): the typography plugin's own greys would ignore the
+   palette. Replaces `prose-neutral dark:prose-invert`. */
+@utility prose-roles {
+	--tw-prose-body: var(--color-body);
+	--tw-prose-headings: var(--color-ink);
+	--tw-prose-lead: var(--color-muted);
+	--tw-prose-links: var(--color-accent);
+	--tw-prose-bold: var(--color-ink);
+	--tw-prose-counters: var(--color-muted);
+	--tw-prose-bullets: var(--color-faint);
+	--tw-prose-hr: var(--color-line);
+	--tw-prose-quotes: var(--color-ink);
+	--tw-prose-quote-borders: var(--color-line);
+	--tw-prose-captions: var(--color-muted);
+	--tw-prose-kbd: var(--color-ink);
+	--tw-prose-code: var(--color-ink);
+	--tw-prose-th-borders: var(--color-line);
+	--tw-prose-td-borders: var(--color-line);
+}
+
+/* Tinted, rounded controls and panels instead of outlines (#77). One tint per role:
+   `field` for inputs, `chip` for small labels (keys, the Draft badge), `surface` for panels. */
+/* `pill` leaves display to the element (`flex`, or `hidden js:inline-flex`). */
+@utility pill {
+	@apply min-h-11 items-center gap-2 rounded-full bg-fill px-4;
+}
+@utility field {
+	@apply flex pill focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent;
+	/* An input with an error (#135): the danger outline, focused or not. */
+	&:has([aria-invalid='true']) {
+		outline: 2px solid var(--color-danger);
+		outline-offset: 2px;
+	}
+}
+/* `field` for a textarea (#135). */
+@utility field-area {
+	@apply field rounded-2xl py-3;
+}
+@utility select-field {
+	@apply h-11 w-full appearance-none rounded-full border-0 bg-fill bg-none py-0 pr-10 pl-4 text-lg focus:ring-0;
+}
+@utility chip {
+	@apply inline-flex items-center rounded-md bg-chip px-1.5;
+}
+@utility surface {
+	@apply rounded-lg bg-panel;
+}
+/* Curly quotes in accent red around a quote's text: post blockquotes and quote asides (#77). */
+@utility quote-marks {
+	& > p:first-child::before {
+		content: '“';
+		@apply text-accent;
+	}
+	& > p:last-child::after {
+		content: '”';
+		@apply text-accent;
+	}
+}
+
+/* Post headings' "#" link (#61): after the text, shown on hover and keyboard focus, always shown
+   (faintly) on touch screens, which can't hover. Clicking copies the section URL (Prose.svelte). */
+@utility heading-link {
+	@apply relative ml-2 font-normal text-faint no-underline opacity-0 hover:text-accent;
+	transition:
+		opacity var(--duration-motion) var(--ease-motion),
+		color var(--duration-hover) var(--ease-motion);
+	@media (hover: none) {
+		@apply opacity-50;
+	}
+	:is(h2, h3):hover > &,
+	&:focus-visible,
+	&:has([data-heading-toast]) {
+		@apply opacity-100;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+/* "Link copied", above the "#" that was clicked; anchored at its right edge so it never widens the page. */
+@utility heading-toast {
+	@apply pointer-events-none absolute right-0 bottom-full mb-1 animate-confirm meta font-normal tracking-normal whitespace-nowrap motion-reduce:animate-none;
+}
+
+/* An unpublished entry in draft preview (#57; docs/design.md → Components). */
+@utility draft-badge {
+	@apply chip text-xs tracking-wide text-muted uppercase;
+}
+
+/* A key in the shortcuts panel (#63). */
+@utility key-cap {
+	@apply chip h-6.5 min-w-6.5 justify-center font-mono text-sm leading-none text-ink;
+}
+
+/* Layout */
+@utility article-grid {
+	grid-template-columns: minmax(0, var(--container-article)) var(--spacing-toc);
+	column-gap: var(--spacing-article-gap);
+}
+@utility resume-skills-grid {
+	grid-template-columns: var(--spacing-resume-label) minmax(0, 1fr);
+}
+@utility max-h-sheet {
+	max-height: 80dvh; /* the ToC bottom sheet */
+}
+
+/* The default `transition` leaves out visibility, which a fade-out needs to hide the element too.
+   Colour too, so a link that fades (the header name) still eases its hover colour. */
+@utility transition-fade {
+	transition-property: opacity, visibility, color;
+	transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+	transition-duration: var(--tw-duration, var(--default-transition-duration));
+}

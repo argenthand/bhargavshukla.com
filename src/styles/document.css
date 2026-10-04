@@ -1,0 +1,34 @@
+/* The document as a whole: paper size, code colours, and the browser's colour scheme. Before
+   nes.css, which overrides the colour scheme at the same specificity. */
+
+/* The printed resume repeats this margin as padding and sets the paper's to 0 (#129, see
+   routes/resume/+page.svelte). */
+@page {
+	size: letter;
+	margin: 0.6in 0.75in;
+}
+
+/* Shiki dual themes (#9): render with themes { light: 'github-light', dark: 'github-dark' } */
+.shiki,
+.shiki span {
+	@variant dark {
+		color: var(--shiki-dark) !important;
+	}
+}
+/* Only the block gets a background; on every token span it showed as a box per line (#77). */
+.shiki {
+	@variant dark {
+		background-color: var(--shiki-dark-bg) !important;
+	}
+}
+
+/* Native controls and scrollbars match the theme (#80). */
+:root {
+	color-scheme: light dark;
+}
+:root[data-theme='light'] {
+	color-scheme: light;
+}
+:root[data-theme='dark'] {
+	color-scheme: dark;
+}
