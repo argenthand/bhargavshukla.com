@@ -14,6 +14,7 @@ Planning and reference docs for bhargavshukla.com.
 | [performance.md](performance.md)             | Slow-network timings: how to measure (`pnpm perf`), results, real-world log |
 | [view-counts.md](view-counts.md)             | Read counts: options, decisions and what was built (#82, #87)               |
 | [contact.md](contact.md)                     | The contact card: checks, spam, delivery, the printed email, setup (#135)   |
+| [analytics.md](analytics.md)                 | Analytics: PostHog through our own beacon, events, privacy, cost (#136)     |
 | [roadmap.md](roadmap.md)                     | Phases, milestones and tickets (GitHub issues)                              |
 | [../CONTEXT.md](../CONTEXT.md)               | The glossary: the site's domain language                                    |
 | [adr/](adr/)                                 | Architecture decisions and why they were made                               |
