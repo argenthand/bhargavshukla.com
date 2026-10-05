@@ -17,7 +17,8 @@
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { ABYSS_LINE, consoleNote } from '$lib/easter-eggs';
 	import { konamiKeydown, taps } from '$lib/gestures';
-	import { reducedMotion } from '$lib/motion';
+	import { introHeading } from '$lib/intro.svelte';
+	import { pageTransition, reducedMotion } from '$lib/motion';
 	import { wake } from '$lib/eight-bit-sound';
 	import { nav, site } from '$lib/site';
 
@@ -32,48 +33,12 @@
 
 	const year = new Date().getFullYear();
 
-	// On the home page the intro's h1 is the name, so the header leaves it out until that heading
-	// scrolls under the sticky phone bar, then fades it in (#59). The desktop header isn't sticky,
-	// so there it simply stays out. `js:` keeps it visible without JavaScript.
-	const isHome = $derived(page.route.id === '/' && !page.error);
-	let introInView = $state(true);
-	$effect(() => {
-		if (!isHome) return;
-		const heading = document.getElementById('intro-name');
-		if (!heading) return;
-		const observer = new IntersectionObserver(
-			([entry]) => (introInView = entry.isIntersecting),
-			{ rootMargin: '-56px 0px 0px 0px' } // the sticky bar's height (h-14)
-		);
-		observer.observe(heading);
-		return () => {
-			observer.disconnect();
-			introInView = true;
-		};
-	});
-	const hideName = $derived(isHome && introInView);
+	// The header name fade (#59, src/lib/intro.svelte.ts): on home, out while the intro's heading is
+	// on screen. `js:` keeps it visible without JavaScript.
+	const hideName = $derived(page.route.id === '/' && !page.error && introHeading.inView);
 
-	// Page transitions (#60): a short cross-fade between pages. A title moves only between a list and
-	// its own page (Writing → post, Asides → aside, and back); between two lists it just fades.
-	// Skipped where the browser has no View Transitions, with reduced motion, and for query-only
-	// changes (filters).
-	const isDetail = (route?: string | null) =>
-		route === '/blog/[slug]' || route === '/asides/[slug]';
-	onNavigate((navigation) => {
-		if (!document.startViewTransition) return;
-		if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-		if (navigation.from?.url.pathname === navigation.to?.url.pathname) return;
-		const root = document.documentElement;
-		const moveTitles = isDetail(navigation.from?.route.id) !== isDetail(navigation.to?.route.id);
-		root.toggleAttribute('data-plain-transition', !moveTitles);
-		return new Promise((done) => {
-			const transition = document.startViewTransition(async () => {
-				done();
-				await navigation.complete;
-			});
-			transition.finished.finally(() => root.removeAttribute('data-plain-transition'));
-		});
-	});
+	// Page transitions (#60, src/lib/motion.ts).
+	onNavigate(pageTransition);
 
 	// A note for whoever opens DevTools (#63).
 	onMount(consoleNote);
@@ -143,6 +108,7 @@
 	<!-- Named, so page transitions keep the header still instead of fading it with the page. -->
 	<header
 		style:view-transition-name="site-header"
+		data-top-bar
 		class="sticky top-0 z-10 bar-top md:static md:bg-transparent md:shadow-none print:hidden"
 	>
 		<div class="mx-auto flex h-14 max-w-5xl items-center justify-between px-5 md:h-20 md:px-8">
