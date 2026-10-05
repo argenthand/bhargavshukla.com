@@ -55,7 +55,7 @@ Every page route's +page.server.ts also exports `actions = { contact }`: the con
 - Layout, tokens, component classes and behaviour follow [design.md](design.md). The nav stays at three items; see [design.md → Sections](design.md#sections).
 - `app.html` adds a `js` class to `<html>`; the `js:` Tailwind variant shows JavaScript-only UI (ToC pill, Copy buttons) and hides no-JS fallbacks.
 - Every page renders `<Seo>`: title (+ site name), description, canonical on the production origin without the query string, Open Graph and Twitter tags. Posts use `seo.metaTitle`, `seo.metaDescription`, `seo.canonicalUrl` and `seo.ogImage` when set, else title, summary and cover. Error pages are `noindex`.
-- Every `load` that reads content goes through `strapi(locals)`. The client fetches the data and records a `type:<model>` cache tag for the page (see [caching.md](caching.md)).
+- Every `load` that reads content goes through `strapi(locals)`. The client fetches the data and records a `type:<content type>` cache tag for the page (see [caching.md](caching.md)). Every route that shows content is declared in the content map (`src/lib/server/content-map.ts`, #140) with the content types it shows; a test runs the real loads and fails if they read anything else, and another fails if a route is missing.
 - A missing slug throws `error(404)`. Error responses are never cached.
 - `+server.ts` routes that read Strapi (RSS, sitemap) are edge-cached and purged like pages: the cache keeps their `content-type`. `static/robots.txt` points to the sitemap.
 - Cacheable `load`s await everything — no streamed promises — so the cached body is complete.

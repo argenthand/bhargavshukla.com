@@ -1,45 +1,7 @@
-// Repopulate after a purge (#123, docs/caching.md → Purge endpoint): fetch the key pages again
-// through Workers Cache, so the next visitor gets the new version from cache instead of being
-// the one who renders it. Pages not listed here render on their next visit, as before.
-
-import type { PurgePlan } from './purge';
-
-/** Pages kept warm: home, the two lists and the resume, plus the feeds. */
-export const KEY_PAGES = ['/', '/blog', '/asides', '/resume'];
-const FEEDS = ['/rss.xml', '/sitemap.xml'];
-
-/** Where each content type's own pages live. */
-const ENTRY_ROUTES: Partial<Record<string, string>> = { post: '/blog', aside: '/asides' };
-
-/**
- * The page data a client-side navigation to `path` fetches, spelled exactly as SvelteKit's client
- * does: Workers Cache keys on the query string verbatim, order included. `01` = the root layout's
- * data is reused, only the page's is new (every navigation between these pages).
- */
-export function dataUrl(path: string): string {
-	return path === '/'
-		? '/__data.json?x-sveltekit-trailing-slash=1&x-sveltekit-invalidated=01'
-		: `${path}/__data.json?x-sveltekit-invalidated=01`;
-}
-
-/** The entry's own page from a Strapi webhook body (`{ uid, entry: { slug } }`), if it has one. */
-function entryPage(plan: Exclude<PurgePlan, { action: 'ignore' }>, body: unknown): string | null {
-	if (plan.action !== 'tags') return null;
-	const model = plan.tags[0]?.replace(/^type:/, '');
-	const route = model ? ENTRY_ROUTES[model] : undefined;
-	const slug = (body as { entry?: { slug?: unknown } } | null)?.entry?.slug;
-	return route && typeof slug === 'string' && /^[a-z0-9-]+$/.test(slug) ? `${route}/${slug}` : null;
-}
-
-/** Every URL to fetch after a purge: each page and its data, then the feeds. */
-export function urlsToRepopulate(
-	plan: Exclude<PurgePlan, { action: 'ignore' }>,
-	body: unknown
-): string[] {
-	const entry = entryPage(plan, body);
-	const pages = entry ? [...KEY_PAGES, entry] : KEY_PAGES;
-	return [...pages.flatMap((path) => [path, dataUrl(path)]), ...FEEDS];
-}
+// Repopulate after a purge (#123, docs/caching.md → Purge endpoint): fetch pages again through
+// Workers Cache, so the next visitor gets the new version from cache instead of being the one who
+// renders it. Which URLs is the content map's call (`planPublish`, #140); pages it leaves out
+// render on their next visit.
 
 /**
  * Fetches each URL (a few at a time, so Strapi isn't flooded) and logs what Workers Cache said.

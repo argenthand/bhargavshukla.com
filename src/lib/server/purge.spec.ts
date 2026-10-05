@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('$env/dynamic/private', () => ({ env: {} }));
 
-const { bearerMatches, handlePurge, modelFromUid, planPurge } = await import('./purge');
+const { bearerMatches, handlePurge } = await import('./purge');
 
 const SECRET = 'webhook-secret';
 
@@ -29,62 +29,6 @@ function workersCache(
 
 afterEach(() => vi.restoreAllMocks());
 
-describe('modelFromUid', () => {
-	it('reads the model from api uids the site knows', () => {
-		expect(modelFromUid('api::post.post')).toBe('post');
-		expect(modelFromUid('api::profile.profile')).toBe('profile');
-	});
-
-	it('ignores plugin and unknown uids', () => {
-		expect(modelFromUid('plugin::upload.file')).toBeUndefined();
-		expect(modelFromUid('api::widget.widget')).toBeUndefined();
-		expect(modelFromUid(undefined)).toBeUndefined();
-	});
-});
-
-describe('planPurge', () => {
-	const purge = (model: string) => ({ action: 'tags', tags: [`type:${model}`] });
-
-	it.each(['entry.publish', 'entry.unpublish', 'entry.delete'])(
-		'%s purges the model, with or without Draft & Publish',
-		(event) => {
-			expect(planPurge({ event, uid: 'api::post.post' })).toEqual(purge('post'));
-			expect(planPurge({ event, uid: 'api::aside.aside' })).toEqual(purge('aside'));
-			expect(planPurge({ event, uid: 'api::tag.tag' })).toEqual(purge('tag'));
-		}
-	);
-
-	it.each(['entry.create', 'entry.update'])('%s purges models without drafts', (event) => {
-		for (const model of ['tag', 'category', 'profile']) {
-			expect(planPurge({ event, uid: `api::${model}.${model}` })).toEqual(purge(model));
-		}
-	});
-
-	it.each(['entry.create', 'entry.update'])('%s is a draft save for the others', (event) => {
-		for (const model of ['post', 'aside', 'resume']) {
-			expect(planPurge({ event, uid: `api::${model}.${model}` }).action).toBe('ignore');
-		}
-	});
-
-	it('ignores media events and models the site never reads', () => {
-		expect(planPurge({ event: 'media.create', uid: 'plugin::upload.file' }).action).toBe('ignore');
-		expect(planPurge({ event: 'media.delete' }).action).toBe('ignore');
-		expect(
-			planPurge({ event: 'entry.publish', uid: 'plugin::users-permissions.user' }).action
-		).toBe('ignore');
-	});
-
-	it('purges everything on { all: true }', () => {
-		expect(planPurge({ all: true })).toEqual({ action: 'everything' });
-	});
-
-	it('ignores anything else', () => {
-		expect(planPurge(null).action).toBe('ignore');
-		expect(planPurge({ all: 'yes' }).action).toBe('ignore');
-		expect(planPurge({ uid: 'api::post.post' }).action).toBe('ignore');
-	});
-});
-
 describe('bearerMatches', () => {
 	it('accepts the exact secret only', async () => {
 		expect(await bearerMatches(`Bearer ${SECRET}`, SECRET)).toBe(true);
@@ -107,7 +51,7 @@ describe('handlePurge', () => {
 		expect(calls).toHaveLength(0);
 	});
 
-	it('purges the tags, then repopulates with the plan and the body', async () => {
+	it('purges the tags, then repopulates the URLs the content map gives', async () => {
 		vi.spyOn(console, 'log').mockImplementation(() => {});
 		const { calls, purge } = workersCache();
 		const repopulate = vi.fn();
@@ -117,7 +61,7 @@ describe('handlePurge', () => {
 
 		expect(res.status).toBe(200);
 		expect(calls).toEqual([{ tags: ['type:post'] }]);
-		expect(repopulate).toHaveBeenCalledWith({ action: 'tags', tags: ['type:post'] }, body);
+		expect(repopulate).toHaveBeenCalledWith(expect.arrayContaining(['/blog', '/blog/a']));
 	});
 
 	it('purges everything on { all: true }', async () => {

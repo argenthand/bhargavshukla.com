@@ -4,7 +4,6 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
 	MAX_PATHS,
 	readCounts,
-	readTarget,
 	recordRead,
 	visitorHash,
 	type ReadsDb,
@@ -34,17 +33,6 @@ const always = async () => true;
 const DAY_1 = new Date('2026-10-01T09:00:00Z');
 const DAY_1_LATE = new Date('2026-10-01T23:59:00Z');
 const DAY_2 = new Date('2026-10-02T00:01:00Z');
-
-describe('readTarget', () => {
-	it('accepts post and aside pages', () => {
-		expect(readTarget('/blog/first-post')).toEqual({ model: 'post', slug: 'first-post' });
-		expect(readTarget('/asides/a-tip')).toEqual({ model: 'aside', slug: 'a-tip' });
-	});
-	it('rejects everything else', () => {
-		for (const path of ['/', '/blog', '/blog/', '/blog/a/b', '/resume', '/blog/a b', '//blog/a'])
-			expect(readTarget(path)).toBeUndefined();
-	});
-});
 
 describe('recordRead', () => {
 	let db: ReturnType<typeof testDb>;
@@ -89,7 +77,7 @@ describe('recordRead', () => {
 		const asked: unknown[] = [];
 		const missing = async (target: unknown) => (asked.push(target), false);
 		expect(await recordRead(db, read('/blog/nope'), missing, DAY_1)).toBe(false);
-		expect(asked).toEqual([{ model: 'post', slug: 'nope' }]);
+		expect(asked).toEqual([{ type: 'post', slug: 'nope' }]);
 		expect(count('/blog/nope')).toBeUndefined();
 		// Asked once: the second try is already in `seen`.
 		await recordRead(db, read('/blog/nope'), missing, DAY_1);

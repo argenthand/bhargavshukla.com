@@ -29,9 +29,9 @@ Publishing any post purges `type:post`, which clears every page that shows posts
 
 ### 2. Strapi client — `src/lib/server/strapi.ts`
 
-- One map: `MODELS = { post: 'posts', category: 'categories' }` (model name → REST path), plus `profile`, `resume`, `aside` and `tag`.
-- `strapi(locals).find(model, query)` builds the URL with `qs`, sends `Authorization: Bearer ${STRAPI_TOKEN}`, and calls `locals.cacheTags.add('type:' + model)`.
-- Populating a relation adds its model's tag too (`category` → `type:category`, `related` → `type:post`; `tags` → `type:tag`), so renaming a category purges every page that shows it.
+- Content types, their REST paths and their relations live in the **content map** (`src/lib/server/content-map.ts`, #140; see [CONTEXT.md](../CONTEXT.md)).
+- `strapi(locals).find(type, query)` builds the URL with `qs`, sends `Authorization: Bearer ${STRAPI_TOKEN}`, and adds the content map's `readTags(type, query)` to `locals.cacheTags`: `type:<content type>`.
+- Populating a relation adds its content type's tag too, by the name the CMS gives it (a post's `category` → `type:category`, `related` → `type:post`; an aside's `tags` → `type:tag`), so renaming a category purges every page that shows it. Tags are per content type, not per entry ([ADR 0001](adr/0001-purge-by-content-type.md)).
 - `hooks.server.ts` creates `locals.cacheTags` for every request; the edge cache (#16) turns it into the `Cache-Tag` header.
 
 ### 3. Hook — `src/hooks.server.ts` + `src/lib/server/edge-cache.ts`
@@ -83,18 +83,18 @@ The CMS and the site share `PREVIEW_SECRET`; the signed text is `link\n<path>\n<
 ### 4. Purge endpoint — `src/routes/api/purge/+server.ts` + `src/lib/server/purge.ts`
 
 - **Auth:** `Authorization: Bearer ${PURGE_SECRET}`, compared with `crypto.subtle.timingSafeEqual`; otherwise 401.
-- **Payload** (Strapi 5): `{ event, model, uid, entry }`, sent as JSON. Derive the model from `uid` (`api::post.post` → `post`); uids the site never reads (plugins, users) are ignored. Send JSON when calling it by hand: SvelteKit's CSRF check answers 403 to a form-encoded cross-site POST.
+- **Payload** (Strapi 5): `{ event, model, uid, entry }`, sent as JSON. The content map's `planPublish(body)` reads the content type from `uid` (`api::post.post` → `post`); uids the site never reads (plugins, users) are ignored. Send JSON when calling it by hand: SvelteKit's CSRF check answers 403 to a form-encoded cross-site POST.
 - **Mapping:**
 
-  | Event                                              | Action                                                                                                                                     |
-  | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-  | `entry.publish`, `entry.unpublish`, `entry.delete` | purge `type:<model>`, then repopulate                                                                                                      |
-  | `entry.create`, `entry.update`                     | purge only for models without Draft & Publish (`category`, `profile`, `tag`); otherwise it's a draft save that doesn't change live content |
-  | `media.*`                                          | ignore                                                                                                                                     |
-  | body `{ "all": true }`                             | purge everything, then repopulate (manual escape hatch)                                                                                    |
+  | Event                                              | Action                                                                                                                                   |
+  | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+  | `entry.publish`, `entry.unpublish`, `entry.delete` | purge `type:<content type>`, then repopulate                                                                                             |
+  | `entry.create`, `entry.update`                     | purge only for content types without drafts (`category`, `profile`, `tag`); otherwise it's a draft save that doesn't change live content |
+  | `media.*`                                          | ignore                                                                                                                                   |
+  | body `{ "all": true }`                             | purge everything, then repopulate (manual escape hatch)                                                                                  |
 
 - **Purge:** `ctx.cache.purge({ tags })`, or `{ purgeEverything: true }` for `{ "all": true }`. It propagates worldwide within seconds and uses the Free plan's purge rate limits, plenty for one purge per publish.
-- **Repopulate** (`src/lib/server/repopulate.ts`): after a successful purge, in the background (`ctx.waitUntil`), the endpoint requests the key pages again through the Worker's own cache (`ctx.exports.default.fetch`, a loopback request): home, Writing, Asides and the resume, each as the page and as its page data, then RSS and the sitemap, plus the published post or aside's own page (from `entry.slug`). The next visitor gets the new version from cache. Page data URLs are spelled as the SvelteKit client sends them (`dataUrl`): the key is the query string verbatim. Other pages render on their next visit. `Repopulate: n/m ok …` in the logs lists each URL with its `cf-cache-status`.
+- **Repopulate** (`src/lib/server/repopulate.ts`): after a successful purge, in the background (`ctx.waitUntil`), the endpoint requests pages again through the Worker's own cache (`ctx.exports.default.fetch`, a loopback request). The content map decides which (#140): the **key pages** that show the published content type, in live sections only, each as the page and as its page data; the published post or aside's own page (from `entry.slug`); then RSS and the sitemap if they show it. A tag edit fetches Asides again, not the resume; `{ "all": true }` fetches every key page. The next visitor gets the new version from cache. Page data URLs are spelled as the SvelteKit client sends them (`dataUrl`): the key is the query string verbatim. Other pages render on their next visit. `Repopulate: n/m ok …` in the logs lists each URL with its `cf-cache-status`.
 - Respond 200 on success or when there's nothing to purge, 502 when the purge fails, 500 when Workers Cache isn't available (`cache.enabled` missing from `wrangler.jsonc`), and log every outcome (`Purge: …` in `wrangler tail` and Workers Logs). Strapi doesn't retry webhooks, so failures must be visible.
 - The handler lives in `purge.ts` (`handlePurge(request, secret, purge, repopulate)`) so it's tested without Workers; `+server.ts` passes in `ctx.cache.purge` and the repopulate step. `crypto.subtle.timingSafeEqual` is Workers-only: both sides are SHA-256 hashed first (equal lengths), with a constant-time loop in Node.
 
@@ -116,8 +116,9 @@ Read string config through `$env/dynamic/private` (populated from bindings by `a
 
 - Bypass rules, and what's cacheable (pages and page data), with the headers each gets.
 - "No tags → not stored", "non-200 → not stored", "preview → not stored".
-- Webhook → tags mapping for every row in the table above; purge auth; purge failure → 502 without repopulating.
-- Repopulate: the URL list (page data spelled like the client, untrusted slugs ignored) and its concurrency.
+- Content map (`content-map.spec.ts`): webhook → plan for every row in the table above, the targeted URLs to fetch again (page data spelled like the client, live sections only, untrusted slugs ignored), relation tags, entry paths.
+- Content map against the code and the CMS (`content-map.pages.spec.ts`): every route's real loads, against a fake Strapi, read exactly the content types it declares; every route that shows content is declared; content types, drafts and relations match the CMS schemas.
+- Purge endpoint: auth, purge failure → 502 without repopulating. Repopulate: its concurrency.
 
 ## Verifying in production
 
