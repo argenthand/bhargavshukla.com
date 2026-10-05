@@ -50,7 +50,7 @@ src/
     api/views/+server.ts          read counts (#87): GET counts for some pages, POST the 10-second beacon
     api/print-contact/+server.ts  the printed resume's email, encoded (#135)
 
-Every page route's +page.server.ts also exports `actions = { contact }`: the contact card's form (#135, contact.md).
+Every page route's +page.server.ts builds its load with `pageLoad` and exports `actions = pageActions` (`src/lib/server/page-load.ts`, #142): drafts in preview, degraded pages when Strapi is down (caching.md → Degraded pages), and the contact card's form (#135, contact.md).
 ```
 
 ## Conventions

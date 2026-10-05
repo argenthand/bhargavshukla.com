@@ -39,7 +39,7 @@ Publishing any post purges `type:post`, which clears every page that shows posts
 `handle = sequence(cacheTags, preview, edgeCache)`. `edgeCache` doesn't store anything itself; it sets the headers Workers Cache follows:
 
 1. **Bypass** (`shouldBypass`): methods other than `GET`/`HEAD`, `/api/*`, and any request with the `__preview` cookie keep their own headers. Unless one says `public` (as `/api/views` does), it also gets `Cloudflare-CDN-Cache-Control: no-store`, because without any `Cache-Control` Workers Cache would keep a 200 for two hours by heuristic.
-2. **Cacheable** when the response is `200`, has ≥ 1 tag, has no `Set-Cookie`, isn't `no-store`/`private`, and the load didn't set `locals.noStore` (home does when Strapi is unreachable, so the page without posts isn't kept). `setHeaders` can't opt out: SvelteKit leaves it off `__data.json`.
+2. **Cacheable** when the response is `200`, has ≥ 1 tag, has no `Set-Cookie`, isn't `no-store`/`private`, and the page isn't degraded (`locals.degraded`, see [Degraded pages](#degraded-pages-142)). `setHeaders` can't opt out: SvelteKit leaves it off `__data.json`.
    - **Page data** always comes from SvelteKit as `private, no-store`, so the header can't decide. It's cacheable when it's `application/json`, a `data` answer, and none of its nodes is an `error` (a 404 or a failed Strapi call arrives as a 200 with an error node; a redirect as `type: 'redirect'`).
 3. **Headers** (`withCacheHeaders`):
    - Cacheable: `Cloudflare-CDN-Cache-Control: max-age=86400, stale-while-revalidate=604800` (Cloudflare only; it outranks `Cache-Control` and isn't passed to browsers), `Cache-Tag: <tags>` (stripped before browsers), `Vary: Cookie`.
@@ -61,6 +61,22 @@ Browsers revalidate every page (`no-cache`); a validator lets that come back as 
 - **Browsers still get no page `ETag`:** Web Analytics injects its beacon into HTML requested with `Accept: text/html`, and that rewrite drops the `ETag` too. Their return visits revalidate by `Last-Modified` instead, which gives the same 304. Requests without that header (curl, feed readers, most bots) keep the `ETag`. Moving the beacon into `app.html` would bring it back, but would likely count EU visitors we exclude ([infrastructure.md](infrastructure.md#analytics-cloudflare-web-analytics-58)); not worth it while each deploy re-renders every page anyway.
 
 Tracking parameters (`?utm_source=…`) make a separate entry: the key can't be normalised for visitor requests. The first visitor from each tracked link renders the page; content is unaffected.
+
+### Degraded pages (#142)
+
+When Strapi can't be reached, a page shows what it can instead of failing: a **degraded page** (CONTEXT.md). Every page load goes through `pageLoad` in `src/lib/server/page-load.ts`, and a route marks what it can do without by catching it with `degrade(value)`:
+
+| Page               | Required  | Without Strapi                                                                                           |
+| ------------------ | --------- | -------------------------------------------------------------------------------------------------------- |
+| `/`                | nothing   | the name alone, no posts                                                                                 |
+| `/blog`, `/asides` | nothing   | an empty list and "can't load right now"                                                                 |
+| `/resume`          | nothing   | whichever of the profile header and the resume loaded, and "can't load right now" in place of the resume |
+| `/blog/[slug]`     | the post  | the error page; with the post but not the other posts, no Next up                                        |
+| `/asides/[slug]`   | the aside | the error page                                                                                           |
+
+- **Required content** isn't caught: the load throws and `+error.svelte` shows (it needs no data).
+- **A degraded page** sets `locals.degraded`. The hook never stores it, and answers a page request `503` with `Retry-After: 60`, so search engines keep the full page instead of indexing the degraded one. The page itself still shows: browsers render a 503's body. Page data (`__data.json`) stays a `200`, because SvelteKit's client treats any other status as a failed navigation.
+- **An unsaved profile or resume** isn't degraded: it's a normal page, cached as usual. Saving it is a publish, which purges the pages that show it.
 
 ### Draft preview (#57) — `src/lib/server/preview.ts`
 
@@ -118,6 +134,7 @@ Read string config through `$env/dynamic/private` (populated from bindings by `a
 - "No tags → not stored", "non-200 → not stored", "preview → not stored".
 - Content map (`content-map.spec.ts`): webhook → plan for every row in the table above, the targeted URLs to fetch again (page data spelled like the client, live sections only, untrusted slugs ignored), relation tags, entry paths.
 - Content map against the code and the CMS (`content-map.pages.spec.ts`): every route's real loads, against a fake Strapi, read exactly the content types it declares; every route that shows content is declared; content types, drafts and relations match the CMS schemas.
+- Page loads (`src/routes/pages.spec.ts`): every page route exports the contact action; each load against a fake Strapi that answers, has nothing saved, or is down (the table under Degraded pages). The hook's 503 for a degraded page and its 200 for degraded page data are in `edge-cache.spec.ts`.
 - Purge endpoint: auth, purge failure → 502 without repopulating. Repopulate: its concurrency.
 
 ## Verifying in production

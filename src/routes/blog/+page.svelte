@@ -136,7 +136,11 @@
 	{#if filtered.length === 0}
 		<div role="status">
 			<p class="body-copy">
-				{data.posts.length === 0 ? 'Nothing published yet.' : 'No posts match those filters.'}
+				{data.degraded
+					? "Posts can't load right now. Try again in a minute."
+					: data.posts.length === 0
+						? 'Nothing published yet.'
+						: 'No posts match those filters.'}
 			</p>
 			{#if data.posts.length > 0}
 				<button type="button" onclick={clear} class="mt-2 link-cta"> Clear filters </button>

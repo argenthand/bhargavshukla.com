@@ -1,5 +1,5 @@
-// The contact card's form action (#135, docs/contact.md). Every page route exports it as
-// `actions = { contact }`: the card sits in the layout, and layouts can't have actions. With
+// The contact card's form action (#135, docs/contact.md). Every page route exports it through
+// `pageActions` (page-load.ts): the card sits in the layout, and layouts can't have actions. With
 // JavaScript the card posts in the background; without it, the browser posts to the page it's on
 // and gets that page back, scrolled to the card, with the result.
 //

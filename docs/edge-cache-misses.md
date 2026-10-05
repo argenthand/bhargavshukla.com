@@ -65,7 +65,7 @@ What changes from today ([caching.md](caching.md)):
    - `Cache-Control: no-cache` for browsers, as today.
    - `Cache-Tag: type:post,…` from `locals.cacheTags`, as today.
 
-   The same rules decide what's cacheable: 200, tagged, no `Set-Cookie`, not `locals.noStore`, and for `__data.json` no error node. Everything else gets `Cloudflare-CDN-Cache-Control: no-store`, so the 2-hour heuristic TTL for responses without headers never applies by accident. That includes `/api/*`, errors, previews and anything without tags.
+   The same rules decide what's cacheable: 200, tagged, no `Set-Cookie`, not `locals.degraded`, and for `__data.json` no error node. Everything else gets `Cloudflare-CDN-Cache-Control: no-store`, so the 2-hour heuristic TTL for responses without headers never applies by accident. That includes `/api/*`, errors, previews and anything without tags.
 
 3. **Purge from inside the Worker:** `/api/purge` calls `ctx.cache.purge({ tags })` instead of Cloudflare's zone purge API. Zone-level purges "don't affect Workers Caching content" ([purge](https://developers.cloudflare.com/workers/cache/purge/)). Propagation is global, like today. The `CF_PURGE_TOKEN` and `CF_ZONE_ID` settings go away. Purges use the Free plan's rate limits, which is plenty for one purge per publish.
 4. **Delete the Cache API code:** `cacheKey`, `KEY_PARAMS`, the `/__edge/` prefix, the `match`/`put` path and `EDGE_TTL`'s day-long expiry all go. What stays is a small hook that sets headers. The adapter's own `caches.default` lookup is independent and unaffected.
