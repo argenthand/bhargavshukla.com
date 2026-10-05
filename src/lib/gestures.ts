@@ -1,6 +1,7 @@
 // Gestures (#143, CONTEXT.md): what a visitor does to find an easter egg. Quick taps on one thing,
-// or the Konami code from the keyboard or the controller. A gesture only says it happened; each
-// egg decides what follows, and whether reduced motion changes it.
+// or the Konami code from the keyboard or the controller. Taps only say they happened: each egg
+// decides what follows. The Konami code always starts 8-bit mode, so it does that here, from one
+// place. Neither checks reduced motion; the effects do.
 
 import { unlock } from '$lib/eight-bit.svelte';
 
@@ -12,6 +13,21 @@ export function isTyping(target: EventTarget | null): boolean {
 		target instanceof HTMLInputElement ||
 		target instanceof HTMLTextAreaElement ||
 		target instanceof HTMLSelectElement
+	);
+}
+
+/**
+ * Keys that shortcuts and the Konami code leave alone: typing in a field, IME composition, chords
+ * with Ctrl/⌘/Alt (so browser and screen reader shortcuts keep working), and keys already handled.
+ */
+export function leaveKeyAlone(event: KeyboardEvent): boolean {
+	return (
+		event.defaultPrevented ||
+		event.isComposing ||
+		isTyping(event.target) ||
+		event.ctrlKey ||
+		event.metaKey ||
+		event.altKey
 	);
 }
 
@@ -51,16 +67,6 @@ export const KONAMI = [
 	'a'
 ];
 
-/** How each Konami key shows on the controller's strip (#111). */
-export const KEY_SYMBOLS: Record<string, string> = {
-	arrowup: '↑',
-	arrowdown: '↓',
-	arrowleft: '←',
-	arrowright: '→',
-	b: 'B',
-	a: 'A'
-};
-
 /** The last keys pressed, from the keyboard and the controller alike: one sequence. */
 let recent: string[] = [];
 
@@ -73,9 +79,13 @@ export function konamiKey(key: string): boolean {
 	return true;
 }
 
-/** The keyboard's way in: `<svelte:window onkeydown={konamiKeydown} />`. Not while typing or in a chord. */
+/**
+ * The keyboard's way in: `<svelte:window onkeydown={konamiKeydown} />`. Not keys left alone, and not
+ * keys aimed at the controller (`data-konami-pad`): Enter or Space there presses a button, and the
+ * button sends its own key.
+ */
 export function konamiKeydown(event: KeyboardEvent) {
-	if (event.defaultPrevented || event.isComposing || isTyping(event.target)) return;
-	if (event.ctrlKey || event.metaKey || event.altKey) return;
+	if (leaveKeyAlone(event)) return;
+	if (event.target instanceof Element && event.target.closest('[data-konami-pad]')) return;
 	konamiKey(event.key);
 }

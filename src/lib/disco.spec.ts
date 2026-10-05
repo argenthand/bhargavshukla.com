@@ -1,3 +1,4 @@
+// The palette disco's order (#111): every other palette, then back to the current one.
 import { describe, expect, it } from 'vitest';
 import { discoOrder } from './disco';
 

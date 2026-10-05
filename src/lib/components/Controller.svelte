@@ -5,8 +5,18 @@
 	// strip echoes the last few. ↑↑↓↓←→←→ B A starts 8-bit mode.
 	import Icon from '$lib/components/Icon.svelte';
 	import { blip } from '$lib/eight-bit.svelte';
-	import { KEY_SYMBOLS, konamiKey } from '$lib/gestures';
+	import { konamiKey } from '$lib/gestures';
 	import { keepAwake } from '$lib/eight-bit-sound';
+
+	/** How each key shows on the strip. */
+	const KEY_SYMBOLS: Record<string, string> = {
+		arrowup: '↑',
+		arrowdown: '↓',
+		arrowleft: '←',
+		arrowright: '→',
+		b: 'B',
+		a: 'A'
+	};
 
 	let pad = $state<HTMLElement>();
 	let pressed = $state<string[]>([]);
@@ -50,6 +60,7 @@
 <div
 	bind:this={pad}
 	id="controller"
+	data-konami-pad
 	popover
 	{ontoggle}
 	aria-label="NES controller"

@@ -67,7 +67,7 @@
 	let winking = $state(false);
 	const shownPhoto = $derived((showAlt && profile?.photoAlt) || profile?.photo);
 
-	function onFifthClick() {
+	function swapOrWink() {
 		if (profile?.photoAlt) showAlt = !showAlt;
 		else winking = true;
 	}
@@ -87,7 +87,7 @@
 				width={shownPhoto.width}
 				height={shownPhoto.height}
 				decoding="async"
-				{@attach taps(5, onFifthClick)}
+				{@attach taps(5, swapOrWink)}
 				onanimationend={() => (winking = false)}
 				class={[
 					'size-28 shrink-0 rounded-full bg-fill object-cover select-none md:size-30 print:hidden',

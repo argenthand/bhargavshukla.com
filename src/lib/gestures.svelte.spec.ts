@@ -80,7 +80,10 @@ describe('taps', () => {
 });
 
 describe('the Konami code', () => {
-	beforeEach(() => window.addEventListener('keydown', konamiKeydown));
+	beforeEach(() => {
+		konamiKey('x'); // no half-entered code left over from the last test
+		window.addEventListener('keydown', konamiKeydown);
+	});
 	afterEach(() => window.removeEventListener('keydown', konamiKeydown));
 
 	const press = (key: string, target: Element = document.body, init: KeyboardEventInit = {}) =>
@@ -115,6 +118,18 @@ describe('the Konami code', () => {
 	it('is one sequence from the keyboard and the controller', () => {
 		for (const key of CODE.slice(0, 5)) press(key);
 		for (const key of CODE.slice(5)) konamiKey(key.toLowerCase());
+		expect(unlock).toHaveBeenCalledTimes(1);
+	});
+
+	it('leaves the keys that work the controller’s buttons to the controller', () => {
+		const pad = document.body.appendChild(document.createElement('div'));
+		pad.setAttribute('data-konami-pad', '');
+		const button = pad.appendChild(document.createElement('button'));
+		for (const key of CODE) {
+			press('Tab', button);
+			press('Enter', button); // the keyboard presses the button…
+			konamiKey(key.toLowerCase()); // …and the button presses its key
+		}
 		expect(unlock).toHaveBeenCalledTimes(1);
 	});
 

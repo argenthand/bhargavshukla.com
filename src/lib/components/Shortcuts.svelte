@@ -7,7 +7,7 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Icon from '$lib/components/Icon.svelte';
-	import { isTyping } from '$lib/gestures';
+	import { leaveKeyAlone } from '$lib/gestures';
 	import { nav } from '$lib/site';
 
 	/** How long `g` waits for its second key. */
@@ -24,8 +24,7 @@
 	let gTimer: ReturnType<typeof setTimeout>;
 
 	function onkeydown(event: KeyboardEvent) {
-		if (event.defaultPrevented || event.isComposing || isTyping(event.target)) return;
-		if (event.ctrlKey || event.metaKey || event.altKey) return;
+		if (leaveKeyAlone(event)) return;
 
 		if (waitingForG) {
 			waitingForG = false;
