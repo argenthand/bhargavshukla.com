@@ -76,6 +76,8 @@ When Strapi can't be reached, a page shows what it can instead of failing: a **d
 
 - **Required content** isn't caught: the load throws and `+error.svelte` shows (it needs no data).
 - **A degraded page** sets `locals.degraded`. The hook never stores it, and answers a page request `503` with `Retry-After: 60`, so search engines keep the full page instead of indexing the degraded one. The page itself still shows: browsers render a 503's body. Page data (`__data.json`) stays a `200`, because SvelteKit's client treats any other status as a failed navigation.
+- **Preview and form posts** skip the hook's rules (Bypass above), so a degraded page there is a `200`. It's still never stored, and crawlers never see either.
+- **Only a `200` becomes a `503`**: if a load degrades and then fails or redirects, that status stands.
 - **An unsaved profile or resume** isn't degraded: it's a normal page, cached as usual. Saving it is a publish, which purges the pages that show it.
 
 ### Draft preview (#57) — `src/lib/server/preview.ts`

@@ -12,8 +12,8 @@ export const load = pageLoad(async ({ locals, params }, { drafts, degrade }) => 
 	// Only fetch the other posts when the author hasn't picked "Next up" by hand.
 	const others = post.related?.length
 		? []
-		: await listPosts(locals, {}, { drafts }).catch(degrade(undefined));
-	const nextUp = others ? pickNextUp(post, others) : [];
+		: await listPosts(locals, {}, { drafts }).catch(degrade([]));
+	const nextUp = pickNextUp(post, others);
 	const { html, headings } = renderMarkdown(post.body ?? '', { headingLinks: true });
 
 	return { post: postPage(post), html, headings, nextUp };

@@ -58,6 +58,18 @@ const post = {
 	cover: null,
 	seo: null
 };
+const aside = {
+	documentId: 'a1',
+	kind: 'tip',
+	title: 'A tip',
+	slug: 'a-tip',
+	body: 'Use the platform.',
+	sourceAuthor: null,
+	sourceTitle: null,
+	sourceUrl: null,
+	publishedAt: '2026-01-01T00:00:00.000Z',
+	tags: []
+};
 const profile = { name: 'Bhargav', tagline: 'Hi', bio: 'Bio.', linkedin: null, github: null };
 
 describe('every page route', () => {
@@ -161,6 +173,14 @@ describe('/blog/[slug]', async () => {
 describe('/asides', async () => {
 	const { load } = await import('./asides/+page.server');
 
+	it('lists asides', async () => {
+		answers = { asides: [aside] };
+		expect(await run(load, event())).toMatchObject({
+			asides: [{ slug: 'a-tip' }],
+			degraded: false
+		});
+	});
+
 	it('degrades to an empty list without Strapi', async () => {
 		answers = { asides: 'down' };
 		expect(await run(load, event())).toMatchObject({ asides: [], degraded: true });
@@ -169,6 +189,14 @@ describe('/asides', async () => {
 
 describe('/asides/[slug]', async () => {
 	const { load } = await import('./asides/[slug]/+page.server');
+
+	it('shows the aside', async () => {
+		answers = { asides: [aside] };
+		expect(await run(load, event({ slug: 'a-tip' }))).toMatchObject({
+			aside: { slug: 'a-tip' },
+			degraded: false
+		});
+	});
 
 	it('is a 404 for an aside that isn’t there', async () => {
 		await expect(run(load, event({ slug: 'nope' }))).rejects.toMatchObject({ status: 404 });

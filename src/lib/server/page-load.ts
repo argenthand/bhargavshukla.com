@@ -16,7 +16,7 @@ import { contact } from './contact';
 /** The contact card is on every page (#135) and layouts can't have actions, so every page has it. */
 export const pageActions = { contact };
 
-export interface PageContent {
+export interface PageLoadTools {
 	/** In draft preview (#57): also show unpublished entries and edits. */
 	drafts: boolean;
 	/** A `.catch` handler: logs the error, marks the page degraded, and stands in `value`. */
@@ -25,7 +25,7 @@ export interface PageContent {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- any route's params and parent data
 export function pageLoad<E extends ServerLoadEvent<any, any, any>, T extends object>(
-	load: (event: E, content: PageContent) => Promise<T>
+	load: (event: E, tools: PageLoadTools) => Promise<T>
 ) {
 	return async (event: E): Promise<T & { degraded: boolean }> => {
 		let degraded = false;
@@ -33,6 +33,7 @@ export function pageLoad<E extends ServerLoadEvent<any, any, any>, T extends obj
 			<V>(value: V) =>
 			(err: unknown) => {
 				console.error(`${event.route.id}: content unavailable`, err);
+				// The page reads its data; the edge-cache hook reads only `locals`.
 				degraded = event.locals.degraded = true;
 				return value;
 			};

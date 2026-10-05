@@ -212,6 +212,14 @@ describe('edgeCache', () => {
 		expect(await res.text()).toBe('<h1>home</h1>');
 	});
 
+	it('leaves an error or redirect from a degraded load its own status (#142)', async () => {
+		const res = await run('GET', '/blog/x', () => new Response('nope', { status: 404 }), {
+			degraded: true
+		});
+		expect(res.status).toBe(404);
+		expect(res.headers.has('retry-after')).toBe(false);
+	});
+
 	it('keeps degraded page data a 200, for client-side navigation, never stored (#142)', async () => {
 		const data = '{"type":"data","nodes":[{"type":"data","data":[]}]}';
 		const res = await run(

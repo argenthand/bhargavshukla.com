@@ -114,7 +114,7 @@ export const edgeCache: Handle = async ({ event, resolve }) => {
 		const out = withCacheHeaders(response, tags, false);
 		// A degraded page (#142) still shows, but as a 503 so search engines keep the full one.
 		// Page data stays a 200: SvelteKit's client treats any other status as a failed navigation.
-		if (event.isDataRequest) return out;
+		if (event.isDataRequest || response.status !== 200) return out;
 		out.headers.set('retry-after', String(DEGRADED_RETRY_AFTER));
 		return new Response(out.body, {
 			status: 503,
