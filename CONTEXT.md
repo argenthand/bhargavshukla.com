@@ -46,6 +46,14 @@ _Avoid_: mode, colour scheme
 A set of colours and a typeface: Newsprint (the default), Harbour, Sage, Plum or Ochre. The visitor's choice is the **chosen palette**.
 _Avoid_: theme, colour, skin
 
+**Easter egg**:
+A hidden surprise for visitors who go looking. It never changes the normal reading experience.
+_Avoid_: secret, hidden feature
+
+**Gesture**:
+What a visitor does to find an easter egg: quick taps on one thing, or the Konami code.
+_Avoid_: trigger, combo
+
 **8-bit mode**:
 The Konami code's reward: a pixel-art look over the palette, for this visit only. Its own palette is Night.
 _Avoid_: NES mode, retro mode

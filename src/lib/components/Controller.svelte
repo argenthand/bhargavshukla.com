@@ -4,13 +4,12 @@
 	// one knows what to press. A popover, so a tap outside, Esc or × closes it. Presses blip; the
 	// strip echoes the last few. ↑↑↓↓←→←→ B A starts 8-bit mode.
 	import Icon from '$lib/components/Icon.svelte';
-	import { KEY_SYMBOLS, konamiMatcher } from '$lib/easter-eggs';
-	import { blip, unlock } from '$lib/eight-bit.svelte';
+	import { blip } from '$lib/eight-bit.svelte';
+	import { KEY_SYMBOLS, konamiKey } from '$lib/gestures';
 	import { keepAwake } from '$lib/eight-bit-sound';
 
 	let pad = $state<HTMLElement>();
 	let pressed = $state<string[]>([]);
-	const konami = konamiMatcher();
 
 	/** Called once loaded, after the © line's third tap (which started the audio). */
 	export function open() {
@@ -20,9 +19,8 @@
 	function press(key: string) {
 		blip(key in KEY_SYMBOLS ? 'press' : 'select');
 		if (key in KEY_SYMBOLS) pressed = [...pressed, KEY_SYMBOLS[key]].slice(-10);
-		if (!konami(key)) return;
-		pad?.hidePopover();
-		void unlock();
+		// The code is one sequence with the keyboard's (#143); completing it starts 8-bit mode.
+		if (konamiKey(key)) pad?.hidePopover();
 	}
 
 	function ontoggle(event: ToggleEvent) {

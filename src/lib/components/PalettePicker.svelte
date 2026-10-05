@@ -8,12 +8,11 @@
 	// In 8-bit mode (#111) the dot shows NES colours, and choosing a palette leaves the mode.
 	// The palette disco (#111, src/lib/disco.ts): five quick taps on the dot and every palette plays
 	// in turn, then it lands back where it was. Each tap before that opens or closes the menu as usual.
-	import { tapCounter } from '$lib/easter-eggs';
+	import { taps } from '$lib/gestures';
 	import { look, PALETTES } from '$lib/look.svelte';
 
 	let button = $state<HTMLButtonElement>();
 	let menu = $state<HTMLElement>();
-	const taps = tapCounter(5, 2000);
 
 	const label = $derived(look.eightBit ? '8-bit' : look.paletteLabel);
 
@@ -49,8 +48,8 @@
 	});
 
 	/** The fifth quick tap starts the disco instead of toggling the menu. Not in 8-bit mode. */
-	function onclick(event: MouseEvent) {
-		if (!taps() || look.eightBit) return;
+	function startDisco(event: MouseEvent) {
+		if (look.eightBit) return;
 		event.preventDefault();
 		menu?.hidePopover();
 		void import('$lib/disco').then(({ disco }) => disco());
@@ -63,7 +62,7 @@
 	popovertarget="palette-menu"
 	aria-label="Colour: {label}"
 	title="Colour: {label}"
-	{onclick}
+	{@attach taps(5, startDisco)}
 	class="hidden size-11 shrink-0 touch-manipulation items-center justify-center rounded-full bg-fill select-none js:flex"
 >
 	{#if look.eightBit}

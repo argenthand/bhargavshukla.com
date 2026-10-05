@@ -45,6 +45,7 @@
 	// contacts one per line beside them from md (#96); on phones the contacts wrap under the name.
 	// In print: no photo (no photos on North American resumes, and ATS parsers skip images).
 	import type { getProfile } from '$lib/server/profile';
+	import { taps } from '$lib/gestures';
 	import { site } from '$lib/site';
 	import Icon from './Icon.svelte';
 
@@ -62,18 +63,11 @@
 
 	// The headshot's easter egg (#63): five quick clicks swap in the profile's alternate photo (and
 	// back); without one, the photo winks instead (not with reduced motion).
-	const CLICKS = 5;
-	const CLICK_WINDOW_MS = 2000;
-	let clicks: number[] = [];
 	let showAlt = $state(false);
 	let winking = $state(false);
 	const shownPhoto = $derived((showAlt && profile?.photoAlt) || profile?.photo);
 
-	function onPhotoClick() {
-		const now = Date.now();
-		clicks = [...clicks.filter((t) => now - t < CLICK_WINDOW_MS), now];
-		if (clicks.length < CLICKS) return;
-		clicks = [];
+	function onFifthClick() {
 		if (profile?.photoAlt) showAlt = !showAlt;
 		else winking = true;
 	}
@@ -85,7 +79,6 @@
 	<div class="flex min-w-0 items-center gap-4 md:gap-5">
 		{#if shownPhoto}
 			<!-- A mouse-only easter egg: no button, so it adds no tab stop or announcement for anyone. -->
-			<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
 			<img
 				src={shownPhoto.src}
 				srcset={shownPhoto.srcset}
@@ -94,7 +87,7 @@
 				width={shownPhoto.width}
 				height={shownPhoto.height}
 				decoding="async"
-				onclick={onPhotoClick}
+				{@attach taps(5, onFifthClick)}
 				onanimationend={() => (winking = false)}
 				class={[
 					'size-28 shrink-0 rounded-full bg-fill object-cover select-none md:size-30 print:hidden',

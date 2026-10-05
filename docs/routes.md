@@ -9,13 +9,15 @@ src/
     look-boot.ts                  the look's first-paint script (look-boot.script.js, raw text), put in app.html by the hooks
     palettes.ts                   PALETTES (#81): plain data, shared with scripts/print-notes.mjs
     eight-bit.svelte.ts           8-bit mode's sound switch, blips and the Konami unlock (#111)
+    gestures.ts                   easter eggs' gestures (#143): quick taps ({@attach taps(…)}), the Konami code
+    easter-eggs.ts                easter eggs' copy (abyss line, 404 lines, console note)
     format.ts                     dates as shown (UTC), shown date = displayDate ?? publishedAt
     site.ts                       name, links, Primary nav (`live` flags hide sections until they ship)
     types/content.ts              Post, PostSummary, Category, Media, Seo, Link, Heading, Tag, Aside, RenderedAside
     components/                   Icon.svelte, PostMeta.svelte (category · date), Prose.svelte (+ code Copy),
                                   Toc.svelte (pill + sheet, or sidebar), NextUp.svelte, Seo.svelte; AsideItem.svelte;
                                   BackToTop.svelte (posts: back to the title, ring = reading progress, #77);
-                                  Shortcuts.svelte (keyboard shortcuts + Konami, #63);
+                                  Shortcuts.svelte (keyboard shortcuts, #63); Toast.svelte (the easter eggs' message, #143);
                                   ThemeToggle.svelte (Light / Dark / System, #80); PalettePicker.svelte (colour palettes, #81)
     server/
       strapi.ts                   typed REST client; records cache tags into locals

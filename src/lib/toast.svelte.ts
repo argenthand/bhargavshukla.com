@@ -1,5 +1,5 @@
 // The one-line message at the bottom of the screen (#63, #111): the Konami code, 8-bit mode and the
-// palette disco use it. Shortcuts.svelte renders it as a `role="status"`, so screen readers hear it.
+// palette disco use it. Toast.svelte renders it (#143).
 
 /** How long a message stays up. */
 export const TOAST_MS = 3000;

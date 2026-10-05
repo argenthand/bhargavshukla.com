@@ -12,9 +12,11 @@
 	import NavProgress from '$lib/components/NavProgress.svelte';
 	import EightBitBanner from '$lib/components/EightBitBanner.svelte';
 	import Shortcuts from '$lib/components/Shortcuts.svelte';
+	import Toast from '$lib/components/Toast.svelte';
 	import PalettePicker from '$lib/components/PalettePicker.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
-	import { ABYSS_LINE, consoleNote, tapCounter } from '$lib/easter-eggs';
+	import { ABYSS_LINE, consoleNote } from '$lib/easter-eggs';
+	import { konamiKeydown, taps } from '$lib/gestures';
 	import { reducedMotion } from '$lib/motion';
 	import { wake } from '$lib/eight-bit-sound';
 	import { nav, site } from '$lib/site';
@@ -79,29 +81,26 @@
 	// The phone tab bar's marker slides to the current tab (#60).
 	const currentTab = $derived(nav.findIndex((item) => current(item.href)));
 
-	// Easter eggs (#111). Three quick taps on the © line open the NES controller; five on the current
-	// tab send its marker round the bar and back (not with reduced motion).
-	// The controller loads on the first tap and opens on the third; the audio starts inside that
-	// tap, as iOS requires.
+	// Easter eggs (#111; gestures in src/lib/gestures.ts, #143). Three quick taps on the © line open
+	// the controller; five on the current tab send its marker round the bar and back (not with
+	// reduced motion). The controller loads on the first tap and opens on the third; the audio
+	// starts inside that tap, as iOS requires.
 	let Controller = $state<Component<Record<string, never>, { open: () => void }>>();
 	let controller = $state<{ open: () => void }>();
-	const copyrightTaps = tapCounter(3, 1000);
+	const loadController = () => import('$lib/components/Controller.svelte');
 
-	function onCopyrightTap() {
-		const loading = import('$lib/components/Controller.svelte');
-		if (!copyrightTaps()) return;
+	function openController() {
 		wake();
-		void loading.then(async (module) => {
+		void loadController().then(async (module) => {
 			Controller = module.default;
 			await tick();
 			controller?.open();
 		});
 	}
-	const tabTaps = tapCounter(5, 2000);
 	let marker = $state<HTMLElement>();
 
-	function onTabClick(href: string) {
-		if (!current(href) || !tabTaps() || reducedMotion() || !marker) return;
+	function lap() {
+		if (reducedMotion() || !marker) return;
 		const at = (i: number, y = '0') => ({ translate: `${i * 100}% ${y}` });
 		const last = nav.length - 1;
 		// In 8-bit mode the marker is the red key; the current tab's label is black only on it.
@@ -225,7 +224,11 @@
 		>
 			<!-- The NES controller's way in (#111): a plain line, so it adds no tab stop. -->
 			<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-			<span class="select-none" onclick={onCopyrightTap}>© {year} {site.name}</span>
+			<span
+				class="select-none"
+				onclick={() => void loadController()}
+				{@attach taps(3, openController, { windowMs: 1000 })}>© {year} {site.name}</span
+			>
 			<!-- A server route, not a page: reload so the browser (or a feed reader) opens the XML. -->
 			<a href={resolve('/rss.xml')} data-sveltekit-reload class="tap-target gap-1.5 link-quiet">
 				<Icon name="rss" />RSS
@@ -234,7 +237,9 @@
 	</footer>
 </div>
 
+<svelte:window onkeydown={konamiKeydown} />
 <Shortcuts />
+<Toast />
 {#if Controller}<Controller bind:this={controller} />{/if}
 
 <!-- Behind the page, so only a bounce past the end shows it (iOS and macOS Safari; #111). Above the
@@ -280,7 +285,7 @@
 			<a
 				href={item.href}
 				aria-current={current(item.href)}
-				onclick={() => onTabClick(item.href)}
+				{@attach current(item.href) && taps(5, lap)}
 				class="relative flex min-h-tab-bar flex-col items-center justify-center gap-1 pt-1 text-xs tracking-wide text-muted aria-[current=page]:font-semibold aria-[current=page]:text-accent"
 			>
 				<Icon name={item.icon} size={22} />
