@@ -10,13 +10,13 @@
 	import ContactCard from '$lib/components/ContactCard.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import NavProgress from '$lib/components/NavProgress.svelte';
-	import NesBanner from '$lib/components/NesBanner.svelte';
+	import EightBitBanner from '$lib/components/EightBitBanner.svelte';
 	import Shortcuts from '$lib/components/Shortcuts.svelte';
 	import PalettePicker from '$lib/components/PalettePicker.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { ABYSS_LINE, consoleNote, tapCounter } from '$lib/easter-eggs';
 	import { reducedMotion } from '$lib/motion';
-	import { wake } from '$lib/nes-sound';
+	import { wake } from '$lib/eight-bit-sound';
 	import { nav, site } from '$lib/site';
 
 	let { children, data } = $props();
@@ -88,7 +88,7 @@
 	const copyrightTaps = tapCounter(3, 1000);
 
 	function onCopyrightTap() {
-		const loading = import('$lib/components/NesController.svelte');
+		const loading = import('$lib/components/Controller.svelte');
 		if (!copyrightTaps()) return;
 		wake();
 		void loading.then(async (module) => {
@@ -185,7 +185,7 @@
 		</div>
 	</header>
 
-	<NesBanner />
+	<EightBitBanner />
 
 	{#if data.preview}
 		<!-- Draft preview (#57, F-writing-* preview mode): only for whoever opened it from Strapi. -->

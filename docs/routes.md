@@ -2,10 +2,13 @@
 
 ```
 src/
-  hooks.server.ts                 cache tags, draft-preview cookie check (#57), edge-cache wrapper — see caching.md
+  hooks.server.ts                 the look's first-paint script (#141), cache tags, draft-preview cookie check (#57), edge-cache wrapper — see caching.md
   app.d.ts                        App.Locals { cacheTags: Set<string> }, App.Platform
   lib/
-    theme.ts                      Light / Dark / System (#80) and PALETTES (#81): cycle, resolve, save (app.html applies both on load)
+    look.svelte.ts                the look (#141, CONTEXT.md): theme, chosen palette, 8-bit mode; the only writer of their storage and <html> attributes
+    look-boot.ts                  the look's first-paint script (look-boot.script.js, raw text), put in app.html by the hooks
+    palettes.ts                   PALETTES (#81): plain data, shared with scripts/print-notes.mjs
+    eight-bit.svelte.ts           8-bit mode's sound switch, blips and the Konami unlock (#111)
     format.ts                     dates as shown (UTC), shown date = displayDate ?? publishedAt
     site.ts                       name, links, Primary nav (`live` flags hide sections until they ship)
     types/content.ts              Post, PostSummary, Category, Media, Seo, Link, Heading, Tag, Aside, RenderedAside

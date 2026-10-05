@@ -3,14 +3,14 @@
 	// ("Save as PDF") that reads cleanly in applicant tracking systems: standard headings, no icons.
 	// Content comes from the Strapi Resume; the header is the shared ProfileHeader (#99) from the Profile.
 	import { page } from '$app/state';
-	import { tick } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import ProfileHeader, { profileContacts } from '$lib/components/ProfileHeader.svelte';
 	import { decodeContact } from '$lib/contact';
 	import Seo from '$lib/components/Seo.svelte';
 	import { formatMonth } from '$lib/format';
 	import { site } from '$lib/site';
-	import { isPalette, type PaletteId } from '$lib/theme';
+	import { look } from '$lib/look.svelte';
 	import type { Employer, Role } from '$lib/server/resume';
 
 	let { data } = $props();
@@ -45,20 +45,12 @@
 		window.print();
 	}
 
-	// The printed note (#102) in the current palette. Only that palette's image loads; it follows
-	// the palette picker. Without JavaScript the page is in Newsprint, the default.
-	let palette = $state<PaletteId>('newsprint');
-	$effect(() => {
-		const root = document.documentElement;
-		const read = () => {
-			const current = root.dataset.palette;
-			palette = isPalette(current) ? current : 'newsprint';
-		};
-		read();
-		const observer = new MutationObserver(read);
-		observer.observe(root, { attributes: true, attributeFilter: ['data-palette'] });
-		return () => observer.disconnect();
-	});
+	// The printed note (#102) in the chosen palette (the look, #141): only that palette's image
+	// loads. The server renders Newsprint, and Svelte doesn't change an image's src while hydrating,
+	// so the chosen palette takes over once mounted. Without JavaScript it stays Newsprint.
+	let mounted = $state(false);
+	onMount(() => (mounted = true));
+	const palette = $derived(mounted ? look.palette : 'newsprint');
 
 	// No browser headers or footers on paper (#129): Chrome only prints its own (date, title, URL,
 	// page numbers) when the page margin has room. So the margin moves onto the resume, repeated on
@@ -164,7 +156,7 @@
 				Last updated <time datetime={resume.updatedAt}>{formatMonth(resume.updatedAt)}</time>
 			</p>
 			<!-- Needs JavaScript; without it, the browser's own Print works just as well. -->
-			<button type="button" onclick={savePdf} data-nes-cta class="hidden pill js:inline-flex">
+			<button type="button" onclick={savePdf} data-eight-bit-cta class="hidden pill js:inline-flex">
 				<Icon name="printer" size={18} />Save as PDF
 			</button>
 		</div>

@@ -8,7 +8,7 @@
 	import { page } from '$app/state';
 	import Icon from '$lib/components/Icon.svelte';
 	import { isTyping, konamiMatcher } from '$lib/easter-eggs';
-	import { unlock } from '$lib/nes.svelte';
+	import { unlock } from '$lib/eight-bit.svelte';
 	import { nav } from '$lib/site';
 	import { toast } from '$lib/toast.svelte';
 
@@ -123,7 +123,7 @@
 <p
 	role="status"
 	class={toast.message
-		? 'pointer-events-none fixed inset-x-0 bottom-20 z-50 mx-auto w-fit animate-confirm bg-ink px-4 py-2 text-page motion-reduce:animate-none md:bottom-8 print:hidden nes:font-pixel nes:text-xs nes:leading-relaxed'
+		? 'pointer-events-none fixed inset-x-0 bottom-20 z-50 mx-auto w-fit animate-confirm bg-ink px-4 py-2 text-page motion-reduce:animate-none md:bottom-8 print:hidden eight-bit:font-pixel eight-bit:text-xs eight-bit:leading-relaxed'
 		: 'sr-only'}
 >
 	{toast.message}

@@ -5,8 +5,8 @@
 	// strip echoes the last few. ↑↑↓↓←→←→ B A starts 8-bit mode.
 	import Icon from '$lib/components/Icon.svelte';
 	import { KEY_SYMBOLS, konamiMatcher } from '$lib/easter-eggs';
-	import { blip, unlock } from '$lib/nes.svelte';
-	import { keepAwake } from '$lib/nes-sound';
+	import { blip, unlock } from '$lib/eight-bit.svelte';
+	import { keepAwake } from '$lib/eight-bit-sound';
 
 	let pad = $state<HTMLElement>();
 	let pressed = $state<string[]>([]);
@@ -51,7 +51,7 @@
 
 <div
 	bind:this={pad}
-	id="nes-controller"
+	id="controller"
 	popover
 	{ontoggle}
 	aria-label="NES controller"
@@ -63,7 +63,7 @@
 		<button
 			type="button"
 			aria-label="Close controller"
-			popovertarget="nes-controller"
+			popovertarget="controller"
 			popovertargetaction="hide"
 			class="inline-flex size-11 items-center justify-center text-pad-face"
 		>
