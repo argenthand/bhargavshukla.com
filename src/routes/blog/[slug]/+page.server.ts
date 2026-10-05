@@ -1,46 +1,22 @@
 import { error } from '@sveltejs/kit';
-import { resolveImage } from '$lib/server/image';
 import { renderMarkdown } from '$lib/server/markdown';
-import { getPost, listPosts, pickNextUp } from '$lib/server/posts';
-import { mediaUrl } from '$lib/server/strapi';
-import { contact } from '$lib/server/contact';
-import type { Actions, PageServerLoad } from './$types';
+import { pageActions, pageLoad } from '$lib/server/page-load';
+import { getPost, listPosts, pickNextUp, postPage } from '$lib/server/posts';
+import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals, params }) => {
-	const drafts = locals.preview;
+// The post is required: without Strapi this is the error page. Next up isn't.
+export const load = pageLoad(async ({ locals, params }, { drafts, degrade }) => {
 	const post = await getPost(locals, params.slug, { drafts });
 	if (!post) error(404, 'Not found');
 
 	// Only fetch the other posts when the author hasn't picked "Next up" by hand.
-	const nextUp = pickNextUp(
-		post,
-		post.related?.length ? [] : await listPosts(locals, {}, { drafts })
-	);
+	const others = post.related?.length
+		? []
+		: await listPosts(locals, {}, { drafts }).catch(degrade([]));
+	const nextUp = pickNextUp(post, others);
 	const { html, headings } = renderMarkdown(post.body ?? '', { headingLinks: true });
 
-	return {
-		post: {
-			slug: post.slug,
-			title: post.title,
-			summary: post.summary,
-			category: post.category,
-			displayDate: post.displayDate,
-			publishedAt: post.publishedAt,
-			updatedAt: post.updatedAt,
-			draft: post.draft,
-			cover: resolveImage(post.cover),
-			seo: {
-				title: post.seo?.metaTitle || post.title,
-				description: post.seo?.metaDescription || post.summary,
-				canonical: post.seo?.canonicalUrl || null,
-				ogImage: post.seo?.ogImage && { ...post.seo.ogImage, url: mediaUrl(post.seo.ogImage.url) }
-			}
-		},
-		html,
-		headings,
-		nextUp
-	};
-};
+	return { post: postPage(post), html, headings, nextUp };
+}) satisfies PageServerLoad;
 
-// The contact card's form (#135): the card is in the layout, and layouts can't have actions.
-export const actions = { contact } satisfies Actions;
+export const actions = pageActions;

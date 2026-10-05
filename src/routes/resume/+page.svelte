@@ -166,7 +166,11 @@
 		<ProfileHeader {profile} {contacts} printNote={resume?.location} {printEmail} />
 
 		{#if !resume}
-			<p class="body-copy">The full resume is on its way.</p>
+			<p class="body-copy">
+				{data.degraded
+					? "The resume can't load right now. Try again in a minute."
+					: 'The full resume is on its way.'}
+			</p>
 		{:else}
 			<section>
 				<h2 class={sectionHeading}>Summary</h2>

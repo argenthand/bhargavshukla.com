@@ -1,33 +1,16 @@
 import { homePosts } from '$lib/server/posts';
+import { pageActions, pageLoad } from '$lib/server/page-load';
 import { getProfile } from '$lib/server/profile';
-import { contact } from '$lib/server/contact';
-import type { Actions, PageServerLoad } from './$types';
+import type { PageServerLoad } from './$types';
 
-// The page must render even when Strapi is unreachable (or the profile isn't saved yet): the
-// intro then falls back to the name alone and the posts section is left out.
-export const load: PageServerLoad = async ({ locals }) => {
-	let degraded = false;
-	const fallback =
-		<T>(value: T) =>
-		(err: unknown) => {
-			console.error('Home: content unavailable', err);
-			degraded = true;
-			return value;
-		};
-
+// Without Strapi the intro falls back to the name alone and the posts section is left out. An
+// unsaved profile does the same, but that's a normal page: saving it purges home.
+export const load = pageLoad(async ({ locals }, { drafts, degrade }) => {
 	const [profile, home] = await Promise.all([
-		getProfile(locals).catch(fallback(undefined)),
-		homePosts(locals, { drafts: locals.preview }).catch(
-			fallback({ heading: 'Featured', posts: [] })
-		)
+		getProfile(locals).catch(degrade(undefined)),
+		homePosts(locals, { drafts }).catch(degrade({ heading: 'Featured', posts: [] }))
 	]);
+	return { profile, home };
+}) satisfies PageServerLoad;
 
-	degraded ||= !profile;
-	// Never edge-cache the degraded page or its data (#16, #108): it would hide the posts for the
-	// whole TTL.
-	if (degraded) locals.noStore = true;
-	return { profile, home, degraded };
-};
-
-// The contact card's form (#135): the card is in the layout, and layouts can't have actions.
-export const actions = { contact } satisfies Actions;
+export const actions = pageActions;

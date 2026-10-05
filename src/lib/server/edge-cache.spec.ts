@@ -1,6 +1,7 @@
 import type { RequestEvent } from '@sveltejs/kit';
 import { describe, expect, it } from 'vitest';
 import {
+	DEGRADED_RETRY_AFTER,
 	EDGE_CACHE_CONTROL,
 	bypass,
 	edgeCache,
@@ -152,13 +153,13 @@ describe('edgeCache', () => {
 		method: string,
 		path: string,
 		page: () => Response,
-		{ tags = ['type:post'], cookies = {}, noStore = false } = {}
+		{ tags = ['type:post'], cookies = {}, degraded = false } = {}
 	) =>
 		edgeCache({
 			event: {
 				...event(method, path, cookies),
 				isDataRequest: path.includes('/__data.json'),
-				locals: { cacheTags: new Set(tags), noStore }
+				locals: { cacheTags: new Set(tags), degraded }
 			} as unknown as RequestEvent,
 			resolve: async () => page()
 		});
@@ -195,13 +196,42 @@ describe('edgeCache', () => {
 		expect(res.headers.has('etag')).toBe(false);
 	});
 
-	it('never stores errors, untagged pages or a load that opted out', async () => {
+	it('never stores errors or untagged pages', async () => {
 		const notFound = await run('GET', '/blog/x', () => new Response('nope', { status: 404 }));
 		expect(notFound.headers.get('cloudflare-cdn-cache-control')).toBe('no-store');
 		const untagged = await run('GET', '/', () => new Response('static'), { tags: [] });
 		expect(untagged.headers.get('cloudflare-cdn-cache-control')).toBe('no-store');
-		const optedOut = await run('GET', '/', () => new Response('home'), { noStore: true });
-		expect(optedOut.headers.get('cloudflare-cdn-cache-control')).toBe('no-store');
+	});
+
+	it('answers a degraded page with a 503 to come back in a minute, never stored (#142)', async () => {
+		const res = await run('GET', '/', () => new Response('<h1>home</h1>'), { degraded: true });
+		expect(res.status).toBe(503);
+		expect(res.headers.get('retry-after')).toBe(String(DEGRADED_RETRY_AFTER));
+		expect(res.headers.get('cloudflare-cdn-cache-control')).toBe('no-store');
+		expect(res.headers.get('cache-tag')).toBeNull();
+		expect(await res.text()).toBe('<h1>home</h1>');
+	});
+
+	it('leaves an error or redirect from a degraded load its own status (#142)', async () => {
+		const res = await run('GET', '/blog/x', () => new Response('nope', { status: 404 }), {
+			degraded: true
+		});
+		expect(res.status).toBe(404);
+		expect(res.headers.has('retry-after')).toBe(false);
+	});
+
+	it('keeps degraded page data a 200, for client-side navigation, never stored (#142)', async () => {
+		const data = '{"type":"data","nodes":[{"type":"data","data":[]}]}';
+		const res = await run(
+			'GET',
+			'/__data.json?x-sveltekit-invalidated=01',
+			() => new Response(data, { headers: { 'content-type': 'application/json' } }),
+			{ degraded: true }
+		);
+		expect(res.status).toBe(200);
+		expect(res.headers.has('retry-after')).toBe(false);
+		expect(res.headers.get('cloudflare-cdn-cache-control')).toBe('no-store');
+		expect(res.headers.has('etag')).toBe(false);
 	});
 
 	it('never stores a preview', async () => {

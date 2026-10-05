@@ -17,6 +17,9 @@ export const EDGE_MAX_AGE = 86_400;
 /** Seconds after that a stale copy is still served while one request refreshes it. */
 export const EDGE_STALE = 604_800;
 
+/** Seconds a degraded page (#142) asks crawlers and browsers to wait before trying again. */
+export const DEGRADED_RETRY_AFTER = 60;
+
 /** Cookie set by draft preview (#57); previews must never be cached or served cached. */
 export const PREVIEW_COOKIE = '__preview';
 
@@ -107,7 +110,18 @@ export const edgeCache: Handle = async ({ event, resolve }) => {
 	if (shouldBypass(event)) return bypass(response);
 
 	const tags = event.locals.cacheTags;
-	if (event.locals.noStore) return withCacheHeaders(response, tags, false);
+	if (event.locals.degraded) {
+		const out = withCacheHeaders(response, tags, false);
+		// A degraded page (#142) still shows, but as a 503 so search engines keep the full one.
+		// Page data stays a 200: SvelteKit's client treats any other status as a failed navigation.
+		if (event.isDataRequest || response.status !== 200) return out;
+		out.headers.set('retry-after', String(DEGRADED_RETRY_AFTER));
+		return new Response(out.body, {
+			status: 503,
+			statusText: 'Service Unavailable',
+			headers: out.headers
+		});
+	}
 	if (event.isDataRequest) {
 		const body = await response.text();
 		const data = new Response(body, response);

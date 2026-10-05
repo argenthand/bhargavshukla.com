@@ -1,11 +1,11 @@
 import { listPosts } from '$lib/server/posts';
+import { pageActions, pageLoad } from '$lib/server/page-load';
 import type { Category } from '$lib/types/content';
-import { contact } from '$lib/server/contact';
-import type { Actions, PageServerLoad } from './$types';
+import type { PageServerLoad } from './$types';
 
 // Every published post; search and the category filter run in the browser (docs/design.md → Routes).
-export const load: PageServerLoad = async ({ locals }) => {
-	const posts = await listPosts(locals, {}, { drafts: locals.preview });
+export const load = pageLoad(async ({ locals }, { drafts, degrade }) => {
+	const posts = await listPosts(locals, {}, { drafts }).catch(degrade([]));
 
 	// Only categories that have posts get a filter.
 	const categories = new Map<string, Category>();
@@ -22,7 +22,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 		})),
 		categories: [...categories.values()].sort((a, b) => a.name.localeCompare(b.name))
 	};
-};
+}) satisfies PageServerLoad;
 
-// The contact card's form (#135): the card is in the layout, and layouts can't have actions.
-export const actions = { contact } satisfies Actions;
+export const actions = pageActions;

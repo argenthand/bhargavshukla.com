@@ -1,16 +1,16 @@
+import { pageActions, pageLoad } from '$lib/server/page-load';
 import { getProfile } from '$lib/server/profile';
 import { getResume } from '$lib/server/resume';
-import { contact } from '$lib/server/contact';
-import type { Actions, PageServerLoad } from './$types';
+import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals }) => {
+// Not published yet: the page shows the profile header and an empty state (#91), not a 404.
+// Without Strapi it shows whichever of the two loaded.
+export const load = pageLoad(async ({ locals }, { drafts, degrade }) => {
 	const [resume, profile] = await Promise.all([
-		getResume(locals, { drafts: locals.preview }),
-		getProfile(locals)
+		getResume(locals, { drafts }).catch(degrade(undefined)),
+		getProfile(locals).catch(degrade(undefined))
 	]);
-	// Not published yet: the page shows the profile header and an empty state (#91), not a 404.
 	return { resume: resume ?? null, profile };
-};
+}) satisfies PageServerLoad;
 
-// The contact card's form (#135): the card is in the layout, and layouts can't have actions.
-export const actions = { contact } satisfies Actions;
+export const actions = pageActions;

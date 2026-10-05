@@ -1,13 +1,13 @@
 import { error } from '@sveltejs/kit';
 import { getAside } from '$lib/server/asides';
-import { contact } from '$lib/server/contact';
-import type { Actions, PageServerLoad } from './$types';
+import { pageActions, pageLoad } from '$lib/server/page-load';
+import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals, params }) => {
-	const found = await getAside(locals, params.slug, { drafts: locals.preview });
+// The aside is required: without Strapi this is the error page.
+export const load = pageLoad(async ({ locals, params }, { drafts }) => {
+	const found = await getAside(locals, params.slug, { drafts });
 	if (!found) error(404, 'Not found');
 	return found;
-};
+}) satisfies PageServerLoad;
 
-// The contact card's form (#135): the card is in the layout, and layouts can't have actions.
-export const actions = { contact } satisfies Actions;
+export const actions = pageActions;

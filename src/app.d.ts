@@ -10,9 +10,10 @@ declare global {
 			cacheTags: Set<string>;
 			/** A valid draft-preview cookie came with the request (#57): loads may read drafts. */
 			preview: boolean;
-			/** Set by a load whose result must not be edge-cached (#108), e.g. home without Strapi.
+			/** Set by a load that showed the page without some of its content (#142, `degrade` in
+			 *  src/lib/server/page-load.ts): never edge-cached, and a page request answers 503.
 			 *  `setHeaders` can't do it: SvelteKit leaves it off `__data.json` responses. */
-			noStore?: boolean;
+			degraded?: boolean;
 		}
 		// interface PageData {}
 		// interface PageState {}

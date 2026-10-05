@@ -2,8 +2,9 @@
 
 import { shownDate } from '$lib/format';
 import type { Post, PostSummary } from '$lib/types/content';
+import { resolveImage } from './image';
 import { mergeDrafts } from './preview';
-import { strapi } from './strapi';
+import { mediaUrl, strapi } from './strapi';
 
 /** `drafts`: in preview (#57), also show unpublished posts and unpublished edits. */
 type Options = { drafts?: boolean };
@@ -94,4 +95,28 @@ export function pickNextUp(post: Post, all: PostSummary[], max = 2): PostSummary
 	const picks = [...sameCategory];
 	for (const p of others) if (!picks.includes(p)) picks.push(p);
 	return picks.slice(0, max);
+}
+
+/**
+ * A post as its page needs it (#142): only the fields it shows, the cover ready to render, and the
+ * SEO fields with their fallbacks (the title and summary when the author left them empty).
+ */
+export function postPage(post: Post) {
+	return {
+		slug: post.slug,
+		title: post.title,
+		summary: post.summary,
+		category: post.category,
+		displayDate: post.displayDate,
+		publishedAt: post.publishedAt,
+		updatedAt: post.updatedAt,
+		draft: post.draft,
+		cover: resolveImage(post.cover),
+		seo: {
+			title: post.seo?.metaTitle || post.title,
+			description: post.seo?.metaDescription || post.summary,
+			canonical: post.seo?.canonicalUrl || null,
+			ogImage: post.seo?.ogImage && { ...post.seo.ogImage, url: mediaUrl(post.seo.ogImage.url) }
+		}
+	};
 }

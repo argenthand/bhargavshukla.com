@@ -76,6 +76,10 @@ _Avoid_: invalidate, bust
 Fetching pages again after a purge, so the edge cache holds the new versions.
 _Avoid_: warm, prefetch
 
+**Degraded page**:
+A page shown without some of its content because the CMS couldn't be reached. It's never kept in the edge cache.
+_Avoid_: fallback page, outage page
+
 **Content map**:
 What the site knows about which pages show which content types.
 _Avoid_: route map, dependency graph

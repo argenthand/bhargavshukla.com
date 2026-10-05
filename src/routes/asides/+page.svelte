@@ -135,7 +135,11 @@
 
 	{#if shown.length === 0}
 		<div class="flex flex-col gap-2" role="status">
-			<p class="body-copy">Nothing here yet.</p>
+			<p class="body-copy">
+				{data.degraded
+					? "Asides can't load right now. Try again in a minute."
+					: 'Nothing here yet.'}
+			</p>
 			{#if data.asides.length > 0}
 				<a href={resolve('/asides')} class="link-cta self-start"> See all asides </a>
 			{/if}
