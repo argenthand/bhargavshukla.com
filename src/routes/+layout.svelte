@@ -212,10 +212,14 @@
 				onclick={() => void loadController()}
 				{@attach taps(3, openController, { windowMs: 1000 })}>© {year} {site.name}</span
 			>
-			<!-- A server route, not a page: reload so the browser (or a feed reader) opens the XML. -->
-			<a href={resolve('/rss.xml')} data-sveltekit-reload class="tap-target gap-1.5 link-quiet">
-				<Icon name="rss" />RSS
-			</a>
+			<div class="flex items-center gap-5">
+				<!-- The privacy note (#154, PRIV-* on the canvas). -->
+				<a href={resolve('/privacy')} class="tap-target link-quiet">Privacy</a>
+				<!-- A server route, not a page: reload so the browser (or a feed reader) opens the XML. -->
+				<a href={resolve('/rss.xml')} data-sveltekit-reload class="tap-target gap-1.5 link-quiet">
+					<Icon name="rss" />RSS
+				</a>
+			</div>
 		</div>
 	</footer>
 </div>

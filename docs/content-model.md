@@ -28,6 +28,15 @@ The home intro and contact links (#42). Home and resume share one header built f
 
 Until the profile is saved, or when Strapi can't be reached, the home page shows the name from `src/lib/site.ts` and no bio or links.
 
+### Privacy — `privacy` (Draft & Publish off)
+
+The privacy note at `/privacy` (#154), linked from the footer: what analytics collects and how ([analytics.md](analytics.md#privacy)). The page adds only the title "Privacy". Edits go live as soon as they're saved. Until it's saved, `/privacy` is a 404.
+
+| Field  | Type      | Notes                                                                            |
+| ------ | --------- | -------------------------------------------------------------------------------- |
+| `lead` | string    | required; the italic line under the title, and the page's meta description       |
+| `body` | rich text | required; Markdown, one `##` heading per section (What's counted, Who keeps it…) |
+
 ### Resume — `resume` (Draft & Publish on)
 
 The `/resume` page (#5). The header (name, tagline, email, LinkedIn, GitHub) comes from the Profile. Work on it as a draft; the page shows only the published version. Until the first publish it shows the Profile header and "The full resume is on its way." (#91).
@@ -138,5 +147,5 @@ An image is either **your own upload** (`file`, served from R2, no credit) or **
 ## Working rules
 
 - The Content-Type Builder only works in `develop` mode. Schema changes are made locally in `cms/`, committed as `src/api/**/content-types/**/schema.json` and `src/components/**`, and shipped as a new image. Content is edited in the production admin.
-- The **Public** role gets no permissions. SvelteKit reads with a **read-only API token** (custom token: `find` and `findOne` on Post, Category, Aside and Tag, and `find` on Profile and Resume).
+- The **Public** role gets no permissions. SvelteKit reads with a **read-only API token** (custom token: `find` and `findOne` on Post, Category, Aside and Tag, and `find` on Profile, Resume and Privacy).
 - Strapi 5 REST responses are flattened (no `attributes` wrapper) and entries have a `documentId`. Only published entries are returned unless `status=draft` is asked for.

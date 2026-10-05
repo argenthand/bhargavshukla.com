@@ -23,7 +23,8 @@ export const CONTENT_TYPES = {
 	category: { api: 'categories', drafts: false },
 	tag: { api: 'tags', drafts: false },
 	profile: { api: 'profile', drafts: false, single: true },
-	resume: { api: 'resume', drafts: true, single: true }
+	resume: { api: 'resume', drafts: true, single: true },
+	privacy: { api: 'privacy', drafts: false, single: true }
 } as const;
 
 export type ContentType = keyof typeof CONTENT_TYPES;
@@ -62,6 +63,7 @@ export const PAGES: Record<string, PageInfo> = {
 	'/asides': { shows: ['aside', 'tag'], kind: 'page', key: true, section: '/asides' },
 	'/asides/[slug]': { shows: ['aside', 'tag'], kind: 'page', section: '/asides' },
 	'/resume': { shows: ['resume', 'profile'], kind: 'page', key: true, section: '/resume' },
+	'/privacy': { shows: ['privacy'], kind: 'page' },
 	'/rss.xml': { shows: ['post', 'category'], kind: 'feed', key: true },
 	'/sitemap.xml': { shows: ['post', 'category', 'aside', 'resume'], kind: 'feed', key: true },
 	'/og/default.png': { shows: ['profile'], kind: 'image' },

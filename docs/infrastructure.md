@@ -415,7 +415,7 @@ To rotate the secret, change it on the Worker and in `/opt/cms/.env` together, t
 
 Test content and code on your machine before either goes live: `pnpm dev:cms` runs the local site against `cms.bhargavshukla.com` and can show drafts. Only `/admin*` sits behind Access; the REST API takes an API token.
 
-1. **Token (once):** in the production admin, Settings → API Tokens → Create. Name `local-dev-read`, type **Custom**, duration **30 days**. Permissions: `find` and `findOne` on Post, Category, Aside and Tag, and `find` on Profile and Resume (the same as frontend-read; it also reads drafts). Never reuse the Worker's `STRAPI_TOKEN`: this one can expire or be revoked on its own.
+1. **Token (once):** in the production admin, Settings → API Tokens → Create. Name `local-dev-read`, type **Custom**, duration **30 days**. Permissions: `find` and `findOne` on Post, Category, Aside and Tag, and `find` on Profile, Resume and Privacy (the same as frontend-read; it also reads drafts). Never reuse the Worker's `STRAPI_TOKEN`: this one can expire or be revoked on its own.
 2. **Env file (once):** copy [`.env.cms.example`](../.env.cms.example) to `.env.cms` (gitignored) and paste the token. Vite reads `.env` first and `.env.cms` on top of it, so only `STRAPI_URL` and `STRAPI_TOKEN` change.
 3. **Run:** `pnpm dev:cms`. Published content shows as on the live site; images come from R2.
 4. **Drafts:** `pnpm preview-link /resume` (any site path; add a port if it isn't 5173) prints a link that works for 5 minutes. Open it: the Preview mode banner shows, and every page shows drafts for 2 hours. **Exit** goes back to published content.
@@ -447,7 +447,9 @@ Before merging #154, in PostHog:
 2. Project settings → Web analytics: **Cookieless server hash mode** on.
 3. Project settings → IP data capture: **Discard client IP data** on.
 4. Organisation settings: sign the **DPA**.
-5. **Merge.** Events start with the deploy. **Check:** open a page on bhargavshukla.com (without `noCount`), then PostHog → Activity shows a `$pageview` within a minute.
+5. **Merge.** The CMS deploys the Privacy single type; events start with the Worker's deploy.
+6. In the production admin: Settings → API Tokens → **frontend-read** → add `find` on **Privacy**; then Content Manager → **Privacy**: write the note and save (until then `/privacy`, linked from the footer, is a 404). The first draft is in `cms/scripts/seed.js` (`PRIVACY`).
+7. **Check:** open a page on bhargavshukla.com (without `noCount`), then PostHog → Activity shows a `$pageview` within a minute.
 
 ### Contact form (#135)
 
