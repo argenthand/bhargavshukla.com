@@ -30,6 +30,9 @@
 		// The sender for contact-form mail: an address on the domain verified with Resend.
 		"CONTACT_FROM": "bhargavshukla.com <form@contact.bhargavshukla.com>",
 		// Turnstile's site key is public (it's in the page). Under `vite dev` the card uses the test key.
-		"PUBLIC_TURNSTILE_SITE_KEY": "0x4AAAAAAFNyN0gwdaoOkbfh"
+		"PUBLIC_TURNSTILE_SITE_KEY": "0x4AAAAAAFNyN0gwdaoOkbfh",
+		// PostHog EU Cloud's project token (#154, docs/analytics.md): public by design, it can only send
+		// events. Empty: nothing is forwarded.
+		"POSTHOG_TOKEN": ""
 	}
 }

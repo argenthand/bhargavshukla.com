@@ -1,6 +1,6 @@
 # Analytics (#136)
 
-Exploration: count what visitors do (easter eggs, palettes, the printed resume, the contact card) and replace Cloudflare Web Analytics with numbers ad blockers can't hide. This doc compares tools, picks how events reach them, and covers privacy, cost and what changes for read counts. It ends with the decisions made. No code yet: a build ticket follows.
+Exploration: count what visitors do (easter eggs, palettes, the printed resume, the contact card) and replace Cloudflare Web Analytics with numbers ad blockers can't hide. This doc compares tools, picks how events reach them, and covers privacy, cost and what changes for read counts. It ends with the decisions made and what was built (#154).
 
 Prices and limits checked 2026-10-05.
 
@@ -134,6 +134,29 @@ After a few months of numbers, decide whether it's worth it, and if so who sees 
 8. **Read counts:** stay in D1; PostHog gets a `read` event.
 9. **Web Vitals:** measured with `web-vitals` and sent as `$web_vitals`.
 10. **Post-MVP:** a consent banner for return visitors, decided after a few months of data.
+
+## Built (#154)
+
+| Piece                                                                     | What it does                                                                                                                                                                                                                                                                                                                                |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`src/lib/events.ts`](../src/lib/events.ts)                               | The events a page may send and the properties each may carry (free text, a number, or one of a few words: the eggs, the palette ids). The beacon is typed from it and the Worker checks against it. `contact_sent` and `contact_blocked` are server-only.                                                                                   |
+| [`src/lib/analytics.ts`](../src/lib/analytics.ts)                         | The beacon: `startAnalytics` (the root layout, once; nothing with `noCount`), `pageview` (on load and from `afterNavigate`, sent at once), `track` (queued), `trackReading`. Sends with `navigator.sendBeacon` as JSON in plain text: on a page view, when the page is hidden, when 10 events are waiting, and when a link leaves the site. |
+| [`src/lib/server/events.ts`](../src/lib/server/events.ts)                 | `counted` (the rules under [Not counted](#not-counted)), `readBeacon` (at most 10 events and 16 KB; unknown events and properties dropped, text cut at 500 characters), `toPostHog` (the cookieless placeholder, `$ip`, `$raw_user_agent`, `$host`, `$process_person_profile: false`, the time from each event's age), `sendToPostHog`.     |
+| [`src/routes/api/events/+server.ts`](../src/routes/api/events/+server.ts) | `POST`: always 204; forwards to `https://eu.i.posthog.com/batch/` in `waitUntil`. Nothing is forwarded while `POSTHOG_TOKEN` (in `vars`) is empty.                                                                                                                                                                                          |
+| [`src/lib/server/contact.ts`](../src/lib/server/contact.ts)               | Sends `contact_sent` (sent, verified or not) and `contact_blocked` (Turnstile failed, or the honeypot was filled) after the card's checks, by the same rules. The card adds a `no-count` field on the author's devices.                                                                                                                     |
+
+Where each event fires: `easter_egg_found` in `unlock` (8-bit, first time in a visit), `disco` and the layout (`tab-lap`; `abyss` when Safari reports a scroll 40 px past the end, once per visit); `palette_chosen` in the palette picker; `resume_printed` on `beforeprint` on `/resume`; `contact_started` on the card's first input (again after Send another); `read` from `ReadCount` wherever it counts reads.
+
+Choices made while building:
+
+- **`read` sends the seconds since its last report**, each time the page is hidden and when the reader leaves, so a reader who switches tabs and comes back isn't cut short or counted twice. Total reading time on a page is the sum of `seconds`; time per view is that sum over the page's `$pageview`s.
+- **`$web_vitals` carries the URL of the page that loaded**, not the page open when it's sent: LCP belongs to the first page of a visit, even after client-side navigations.
+- **Timestamps come from the Worker's clock**: each event carries its age in milliseconds, so a wrong clock on the device doesn't move it.
+- **Cost on the page:** about 1.3 KB gz more on every page, plus `web-vitals` (3.0 KB gz), loaded once the page is idle.
+
+**Not counting your own visits:** the same `noCount` as read counts ([view-counts.md](view-counts.md#built-87)).
+
+**Sessions:** still to check against the PostHog project (the ticket's "Check first"): whether its web analytics dashboard groups these cookieless page views into sessions without `$session_id`. If not, the beacon gets a session ID kept in memory per tab.
 
 ## Sources
 

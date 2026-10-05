@@ -3,6 +3,7 @@
 // Night's colours and pixel fonts over the palette, for this visit only. Screen only: the resume
 // prints in the palette underneath.
 
+import { track } from '$lib/analytics';
 import { reducedMotion } from '$lib/motion';
 import { play, type Sound } from '$lib/eight-bit-sound';
 import { look } from '$lib/look.svelte';
@@ -39,6 +40,7 @@ export function blip(name: Sound) {
 export async function unlock() {
 	const already = look.eightBit;
 	look.setEightBit(true);
+	if (!already) track('easter_egg_found', { egg: '8-bit' });
 	blip('unlock');
 	showToast(already ? '↑↑↓↓←→←→BA. Still 8-bit.' : '↑↑↓↓←→←→BA. 8-bit mode unlocked.');
 	if (reducedMotion()) return;

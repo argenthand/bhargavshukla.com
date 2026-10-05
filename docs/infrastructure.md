@@ -69,6 +69,15 @@ To be replaced by PostHog through our own beacon, after four weeks side by side:
 - **Privacy:** no cookies and no localStorage (checked on a fresh visit), so no consent banner. EU visitors are counted (the EU exclusion was turned off in #136).
 - **Checking it:** requests without a browser `Accept: text/html` header get no beacon. Ad blockers and DNS blocklists (Pi-hole and the like) block `static.cloudflareinsights.com`, so those visits don't show up; on such a network, test with another resolver (for example Chromium's `--host-resolver-rules`).
 
+## Analytics: PostHog EU Cloud (#154)
+
+Events from our own beacon, through the Worker: [analytics.md](analytics.md).
+
+- **Where:** PostHog EU Cloud (`eu.posthog.com`), free plan, no card: events past 1 M a month are dropped, never billed. Web analytics dashboard for page views, referrers, countries, devices and Web Vitals; Product analytics for the custom events.
+- **Setup:** the project token (`phc_…`) is `POSTHOG_TOKEN` in `vars` in `wrangler.jsonc`, not a secret: it can only send events. Empty, nothing is sent. The Worker posts to `https://eu.i.posthog.com/batch/`.
+- **Privacy:** cookieless server hash mode and **Discard client IP data** on (Project settings); nothing stored in the browser, so no consent banner. PostHog keeps events for one year. DPA signed in Organisation settings.
+- **Cost:** $0 to about 300 K page views a month (≈3 events each). Each beacon is a Worker request, about 2 per page view, inside Workers Paid's included 10 M.
+
 ## Read counts: Cloudflare D1 (#87)
 
 - **What:** D1 database `bs-reads` (binding `READS`), the `views`, `seen` and `salts` tables from [`migrations/`](../migrations). Design and numbers: [view-counts.md](view-counts.md).
@@ -429,6 +438,16 @@ Before merging #87 (the Worker refuses to deploy with a binding to a database th
 2. `pnpm exec wrangler d1 migrations apply bs-reads --remote`: creates the tables.
 3. **Merge.** Counting starts with the deploy.
 4. **Check:** read a post for 10 seconds, then `pnpm exec wrangler d1 execute bs-reads --remote --command "SELECT * FROM views"` shows it with a count of 1. The page shows no number until 5.
+
+### Analytics (#154)
+
+Before merging #154, in PostHog:
+
+1. Create a project on **EU Cloud** (no card). Its project token goes in `POSTHOG_TOKEN` in `wrangler.jsonc`.
+2. Project settings → Web analytics: **Cookieless server hash mode** on.
+3. Project settings → IP data capture: **Discard client IP data** on.
+4. Organisation settings: sign the **DPA**.
+5. **Merge.** Events start with the deploy. **Check:** open a page on bhargavshukla.com (without `noCount`), then PostHog → Activity shows a `$pageview` within a minute.
 
 ### Contact form (#135)
 

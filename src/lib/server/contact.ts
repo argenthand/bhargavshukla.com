@@ -17,6 +17,8 @@ import {
 	type ContactResult,
 	type ContactValues
 } from '$lib/contact';
+import { NO_COUNT_FIELD, type ServerEvent } from '$lib/events';
+import { contactEvent, counted, sendToPostHog, toPostHog, visitorOf } from './events';
 import type { ReadsDb } from './reads';
 import { getContactEmail } from './profile';
 
@@ -178,14 +180,25 @@ export async function sendWithResend(
 }
 
 export const contact: Action = async (event) => {
-	const { platform, locals, fetch } = event;
+	const { platform, locals, fetch, request, url } = event;
 	const ip = event.getClientAddress();
 	const db = platform?.env.READS;
 	const limiter = platform?.env.CONTACT_RATE;
 	const day = new Date().toISOString().slice(0, 10);
 	const secret = env.TURNSTILE_SECRET || (dev ? TEST_SECRET : '');
+	const data = await request.formData();
 
-	return handleContact(await event.request.formData(), {
+	// Sent and blocked are decided here, so the Worker tells PostHog itself (#154), by the beacon's rules.
+	const token = env.POSTHOG_TOKEN;
+	const counts =
+		token && !data.get(NO_COUNT_FIELD) && counted(request, { preview: locals.preview });
+	const tell = (name: ServerEvent) => {
+		const properties = { $current_url: url.origin + url.pathname, $pathname: url.pathname };
+		const batch = toPostHog(token!, [{ event: name, properties }], visitorOf(request, ip));
+		platform?.ctx.waitUntil(sendToPostHog(batch, globalThis.fetch));
+	};
+
+	return handleContact(data, {
 		allow: async () => (limiter ? (await limiter.limit({ key: ip })).success : true),
 		verify: (token) =>
 			secret ? verifyTurnstile(token, secret, ip, fetch) : Promise.resolve(false),
@@ -210,6 +223,10 @@ export const contact: Action = async (event) => {
 				throw new Error('Contact: RESEND_API_KEY, CONTACT_FROM or the profile email is missing');
 			await sendWithResend(mail, { apiKey: env.RESEND_API_KEY, from: env.CONTACT_FROM, to }, fetch);
 		},
-		log: (outcome) => console.log(JSON.stringify({ contact: outcome }))
+		log: (outcome) => {
+			console.log(JSON.stringify({ contact: outcome }));
+			const name = contactEvent(outcome);
+			if (name && counts) tell(name);
+		}
 	});
 };

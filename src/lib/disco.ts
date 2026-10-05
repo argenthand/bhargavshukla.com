@@ -3,6 +3,7 @@
 // line at the bottom. Nothing is saved; a tap anywhere stops it early. PalettePicker.svelte loads
 // this on the fifth quick tap on the dot, so it costs nothing otherwise.
 
+import { track } from '$lib/analytics';
 import { reducedMotion } from '$lib/motion';
 import { look, PALETTES } from '$lib/look.svelte';
 import { showToast } from '$lib/toast.svelte';
@@ -19,6 +20,7 @@ const STEP_MS = 400;
 const CONFETTI_MS = 300;
 
 export async function disco() {
+	track('easter_egg_found', { egg: 'disco' });
 	const start = look.palette;
 	let stopped = false;
 	const stop = () => (stopped = true);

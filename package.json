@@ -73,6 +73,7 @@
 		"@fontsource/newsreader": "^5.3.0",
 		"@resvg/resvg-wasm": "^2.6.2",
 		"canvas-confetti": "^1.9.4",
-		"satori": "^0.32.0"
+		"satori": "^0.32.0",
+		"web-vitals": "^6.2.2"
 	}
 }

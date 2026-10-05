@@ -23,6 +23,9 @@
 		type ContactResult,
 		type ContactValues
 	} from '$lib/contact';
+	import { track } from '$lib/analytics';
+	import { NO_COUNT_FIELD } from '$lib/events';
+	import { optedOut } from '$lib/reads';
 	import { loadTurnstile, TEST_SITE_KEY, type Turnstile } from '$lib/turnstile';
 	import Icon from './Icon.svelte';
 
@@ -56,6 +59,14 @@
 	/** Leaving a field checks it, unless it was left empty: that waits for Send. */
 	function onBlur(field: ContactField) {
 		if (trimmed[field] || errors[field]) errors[field] = checkField(field, trimmed[field]);
+	}
+
+	// Analytics (#154): the first keystroke of each message.
+	let started = false;
+	function onFirstInput() {
+		if (started) return;
+		started = true;
+		track('contact_started');
 	}
 
 	/** Once a field has an error, every keystroke re-checks it, so the error clears when it's fixed. */
@@ -112,6 +123,7 @@
 	function sendAnother(event: MouseEvent) {
 		event.preventDefault();
 		sentTo = '';
+		started = false;
 		values = { ...EMPTY };
 		errors = {};
 		failure = '';
@@ -164,6 +176,7 @@
 			action={CONTACT_ACTION}
 			novalidate={hydrated}
 			onfocusin={startSpamCheck}
+			oninput={onFirstInput}
 			class="flex flex-col gap-5"
 			use:enhance={async ({ formData, cancel }) => {
 				if (sending) return cancel();
@@ -176,6 +189,8 @@
 				failure = '';
 				const fresh = await tokenFor(4000);
 				if (fresh) formData.set('cf-turnstile-response', fresh);
+				// The author's devices: the server doesn't send this message's outcome to analytics.
+				if (optedOut()) formData.set(NO_COUNT_FIELD, '1');
 				return async ({ result }) => {
 					sending = false;
 					// A token works once.
