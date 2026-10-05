@@ -46,20 +46,21 @@
 	// In print: no photo (no photos on North American resumes, and ATS parsers skip images).
 	import type { getProfile } from '$lib/server/profile';
 	import { taps } from '$lib/gestures';
+	import { watchIntro } from '$lib/intro.svelte';
 	import { site } from '$lib/site';
 	import Icon from './Icon.svelte';
 
 	type Props = {
 		profile: Awaited<ReturnType<typeof getProfile>>;
 		contacts: Contact[];
-		/** The home intro's heading id: the layout fades the header name in once it scrolls away (#59). */
-		headingId?: string;
+		/** The home intro (#59, #144): the header leaves the name out while this heading is on screen. */
+		intro?: boolean;
 		/** Printed after the contacts, e.g. the resume's location. */
 		printNote?: string | null;
 		/** Printed first, in place of "Send a message": the resume's email (#135), fetched after load. */
 		printEmail?: string | null;
 	};
-	let { profile, contacts, headingId, printNote, printEmail }: Props = $props();
+	let { profile, contacts, intro = false, printNote, printEmail }: Props = $props();
 
 	// The headshot's easter egg (#63): five quick clicks swap in the profile's alternate photo (and
 	// back); without one, the photo winks instead (not with reduced motion).
@@ -96,7 +97,7 @@
 			/>
 		{/if}
 		<div class="min-w-0">
-			<h1 id={headingId} class="page-title print:text-2xl">
+			<h1 {@attach intro && watchIntro} class="page-title print:text-2xl">
 				{profile?.name ?? site.name}
 			</h1>
 			{#if profile?.tagline}

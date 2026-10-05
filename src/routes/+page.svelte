@@ -20,7 +20,7 @@
 <div class="page max-w-3xl">
 	<section aria-label="About" class="flex flex-col gap-7 pb-14">
 		<!-- The layout hides the header's name while this heading is on screen (#59). -->
-		<ProfileHeader {profile} {contacts} headingId="intro-name" />
+		<ProfileHeader {profile} {contacts} intro />
 		<div class="flex flex-col gap-4 body-copy">
 			{#if profile}
 				<div class="flex flex-col gap-4 [&_a]:text-accent [&_a]:underline [&_a]:underline-offset-4">
