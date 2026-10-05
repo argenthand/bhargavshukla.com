@@ -1,16 +1,14 @@
 <script lang="ts">
-	// Keyboard shortcuts and the Konami code (#63, F-shortcuts-*): `?` opens this panel, `g` then a
-	// letter goes to a live section, `/` searches on Writing, and ↑↑↓↓←→←→BA starts 8-bit mode
-	// (#111). Nothing fires while typing in a field or with Ctrl/⌘/Alt held, so browser and screen
-	// reader shortcuts keep working. It also shows the easter eggs' toast.
+	// Keyboard shortcuts (#63, F-shortcuts-*): `?` opens this panel, `g` then a letter goes to a live
+	// section, and `/` searches on Writing. Nothing fires while typing in a field or with Ctrl/⌘/Alt
+	// held, so browser and screen reader shortcuts keep working. The Konami code is a gesture, not a
+	// shortcut: src/lib/gestures.ts, listened for by the layout (#143).
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Icon from '$lib/components/Icon.svelte';
-	import { isTyping, konamiMatcher } from '$lib/easter-eggs';
-	import { unlock } from '$lib/eight-bit.svelte';
+	import { leaveKeyAlone } from '$lib/gestures';
 	import { nav } from '$lib/site';
-	import { toast } from '$lib/toast.svelte';
 
 	/** How long `g` waits for its second key. */
 	const SEQUENCE_MS = 1500;
@@ -24,12 +22,9 @@
 	let dialog = $state<HTMLDialogElement>();
 	let waitingForG = false;
 	let gTimer: ReturnType<typeof setTimeout>;
-	const konami = konamiMatcher();
 
 	function onkeydown(event: KeyboardEvent) {
-		if (event.defaultPrevented || event.isComposing || isTyping(event.target)) return;
-		if (event.ctrlKey || event.metaKey || event.altKey) return;
-		if (konami(event.key)) return void unlock();
+		if (leaveKeyAlone(event)) return;
 
 		if (waitingForG) {
 			waitingForG = false;
@@ -118,13 +113,3 @@
 		<p class="meta">Shortcuts are off while you type in a field.</p>
 	</div>
 </dialog>
-
-<!-- The easter eggs' message (toast.svelte.ts); also what screen readers hear. -->
-<p
-	role="status"
-	class={toast.message
-		? 'pointer-events-none fixed inset-x-0 bottom-20 z-50 mx-auto w-fit animate-confirm bg-ink px-4 py-2 text-page motion-reduce:animate-none md:bottom-8 print:hidden eight-bit:font-pixel eight-bit:text-xs eight-bit:leading-relaxed'
-		: 'sr-only'}
->
-	{toast.message}
-</p>

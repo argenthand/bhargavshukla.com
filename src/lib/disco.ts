@@ -3,10 +3,15 @@
 // line at the bottom. Nothing is saved; a tap anywhere stops it early. PalettePicker.svelte loads
 // this on the fifth quick tap on the dot, so it costs nothing otherwise.
 
-import { discoOrder } from '$lib/easter-eggs';
 import { reducedMotion } from '$lib/motion';
 import { look, PALETTES } from '$lib/look.svelte';
 import { showToast } from '$lib/toast.svelte';
+
+/** Every other palette in picker order, ending back on the current one. */
+export function discoOrder<T>(palettes: readonly T[], current: T): T[] {
+	const i = Math.max(palettes.indexOf(current), 0);
+	return [...palettes.slice(i + 1), ...palettes.slice(0, i), palettes[i]];
+}
 
 /** How long each palette shows. */
 const STEP_MS = 400;
