@@ -2,8 +2,8 @@
  * 8-bit mode (#111, NES-A-* on the canvas): the Konami code's exclusive palette, Night. `data-eight-bit`
  * on <html> (src/lib/eight-bit.svelte.ts; set before the first paint by app.html) swaps the roles for
  * NES colours, one dark look whatever the theme, and the type for pixel fonts: Press Start 2P for
- * headings and controls, Pixelify Sans to read. Screen only, so the resume prints in the palette
- * underneath. Its fonts download only while it's on.
+ * headings and controls, Pixelify Sans to read. Screen only, `eight-bit:` utilities included, so the
+ * resume prints in the palette underneath. Its fonts download only while it's on.
  */
 :root {
 	--night-black: #000000;
@@ -19,7 +19,15 @@
 	--eight-bit-press: calc(var(--spacing) * 1); /* how far a block moves when pressed */
 	--eight-bit-shadow: var(--eight-bit-press) var(--eight-bit-press) 0 var(--night-white); /* hard, pixel-style */
 }
-@custom-variant eight-bit (&:where([data-eight-bit], [data-eight-bit] *));
+/* Screen only like the rest (#147): `eight-bit:block` would otherwise beat `print:hidden`, as custom
+   variants sort after Tailwind's own. */
+@custom-variant eight-bit {
+	@media screen {
+		&:where([data-eight-bit], [data-eight-bit] *) {
+			@slot;
+		}
+	}
+}
 @media screen {
 	:root[data-eight-bit] {
 		color-scheme: dark;
