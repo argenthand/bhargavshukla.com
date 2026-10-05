@@ -35,7 +35,12 @@ export default defineConfig({
 					browser: {
 						enabled: true,
 						provider: playwright(),
-						instances: [{ browser: 'chromium', headless: true }]
+						instances: [{ browser: 'chromium', headless: true }],
+						commands: {
+							// Print checks (#147): render the page as for paper, or back to the screen with null.
+							emulateMedia: (ctx, media: 'print' | 'screen' | null) =>
+								ctx.page.emulateMedia({ media })
+						}
 					},
 					include: ['src/**/*.svelte.{test,spec}.{js,ts}'],
 					exclude: ['src/lib/server/**']
