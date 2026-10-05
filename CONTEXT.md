@@ -91,3 +91,13 @@ _Avoid_: fallback page, outage page
 **Content map**:
 What the site knows about which pages show which content types.
 _Avoid_: route map, dependency graph
+
+## Analytics
+
+**Visitor**:
+Someone on the site on a given day. The same person tomorrow is a new visitor: nobody is recognised across days.
+_Avoid_: user, reader
+
+**Event**:
+Something a visitor does that's counted: viewing a page, finding an easter egg, choosing a palette, printing the resume, sending the contact card.
+_Avoid_: action, interaction
