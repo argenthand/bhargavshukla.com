@@ -127,7 +127,7 @@ After a few months of numbers, decide whether it's worth it, and if so who sees 
 1. **Tool:** PostHog EU Cloud, free plan, no card.
 2. **Sending:** our own beacon to `/api/events`, forwarded by the Worker. No posthog-js, autocapture or replay.
 3. **Visitors:** PostHog's cookieless server hash mode, with client IP data discarded. No cookies, no banner.
-4. **EU:** visitors included in full. Web Analytics' EU exclusion is turned off now.
+4. **EU:** visitors included in full. Web Analytics' EU exclusion is turned off now. _Changed while building (#154), below: no visitors from the EEA, the UK or Switzerland until there's a DPA._
 5. **Events:** as listed above; the must-haves are easter eggs, palettes, the printed resume and the contact card.
 6. **Not counted:** the read counts' rules, plus bot User-Agents. One `noCount` flag for both.
 7. **Web Analytics:** alongside for four weeks after launch, then off.
@@ -154,6 +154,8 @@ Choices made while building:
 - **`$web_vitals` carries the URL of the page that loaded**, not the page open when it's sent: LCP belongs to the first page of a visit, even after client-side navigations.
 - **Timestamps come from the Worker's clock**: each event carries its age in milliseconds, so a wrong clock on the device doesn't move it.
 - **Cost on the page:** about 1.3 KB gz more on every page, plus `web-vitals` (3.0 KB gz), loaded once the page is idle.
+
+**EEA, UK and Switzerland not counted (2026-10-05).** PostHog's DPA is written for a company to sign, and this site is run by an individual; PostHog's advice was to ask a legal adviser whether it fits. Until that's settled, the Worker drops every event from a visitor in the EEA (the EU and its outermost regions, Iceland, Liechtenstein, Norway), the UK (with Gibraltar and the Crown Dependencies) or Switzerland, by `request.cf.country` (`EXCLUDED_COUNTRIES` in `src/lib/server/events.ts`), and from unknown countries and Tor. Nothing about their visits reaches PostHog. Their pages still send the beacon: pages come from the shared edge cache, so the page can't know where its visitor is, and the Worker decides. Cloudflare Web Analytics' EU exclusion is back on. Read counts are unchanged: they stay in D1 and never leave Cloudflare. VPN users count under their VPN's exit country, as with every IP-based check. To count these visitors again, empty the list.
 
 **Not counting your own visits:** the same `noCount` as read counts ([view-counts.md](view-counts.md#built-87)).
 

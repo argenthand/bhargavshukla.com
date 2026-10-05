@@ -8,6 +8,11 @@ import type { RequestHandler } from './$types';
 export const POST: RequestHandler = ({ request, locals, platform, getClientAddress }) =>
 	handleBeacon(
 		request,
-		{ preview: locals.preview, ip: getClientAddress(), token: env.POSTHOG_TOKEN },
+		{
+			preview: locals.preview,
+			ip: getClientAddress(),
+			token: env.POSTHOG_TOKEN,
+			country: platform?.cf?.country
+		},
 		(batch) => platform?.ctx.waitUntil(sendToPostHog(batch, fetch))
 	);

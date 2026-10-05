@@ -195,6 +195,7 @@ export const contact: Action = async (event) => {
 		ip,
 		token: env.POSTHOG_TOKEN,
 		skip: Boolean(data.get(NO_COUNT_FIELD)),
+		country: platform?.cf?.country,
 		waitUntil: platform && ((promise: Promise<unknown>) => platform.ctx.waitUntil(promise))
 	};
 

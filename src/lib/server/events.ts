@@ -21,6 +21,31 @@ const DAY_MS = 86_400_000;
 const BOTS =
 	/bot|crawl|spider|slurp|headless|lighthouse|pagespeed|gtmetrix|curl|wget|python|httpclient|okhttp|go-http|axios|node-fetch|undici|facebookexternalhit|embedly|phantomjs|selenium|puppeteer|playwright/i;
 
+/**
+ * Visitors not counted, by Cloudflare's country code: the EEA (the EU, plus its outermost regions
+ * that have their own codes, Iceland, Liechtenstein and Norway), the UK with Gibraltar and the
+ * Crown Dependencies, and Switzerland: places with GDPR or a law like it. Until there's a data
+ * processing agreement with PostHog, their visitors send it nothing (docs/analytics.md).
+ */
+export const EXCLUDED_COUNTRIES = new Set([
+	// EU
+	...['AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT'],
+	...['LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE'],
+	// EU regions with codes of their own: Åland, French Guiana, Guadeloupe, Martinique, Réunion,
+	// Mayotte, Saint Martin
+	...['AX', 'GF', 'GP', 'MQ', 'RE', 'YT', 'MF'],
+	// The rest of the EEA, the UK and its dependencies, Switzerland
+	...['IS', 'LI', 'NO', 'GB', 'GI', 'IM', 'JE', 'GG', 'CH']
+]);
+
+/** Cloudflare's codes for "unknown" and for Tor, where the visitor could be anywhere. */
+const UNKNOWN_COUNTRIES = new Set(['XX', 'T1']);
+
+/** Whether a visitor's country is counted: not an excluded one, and known. */
+export function countryCounted(country: string | undefined): boolean {
+	return !!country && !EXCLUDED_COUNTRIES.has(country) && !UNKNOWN_COUNTRIES.has(country);
+}
+
 export function isBot(userAgent: string): boolean {
 	return !userAgent || BOTS.test(userAgent);
 }
@@ -28,12 +53,17 @@ export function isBot(userAgent: string): boolean {
 /**
  * Whether a request's events count: the read counts' rules (docs/view-counts.md). Only same-origin
  * requests on bhargavshukla.com (not `vite dev` or Workers Builds preview URLs), outside preview
- * mode, and not from a bot. The author's devices don't send at all (`noCount`).
+ * mode, not from a bot, and not from an excluded country. The author's devices don't send at all
+ * (`noCount`).
  */
-export function counted(request: Request, { preview }: { preview: boolean }): boolean {
+export function counted(
+	request: Request,
+	{ preview, country }: { preview: boolean; country: string | undefined }
+): boolean {
 	const url = new URL(request.url);
 	return (
 		!preview &&
+		countryCounted(country) &&
 		url.host === PRODUCTION_HOST &&
 		request.headers.get('origin') === url.origin &&
 		!isBot(request.headers.get('user-agent') ?? '')
@@ -154,10 +184,15 @@ export function visitorOf(request: Request, ip: string): Visitor {
  */
 export async function handleBeacon(
 	request: Request,
-	{ preview, ip, token }: { preview: boolean; ip: string; token: string | undefined },
+	{
+		preview,
+		ip,
+		token,
+		country
+	}: { preview: boolean; ip: string; token: string | undefined; country: string | undefined },
 	send: (batch: PostHogBatch) => void
 ): Promise<Response> {
-	if (token && counted(request, { preview })) {
+	if (token && counted(request, { preview, country })) {
 		const events = readBeacon(await request.text());
 		if (events.length > 0) send(toPostHog(token, events, visitorOf(request, ip)));
 	}
@@ -176,6 +211,7 @@ export function sendServerEvent(
 		ip,
 		token,
 		skip,
+		country,
 		waitUntil
 	}: {
 		request: Request;
@@ -183,10 +219,12 @@ export function sendServerEvent(
 		ip: string;
 		token: string | undefined;
 		skip: boolean;
+		/** Cloudflare's country code for the visitor (`platform.cf.country`). */
+		country: string | undefined;
 		waitUntil: ((promise: Promise<unknown>) => void) | undefined;
 	}
 ): void {
-	if (!token || skip || !counted(request, { preview })) return;
+	if (!token || skip || !counted(request, { preview, country })) return;
 	const { origin, pathname } = new URL(request.url);
 	const properties = { $current_url: origin + pathname, $pathname: pathname };
 	waitUntil?.(

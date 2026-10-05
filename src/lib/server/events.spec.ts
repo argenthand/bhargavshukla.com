@@ -52,7 +52,7 @@ describe('isBot', () => {
 
 describe('counted', () => {
 	it('counts a same-origin request on the site, outside preview, from a browser', () => {
-		expect(counted(beacon([]), { preview: false })).toBe(true);
+		expect(counted(beacon([]), { preview: false, country: 'CA' })).toBe(true);
 	});
 
 	it.each([
@@ -74,7 +74,22 @@ describe('counted', () => {
 		],
 		['a bot', beacon([], { ua: 'Googlebot/2.1' }), false]
 	])('not from %s', (_, request, preview) => {
-		expect(counted(request, { preview })).toBe(false);
+		expect(counted(request, { preview, country: 'CA' })).toBe(false);
+	});
+
+	it.each(['DE', 'FR', 'IE', 'NO', 'IS', 'LI', 'GB', 'CH', 'RE', 'JE'])(
+		'not from a visitor in %s (EEA, UK, Switzerland)',
+		(country) => {
+			expect(counted(beacon([]), { preview: false, country })).toBe(false);
+		}
+	);
+
+	it.each([undefined, 'XX', 'T1'])('not when the country is unknown (%s) or Tor', (country) => {
+		expect(counted(beacon([]), { preview: false, country })).toBe(false);
+	});
+
+	it.each(['US', 'IN', 'AU', 'BR'])('counts a visitor in %s', (country) => {
+		expect(counted(beacon([]), { preview: false, country })).toBe(true);
 	});
 });
 
@@ -214,7 +229,7 @@ describe('sendToPostHog', () => {
 });
 
 describe('handleBeacon', () => {
-	const context = { preview: false, ip: '203.0.113.9', token: 'phc_test' };
+	const context = { preview: false, ip: '203.0.113.9', token: 'phc_test', country: 'CA' };
 
 	it('answers 204 and forwards what it accepted', async () => {
 		const send = vi.fn();
@@ -231,6 +246,7 @@ describe('handleBeacon', () => {
 	it.each([
 		['not counted', beacon([pageview], { origin: 'https://evil.example' }), context],
 		['without a token', beacon([pageview]), { ...context, token: '' }],
+		['from the EU', beacon([pageview]), { ...context, country: 'DE' }],
 		['with nothing known in it', beacon([{ event: 'nope', properties: {}, age: 0 }]), context]
 	])('answers 204 and forwards nothing when %s', async (_, request, ctx) => {
 		const send = vi.fn();
@@ -257,7 +273,7 @@ describe('contactEvent', () => {
 describe('sendServerEvent', () => {
 	const fetcher = vi.fn(async () => new Response('{}'));
 	vi.stubGlobal('fetch', fetcher);
-	const base = { preview: false, ip: '203.0.113.9', token: 'phc_test', skip: false };
+	const base = { preview: false, ip: '203.0.113.9', token: 'phc_test', skip: false, country: 'CA' };
 	const form = (origin = SITE) =>
 		new Request(`${SITE}/blog/a?/contact`, {
 			method: 'POST',
@@ -285,7 +301,8 @@ describe('sendServerEvent', () => {
 	it.each([
 		['the author’s devices', { skip: true }],
 		['without a token', { token: '' }],
-		['preview mode', { preview: true }]
+		['preview mode', { preview: true }],
+		['the UK', { country: 'GB' }]
 	])('sends nothing from %s', (_, overrides) => {
 		const waitUntil = vi.fn();
 		sendServerEvent('contact_sent', { ...base, ...overrides, request: form(), waitUntil });

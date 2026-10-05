@@ -66,7 +66,7 @@ To be replaced by PostHog through our own beacon, after four weeks side by side:
 - **Where:** dashboard → Analytics & Logs → Web Analytics → `bhargavshukla.com`. Page views, page paths, referrers, countries, browsers and devices, plus Core Web Vitals (LCP, INP, CLS) per page.
 - **Setup: automatic, no code.** Cloudflare injects the beacon (`static.cloudflareinsights.com/beacon.min.js`) into HTML responses as they leave the zone, after the Worker, so it is not in the repo, never in `vite dev` or `wrangler dev`, and never stored in our edge cache (pages are stored before injection; each response gets it once). SPA tracking is on (`"spa"` in `data-cf-beacon`), so client-side navigations count. The beacon reports to `bhargavshukla.com/cdn-cgi/rum`, which Cloudflare answers before the Worker.
 - **Validators:** injecting the beacon rewrites the HTML, so Cloudflare drops the page's `ETag` for browser requests; `Last-Modified` gives them the 304 instead ([caching.md](caching.md#validators-126)).
-- **Privacy:** no cookies and no localStorage (checked on a fresh visit), so no consent banner. EU visitors are counted (the EU exclusion was turned off in #136).
+- **Privacy:** no cookies and no localStorage (checked on a fresh visit), so no consent banner. EU visitors are excluded: the EU exclusion was turned off in #136 and back on in #154, while PostHog leaves out the EEA, the UK and Switzerland ([analytics.md](analytics.md#built-154)).
 - **Checking it:** requests without a browser `Accept: text/html` header get no beacon. Ad blockers and DNS blocklists (Pi-hole and the like) block `static.cloudflareinsights.com`, so those visits don't show up; on such a network, test with another resolver (for example Chromium's `--host-resolver-rules`).
 
 ## Analytics: PostHog EU Cloud (#154)
@@ -75,7 +75,7 @@ Events from our own beacon, through the Worker: [analytics.md](analytics.md).
 
 - **Where:** PostHog EU Cloud (`eu.posthog.com`), free plan, no card: events past 1 M a month are dropped, never billed. Web analytics dashboard for page views, referrers, countries, devices and Web Vitals; Product analytics for the custom events.
 - **Setup:** the project token (`phc_…`) is `POSTHOG_TOKEN` in `vars` in `wrangler.jsonc`, not a secret: it can only send events. Empty, nothing is sent. The Worker posts to `https://eu.i.posthog.com/batch/`.
-- **Privacy:** cookieless server hash mode and **Discard client IP data** on (Project settings); nothing stored in the browser, so no consent banner. PostHog keeps events for one year. DPA signed in Organisation settings.
+- **Privacy:** cookieless server hash mode and **Discard client IP data** on (Project settings); nothing stored in the browser, so no consent banner. No events from visitors in the EEA, the UK or Switzerland while there's no DPA ([analytics.md](analytics.md#built-154)). PostHog keeps events for one year. DPA: pending legal advice (runbook step 4).
 - **Cost:** $0 to about 300 K page views a month (≈3 events each). Each beacon is a Worker request, about 2 per page view, inside Workers Paid's included 10 M.
 
 ## Read counts: Cloudflare D1 (#87)
@@ -441,15 +441,16 @@ Before merging #87 (the Worker refuses to deploy with a binding to a database th
 
 ### Analytics (#154)
 
-Before merging #154, in PostHog:
+Before merging #154:
 
 1. Create a project on **EU Cloud** (no card). Its project token goes in `POSTHOG_TOKEN` in `wrangler.jsonc`.
 2. Project settings → Web analytics: **Cookieless server hash mode** on.
 3. Project settings → IP data capture: **Discard client IP data** on.
-4. Organisation settings: sign the **DPA**.
-5. **Merge.** The CMS deploys the Privacy single type; events start with the Worker's deploy.
-6. In the production admin: Settings → API Tokens → **frontend-read** → add `find` on **Privacy**; then Content Manager → **Privacy**: write the note and save (until then `/privacy`, linked from the footer, is a 404). The first draft is in `cms/scripts/seed.js` (`PRIVACY`).
-7. **Check:** open a page on bhargavshukla.com (without `noCount`), then PostHog → Activity shows a `$pageview` within a minute.
+4. **DPA:** PostHog's is written for a company to sign; ask a legal adviser whether it works for an individual. Until it's signed, the Worker leaves out visitors in the EEA, the UK and Switzerland.
+5. Cloudflare dashboard → Web Analytics → `bhargavshukla.com`: turn the **EU exclusion** back on.
+6. **Merge.** The CMS deploys the Privacy single type; events start with the Worker's deploy.
+7. In the production admin: Settings → API Tokens → **frontend-read** → add `find` on **Privacy**; then Content Manager → **Privacy**: write the note and save (until then `/privacy`, linked from the footer, is a 404). The first draft is in `cms/scripts/seed.js` (`PRIVACY`).
+8. **Check:** from outside the EEA, the UK and Switzerland (or a VPN exit there), open a page on bhargavshukla.com (without `noCount`), then PostHog → Activity shows a `$pageview` within a minute.
 
 ### Contact form (#135)
 
