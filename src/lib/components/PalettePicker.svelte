@@ -9,7 +9,7 @@
 	// The palette disco (#111, src/lib/disco.ts): five quick taps on the dot and every palette plays
 	// in turn, then it lands back where it was. Each tap before that opens or closes the menu as usual.
 	import { tapCounter } from '$lib/easter-eggs';
-	import { nes, setNes } from '$lib/nes.svelte';
+	import { nes, setNes } from '$lib/eight-bit.svelte';
 	import { isPalette, PALETTES, setPalette, type PaletteId } from '$lib/theme';
 
 	let current = $state<PaletteId>('newsprint');
@@ -81,8 +81,8 @@
 >
 	{#if nes.on}
 		<span aria-hidden="true" class="grid size-4.5 grid-cols-2 overflow-hidden rounded-full">
-			<span class="bg-(--nes-red)"></span><span class="bg-(--nes-sky)"></span>
-			<span class="bg-(--nes-orange)"></span><span class="bg-(--nes-green)"></span>
+			<span class="bg-(--night-red)"></span><span class="bg-(--night-sky)"></span>
+			<span class="bg-(--night-orange)"></span><span class="bg-(--night-green)"></span>
 		</span>
 	{:else}
 		<span aria-hidden="true" class="size-4.5 rounded-full bg-accent"></span>

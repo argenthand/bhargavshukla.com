@@ -5,8 +5,8 @@
 	// strip echoes the last few. ↑↑↓↓←→←→ B A starts 8-bit mode.
 	import Icon from '$lib/components/Icon.svelte';
 	import { KEY_SYMBOLS, konamiMatcher } from '$lib/easter-eggs';
-	import { blip, unlock } from '$lib/nes.svelte';
-	import { keepAwake } from '$lib/nes-sound';
+	import { blip, unlock } from '$lib/eight-bit.svelte';
+	import { keepAwake } from '$lib/eight-bit-sound';
 
 	let pad = $state<HTMLElement>();
 	let pressed = $state<string[]>([]);

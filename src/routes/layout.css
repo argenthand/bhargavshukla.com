@@ -9,7 +9,7 @@
 @import '../styles/tokens.css';
 @import '../styles/utilities.css';
 @import '../styles/document.css';
-@import '../styles/nes.css';
+@import '../styles/eight-bit.css';
 @import '../styles/base.css';
 @import '../styles/motion.css';
 @plugin '@tailwindcss/forms';

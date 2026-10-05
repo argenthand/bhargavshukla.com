@@ -1,5 +1,5 @@
 /* Page-wide behaviour: scrolling, the focus ring, the pointer, the `js:` variant, Copy and code
-   blocks. After nes.css: variants sort in the order they're declared, so `js:` stays after `nes:`. */
+   blocks. After eight-bit.css: variants sort in the order they're declared, so `js:` stays after `eight-bit:`. */
 
 html {
 	scroll-padding-top: 4.5rem; /* sticky top bar + pill */

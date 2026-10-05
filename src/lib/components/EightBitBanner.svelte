@@ -1,10 +1,10 @@
 <script lang="ts">
 	// 8-bit mode's banner (#111, NES-A-* on the canvas): under the header while the mode is on, with
 	// the sound switch and the way back to the palette underneath. It's on every page and shown by CSS
-	// (`nes:`), so a page that loads in 8-bit mode has it from the first paint, without a shift.
+	// (`eight-bit:`), so a page that loads in 8-bit mode has it from the first paint, without a shift.
 	// While the mode is on, buttons and links blip when pressed.
 	import Icon from '$lib/components/Icon.svelte';
-	import { blip, nes, paletteLabel, readNes, setNes, setSound } from '$lib/nes.svelte';
+	import { blip, nes, paletteLabel, readNes, setNes, setSound } from '$lib/eight-bit.svelte';
 
 	let label = $state('Newsprint');
 
@@ -36,7 +36,7 @@
 	role="region"
 	aria-label="8-bit mode"
 	data-own-sound
-	class="hidden bg-accent text-page print:hidden nes:block"
+	class="hidden bg-accent text-page print:hidden eight-bit:block"
 >
 	<div class="mx-auto flex min-h-13 max-w-5xl items-center justify-between gap-3 px-5 md:px-8">
 		<span class="inline-flex items-center gap-2.5 font-pixel text-xs">

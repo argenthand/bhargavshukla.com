@@ -1,5 +1,5 @@
 /* The document as a whole: paper size, code colours, and the browser's colour scheme. Before
-   nes.css, which overrides the colour scheme at the same specificity. */
+   eight-bit.css, which overrides the colour scheme at the same specificity. */
 
 /* The printed resume repeats this margin as padding and sets the paper's to 0 (#129, see
    routes/resume/+page.svelte). */
