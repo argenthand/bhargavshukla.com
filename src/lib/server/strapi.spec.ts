@@ -4,10 +4,10 @@ vi.mock('$env/dynamic/private', () => ({
 	env: { STRAPI_URL: 'http://cms.test/', STRAPI_TOKEN: 'secret' }
 }));
 
-const { buildUrl, mediaUrl, strapi, tagsFor } = await import('./strapi');
+const { buildUrl, mediaUrl, strapi } = await import('./strapi');
 
 describe('buildUrl', () => {
-	it('maps the model to its REST path and trims the base slash', () => {
+	it('maps the content type to its REST path and trims the base slash', () => {
 		expect(buildUrl('http://cms.test/', 'post')).toBe('http://cms.test/api/posts');
 	});
 
@@ -23,20 +23,6 @@ describe('buildUrl', () => {
 		expect(url.searchParams.get('filters[slug][$eq]')).toBe('hello world');
 		expect(url.searchParams.get('populate[category][fields][0]')).toBe('name');
 		expect(url.searchParams.get('sort[0]')).toBe('publishedAt:desc');
-	});
-});
-
-describe('tagsFor', () => {
-	it('tags the model itself', () => {
-		expect(tagsFor('post')).toEqual(['type:post']);
-	});
-
-	it('adds populated relations that map to a model', () => {
-		expect(tagsFor('post', { populate: { category: {}, related: {}, cover: {} } })).toEqual([
-			'type:post',
-			'type:category'
-		]);
-		expect(tagsFor('post', { populate: 'category' })).toEqual(['type:post', 'type:category']);
 	});
 });
 

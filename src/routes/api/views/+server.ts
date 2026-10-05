@@ -47,8 +47,8 @@ export const POST: RequestHandler = async ({
 
 	const path = (await request.text()).slice(0, 300);
 	// Only a published post or aside: asked once per new reader, so it rarely reaches Strapi.
-	const exists = async ({ model, slug }: ReadTarget) => {
-		const { data } = await strapi(locals).find(model, {
+	const exists = async ({ type, slug }: ReadTarget) => {
+		const { data } = await strapi(locals).find(type, {
 			filters: { slug: { $eq: slug } },
 			fields: ['slug'],
 			pagination: { pageSize: 1 }

@@ -3,6 +3,8 @@
 // for the day. Salts and hashes from earlier days are deleted, so nothing links back to a visitor;
 // the IP and User-Agent are never stored.
 
+import { entryAt } from './content-map';
+
 /** Below this, pages show no count. */
 export const READS_SHOWN_FROM = 5;
 /** The most paths one GET /api/views may ask for (the home page asks for three). */
@@ -20,16 +22,8 @@ export interface ReadsDb {
 	batch(statements: Statement[]): Promise<unknown[]>;
 }
 
-/** Only post and aside pages have counts. */
-const PAGE = /^\/(blog|asides)\/([A-Za-z0-9._~-]{1,200})$/;
-const MODELS = { blog: 'post', asides: 'aside' } as const;
-
-export type ReadTarget = { model: 'post' | 'aside'; slug: string };
-
-export function readTarget(path: string): ReadTarget | undefined {
-	const match = PAGE.exec(path);
-	return match ? { model: MODELS[match[1] as keyof typeof MODELS], slug: match[2] } : undefined;
-}
+/** Only entries' pages have counts: a post or an aside (the content map, #140). */
+export type ReadTarget = NonNullable<ReturnType<typeof entryAt>>;
 
 const hex = (bytes: ArrayBuffer | Uint8Array) =>
 	[...new Uint8Array(bytes)].map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -65,7 +59,7 @@ export async function recordRead(
 	exists: (target: ReadTarget) => Promise<boolean>,
 	now = new Date()
 ): Promise<boolean> {
-	const target = readTarget(read.path);
+	const target = entryAt(read.path);
 	if (!target) return false;
 	const day = utcDay(now);
 	const hash = await visitorHash(await todaysSalt(db, day), read.ip, read.userAgent, read.path);
@@ -85,7 +79,7 @@ export async function recordRead(
 
 /** Counts for the given pages, leaving out any below `READS_SHOWN_FROM`. */
 export async function readCounts(db: ReadsDb, paths: string[]): Promise<Record<string, number>> {
-	const valid = [...new Set(paths)].filter((path) => readTarget(path)).slice(0, MAX_PATHS);
+	const valid = [...new Set(paths)].filter((path) => entryAt(path)).slice(0, MAX_PATHS);
 	if (valid.length === 0) return {};
 	const { results } = await db
 		.prepare(

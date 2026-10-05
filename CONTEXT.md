@@ -1,0 +1,55 @@
+# bhargavshukla.com
+
+A personal site: long-form writing, short asides and a resume, written in a CMS and served from the edge. This glossary is the shared language for the site's content and how it reaches visitors.
+
+## Content
+
+**Content type**:
+A kind of content the CMS holds and the site shows: post, aside, category, tag, profile, resume.
+_Avoid_: model, collection
+
+**Entry**:
+One post or aside.
+_Avoid_: item, record
+
+**Post**:
+A long-form piece of writing.
+_Avoid_: article, blog post
+
+**Aside**:
+A short piece: a code snippet, a quote, a tip.
+_Avoid_: snippet, note
+
+**Section**:
+One of the site's top-level areas, each a tab in the nav: Writing, Asides, Resume.
+_Avoid_: area, tab
+
+**Writing**:
+The section that holds posts.
+_Avoid_: blog, articles
+
+**Live**:
+A section shown to visitors: in the nav and the sitemap.
+_Avoid_: enabled, launched
+
+## Publishing
+
+**Publish**:
+A change that makes content visible on the site, or hides it: publishing, unpublishing or deleting an entry, or saving a content type that has no drafts.
+_Avoid_: deploy, release
+
+**Key page**:
+A page fetched again right after every publish, so visitors never wait for it to render.
+_Avoid_: warm page, hot page
+
+**Purge**:
+Dropping every page that shows a content type from the edge cache.
+_Avoid_: invalidate, bust
+
+**Repopulate**:
+Fetching pages again after a purge, so the edge cache holds the new versions.
+_Avoid_: warm, prefetch
+
+**Content map**:
+What the site knows about which pages show which content types.
+_Avoid_: route map, dependency graph
