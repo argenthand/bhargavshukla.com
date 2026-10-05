@@ -1,6 +1,7 @@
 import { env } from '$env/dynamic/private';
 import type { Handle } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
+import { bootScript } from '$lib/look-boot';
 import { edgeCache } from '$lib/server/edge-cache';
 import { PREVIEW_COOKIE, verifyCookie } from '$lib/server/preview';
 
@@ -23,4 +24,9 @@ const preview: Handle = async ({ event, resolve }) => {
 	return response;
 };
 
-export const handle = sequence(cacheTags, preview, edgeCache);
+// The look's first-paint script (#141), generated from src/lib/look-boot.ts so it can't drift from the look.
+const LOOK = bootScript();
+const look: Handle = ({ event, resolve }) =>
+	resolve(event, { transformPageChunk: ({ html }) => html.replace('/*%look%*/', LOOK) });
+
+export const handle = sequence(look, cacheTags, preview, edgeCache);

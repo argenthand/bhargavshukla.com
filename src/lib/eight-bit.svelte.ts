@@ -1,38 +1,24 @@
-// 8-bit mode (#111, NES-A-* on the canvas): the Konami code's reward. An exclusive NES palette
-// (Night) with pixel fonts, for this visit only: it lives in sessionStorage, so the next visit is
-// back to the saved palette, which it never touches. `data-eight-bit` on <html> turns it on; the inline
-// script in app.html sets it before the first paint (keep the two in step). Screen only: the
-// resume prints in the palette underneath.
+// 8-bit mode's behaviour (#111, NES-A-* on the canvas; CONTEXT.md): its blips and their sound
+// switch, and the Konami code's unlock. Whether it's on is part of the look (src/lib/look.svelte.ts):
+// Night's colours and pixel fonts over the palette, for this visit only. Screen only: the resume
+// prints in the palette underneath.
 
 import { reducedMotion } from '$lib/motion';
 import { play, type Sound } from '$lib/eight-bit-sound';
-import { isPalette, PALETTES } from '$lib/theme';
+import { look } from '$lib/look.svelte';
 import { showToast } from '$lib/toast.svelte';
 
-export const NES_KEY = 'nes';
-export const SOUND_KEY = 'nes-sound';
+const SOUND_KEY = 'eight-bit-sound';
 
-/** Whether 8-bit mode is on, and whether its blips play. Read from <html> once hydrated. */
-export const nes = $state({ on: false, sound: true });
+/** Whether 8-bit mode's blips play: on unless muted this visit. */
+export const sound = $state({ on: readSound() });
 
-export function readNes() {
-	nes.on = document.documentElement.hasAttribute('data-eight-bit');
+function readSound() {
 	try {
-		nes.sound = sessionStorage.getItem(SOUND_KEY) !== 'off';
+		return typeof sessionStorage === 'undefined' || sessionStorage.getItem(SOUND_KEY) !== 'off';
 	} catch {
-		// Storage blocked: sound stays on.
+		return true; // Storage blocked: sound stays on.
 	}
-}
-
-export function setNes(on: boolean) {
-	try {
-		if (on) sessionStorage.setItem(NES_KEY, '1');
-		else sessionStorage.removeItem(NES_KEY);
-	} catch {
-		// Storage blocked: it still applies to this page.
-	}
-	document.documentElement.toggleAttribute('data-eight-bit', on);
-	nes.on = on;
 }
 
 export function setSound(on: boolean) {
@@ -41,24 +27,18 @@ export function setSound(on: boolean) {
 	} catch {
 		// Storage blocked: it still applies to this page.
 	}
-	nes.sound = on;
+	sound.on = on;
 }
 
 /** A blip, unless muted. */
-export function blip(sound: Sound) {
-	if (nes.sound) play(sound);
-}
-
-/** The palette under 8-bit mode: what "Back to …" returns to. */
-export function paletteLabel(): string {
-	const id = document.documentElement.dataset.palette;
-	return PALETTES.find((p) => p.id === (isPalette(id) ? id : 'newsprint'))!.label;
+export function blip(name: Sound) {
+	if (sound.on) play(name);
 }
 
 /** The Konami code, from the keyboard or the controller. */
 export async function unlock() {
-	const already = nes.on;
-	setNes(true);
+	const already = look.eightBit;
+	look.setEightBit(true);
 	blip('unlock');
 	showToast(already ? '↑↑↓↓←→←→BA. Still 8-bit.' : '↑↑↓↓←→←→BA. 8-bit mode unlocked.');
 	if (reducedMotion()) return;

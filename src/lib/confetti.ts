@@ -1,9 +1,10 @@
 // Confetti for the easter eggs (#63, #111): by default a burst in the visitor's palette (#81) and
-// theme (#80); 8-bit mode passes its NES colours, the palette disco a shorter burst per palette.
+// theme (#80); 8-bit mode passes Night's colours, the palette disco a shorter burst per palette.
 // Loaded with a dynamic import only when an egg fires, so neither this nor canvas-confetti costs
 // anything otherwise. Callers skip it under reduced motion.
 
 import canvasConfetti from 'canvas-confetti';
+import { look } from '$lib/look.svelte';
 
 // Palette shades per theme, matching the accent (--hue-700 in light, --hue-400 in dark) plus a grey.
 const SHADES = {
@@ -34,11 +35,7 @@ export function confetti({
 	vars,
 	durationMs = DURATION_MS
 }: { vars?: string[]; durationMs?: number } = {}) {
-	// The inline script in app.html sets data-theme before first paint; fall back to the system.
-	const theme =
-		document.documentElement.dataset.theme ??
-		(matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-	const colors = resolveColors(vars ?? SHADES[theme === 'dark' ? 'dark' : 'light']);
+	const colors = resolveColors(vars ?? SHADES[look.shownTheme()]);
 
 	const end = Date.now() + durationMs;
 	const shoot = () => {

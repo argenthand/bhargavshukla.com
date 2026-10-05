@@ -51,7 +51,7 @@
 
 <div
 	bind:this={pad}
-	id="nes-controller"
+	id="controller"
 	popover
 	{ontoggle}
 	aria-label="NES controller"
@@ -63,7 +63,7 @@
 		<button
 			type="button"
 			aria-label="Close controller"
-			popovertarget="nes-controller"
+			popovertarget="controller"
 			popovertargetaction="hide"
 			class="inline-flex size-11 items-center justify-center text-pad-face"
 		>

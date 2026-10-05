@@ -5,38 +5,10 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="text-scale" content="scale" />
 		<script>
-			// Runs before the first paint. `js` turns on the js: variant. The theme (#80): the visitor's
-			// choice from localStorage (light | dark | system, default system) resolved to light or dark,
-			// so the page never flashes the wrong one. Keep in step with src/lib/theme.ts.
-			(function () {
-				var root = document.documentElement;
-				root.classList.add('js');
-				var pref = 'system';
-				try {
-					pref = localStorage.getItem('theme') || 'system';
-				} catch (e) {}
-				if (pref !== 'light' && pref !== 'dark') pref = 'system';
-				var system = matchMedia('(prefers-color-scheme: dark)');
-				var apply = function () {
-					var p = root.dataset.themePref;
-					root.dataset.theme =
-						p === 'dark' || (p === 'system' && system.matches) ? 'dark' : 'light';
-				};
-				root.dataset.themePref = pref;
-				apply();
-				// The colour palette (#81); Newsprint (no attribute) unless another was chosen.
-				try {
-					var palette = localStorage.getItem('palette');
-					if (['newsprint', 'harbour', 'sage', 'plum', 'ochre'].indexOf(palette) !== -1)
-						root.dataset.palette = palette;
-				} catch (e) {}
-				// 8-bit mode (#111): this visit only, over the saved palette. Keep in step with src/lib/eight-bit.svelte.ts.
-				try {
-					if (sessionStorage.getItem('nes') === '1') root.setAttribute('data-eight-bit', '');
-				} catch (e) {}
-				// While on System, follow the OS live.
-				system.addEventListener('change', apply);
-			})();
+			// Runs before the first paint. `js` turns on the js: variant. The server hooks put the look's
+			// script in the comment below: the saved theme, palette and 8-bit mode (src/lib/look-boot.ts).
+			document.documentElement.classList.add('js');
+			/*%look%*/
 		</script>
 		%sveltekit.head%
 	</head>

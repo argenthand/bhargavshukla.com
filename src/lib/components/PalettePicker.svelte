@@ -9,20 +9,13 @@
 	// The palette disco (#111, src/lib/disco.ts): five quick taps on the dot and every palette plays
 	// in turn, then it lands back where it was. Each tap before that opens or closes the menu as usual.
 	import { tapCounter } from '$lib/easter-eggs';
-	import { nes, setNes } from '$lib/eight-bit.svelte';
-	import { isPalette, PALETTES, setPalette, type PaletteId } from '$lib/theme';
+	import { look, PALETTES } from '$lib/look.svelte';
 
-	let current = $state<PaletteId>('newsprint');
 	let button = $state<HTMLButtonElement>();
 	let menu = $state<HTMLElement>();
 	const taps = tapCounter(5, 2000);
 
-	$effect(() => {
-		const saved = document.documentElement.dataset.palette;
-		if (isPalette(saved)) current = saved;
-	});
-
-	const label = $derived(nes.on ? '8-bit' : PALETTES.find((p) => p.id === current)?.label);
+	const label = $derived(look.eightBit ? '8-bit' : look.paletteLabel);
 
 	/** Opens under the button, right edges aligned (the popover lives in the top layer). */
 	function place(event: ToggleEvent) {
@@ -55,18 +48,12 @@
 		};
 	});
 
-	function choose(id: PaletteId) {
-		current = id;
-		setPalette(id);
-		if (nes.on) setNes(false);
-	}
-
 	/** The fifth quick tap starts the disco instead of toggling the menu. Not in 8-bit mode. */
 	function onclick(event: MouseEvent) {
-		if (!taps() || nes.on) return;
+		if (!taps() || look.eightBit) return;
 		event.preventDefault();
 		menu?.hidePopover();
-		void import('$lib/disco').then(({ disco }) => disco(current));
+		void import('$lib/disco').then(({ disco }) => disco());
 	}
 </script>
 
@@ -79,7 +66,7 @@
 	{onclick}
 	class="hidden size-11 shrink-0 touch-manipulation items-center justify-center rounded-full bg-fill select-none js:flex"
 >
-	{#if nes.on}
+	{#if look.eightBit}
 		<span aria-hidden="true" class="grid size-4.5 grid-cols-2 overflow-hidden rounded-full">
 			<span class="bg-(--night-red)"></span><span class="bg-(--night-sky)"></span>
 			<span class="bg-(--night-orange)"></span><span class="bg-(--night-green)"></span>
@@ -106,8 +93,8 @@
 					type="radio"
 					name="palette"
 					value={palette.id}
-					checked={current === palette.id && !nes.on}
-					onchange={() => choose(palette.id)}
+					checked={look.palette === palette.id && !look.eightBit}
+					onchange={() => look.choosePalette(palette.id)}
 					class="sr-only"
 				/>
 				<span aria-hidden="true" class="size-4.5 shrink-0 rounded-full {palette.swatch}"></span>

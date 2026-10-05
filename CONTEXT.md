@@ -32,6 +32,32 @@ _Avoid_: blog, articles
 A section shown to visitors: in the nav and the sitemap.
 _Avoid_: enabled, launched
 
+## The look
+
+**Look**:
+What the visitor sees: the theme, the palette and 8-bit mode together.
+_Avoid_: theme, appearance, style
+
+**Theme**:
+Light, Dark or System (following the device).
+_Avoid_: mode, colour scheme
+
+**Palette**:
+A set of colours and a typeface: Newsprint (the default), Harbour, Sage, Plum or Ochre. The visitor's choice is the **chosen palette**.
+_Avoid_: theme, colour, skin
+
+**8-bit mode**:
+The Konami code's reward: a pixel-art look over the palette, for this visit only. Its own palette is Night.
+_Avoid_: NES mode, retro mode
+
+**Controller**:
+The on-screen game pad that takes the Konami code on touch screens.
+_Avoid_: gamepad, NES pad, d-pad
+
+**Disco**:
+The easter egg that shows every palette in turn without choosing any.
+_Avoid_: palette cycle
+
 ## Publishing
 
 **Publish**:

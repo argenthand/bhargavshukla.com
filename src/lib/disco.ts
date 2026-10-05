@@ -5,7 +5,7 @@
 
 import { discoOrder } from '$lib/easter-eggs';
 import { reducedMotion } from '$lib/motion';
-import { PALETTES, type PaletteId } from '$lib/theme';
+import { look, PALETTES } from '$lib/look.svelte';
 import { showToast } from '$lib/toast.svelte';
 
 /** How long each palette shows. */
@@ -13,8 +13,8 @@ const STEP_MS = 400;
 /** Confetti per palette: a short burst, so they don't pile up. */
 const CONFETTI_MS = 300;
 
-export async function disco(start: PaletteId) {
-	const root = document.documentElement;
+export async function disco() {
+	const start = look.palette;
 	let stopped = false;
 	const stop = () => (stopped = true);
 	// Let the press that started it finish before listening for the tap that stops it.
@@ -23,12 +23,11 @@ export async function disco(start: PaletteId) {
 	const ids = PALETTES.map((p) => p.id);
 	for (const id of discoOrder(ids, start)) {
 		if (stopped) break;
-		root.dataset.palette = id;
+		look.showPalette(id);
 		confetti?.({ durationMs: CONFETTI_MS });
 		await new Promise((done) => setTimeout(done, STEP_MS));
 	}
 	document.removeEventListener('pointerdown', stop);
-	root.dataset.palette = start;
-	const name = PALETTES.find((p) => p.id === start)?.label;
-	showToast(`Back to ${name}. Pick any of them from the dot.`);
+	look.showPalette(null);
+	showToast(`Back to ${look.paletteLabel}. Pick any of them from the dot.`);
 }

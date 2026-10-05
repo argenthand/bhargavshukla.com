@@ -4,18 +4,12 @@
 	// (`eight-bit:`), so a page that loads in 8-bit mode has it from the first paint, without a shift.
 	// While the mode is on, buttons and links blip when pressed.
 	import Icon from '$lib/components/Icon.svelte';
-	import { blip, nes, paletteLabel, readNes, setNes, setSound } from '$lib/eight-bit.svelte';
-
-	let label = $state('Newsprint');
-
-	$effect(() => readNes());
-	$effect(() => {
-		if (nes.on) label = paletteLabel();
-	});
+	import { blip, setSound, sound } from '$lib/eight-bit.svelte';
+	import { look } from '$lib/look.svelte';
 
 	// One listener for the whole page; the controller and this banner play their own sounds.
 	$effect(() => {
-		if (!nes.on) return;
+		if (!look.eightBit) return;
 		const onclick = (event: MouseEvent) => {
 			const target = event.target instanceof Element ? event.target : null;
 			if (!target?.closest('a[href], button, summary, label')) return;
@@ -28,7 +22,7 @@
 
 	function back() {
 		blip('back');
-		setNes(false);
+		look.setEightBit(false);
 	}
 </script>
 
@@ -58,14 +52,14 @@
 			<button
 				type="button"
 				aria-label="Sound"
-				aria-pressed={nes.sound}
+				aria-pressed={sound.on}
 				onclick={() => {
-					setSound(!nes.sound);
+					setSound(!sound.on);
 					blip('select');
 				}}
 				class="inline-flex size-11 items-center justify-center"
 			>
-				<Icon name={nes.sound ? 'volume' : 'volume-off'} size={20} />
+				<Icon name={sound.on ? 'volume' : 'volume-off'} size={20} />
 			</button>
 			<button
 				type="button"
@@ -84,7 +78,7 @@
 				>
 					<path d="M3 0h1v1H3zM2 1h1v1H2zM1 2h1v1H1zM0 3h7v1H0zM1 4h1v1H1zM2 5h1v1H2zM3 6h1v1H3z" />
 				</svg>
-				Back to {label}
+				Back to {look.paletteLabel}
 			</button>
 		</div>
 	</div>
