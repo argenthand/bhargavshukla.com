@@ -134,3 +134,41 @@ After a few months of numbers, decide whether it's worth it, and if so who sees 
 8. **Read counts:** stay in D1; PostHog gets a `read` event.
 9. **Web Vitals:** measured with `web-vitals` and sent as `$web_vitals`.
 10. **Post-MVP:** a consent banner for return visitors, decided after a few months of data.
+
+## Sources
+
+Checked 2026-10-05. Third-party summaries are marked; check prices against the vendor's own page before relying on them.
+
+**PostHog**
+
+- [Cookieless tracking](https://posthog.com/tutorials/cookieless-tracking): server hash mode, the daily salt, `cookieless_mode: 'always'` and `'on_reject'`
+- [Capture API](https://posthog.com/docs/api/capture): EU endpoints (`eu.i.posthog.com`), required fields, the public project token, `$process_person_profile`
+- [Cookieless server hash mode in capture](https://github.com/PostHog/posthog/pull/27290) (PostHog PR): how the `$posthog_cookieless` placeholder becomes a hash
+- [The cookieless placeholder](https://github.com/PostHog/posthog/pull/110316) (PostHog PR): every cookieless event shares one placeholder `distinct_id`
+- [Person processing](https://posthog.com/handbook/engineering/person-processing) (handbook): `$ip` and `$raw_user_agent` for server-side events; cookieless events without `$ip` are dropped
+- [Controlling data collection](https://posthog.com/docs/privacy/data-collection): **Discard client IP data**, and GeoIP and bot detection still using the IP first
+- [Bot and traffic detection](https://posthog.com/docs/web-analytics/bot-detection)
+- [Web analytics: getting started](https://posthog.com/docs/web-analytics/getting-started) and [the dashboard](https://posthog.com/docs/web-analytics/dashboard): `$pageview`, the properties the dashboard reads, Web Vitals
+- [Bounce rate](https://posthog.com/tutorials/bounce-rate): how a bounce is defined
+- [Pricing](https://posthog.com/pricing); the free plan's limits as summarised by [usercall.co](https://www.usercall.co/post/posthog-pricing) (third party)
+
+**Cloudflare**
+
+- [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/): 10 M requests a month on Workers Paid, then $0.30 per million
+- [Analytics Engine pricing](https://developers.cloudflare.com/analytics/analytics-engine/pricing/): 10 M data points and 1 M queries a month
+
+**Alternatives**
+
+- [Umami Cloud FAQ](https://umami.is/docs/cloud/faq): the Hobby plan's 100 K events a month and 6 months of history
+- [Plausible pricing](https://seline.com/blog/plausible-analytics-pricing) (third party): from $9 a month, no free plan
+
+**Libraries**
+
+- [`web-vitals` size](https://mcp.depscope.dev/pkg/npm/web-vitals) (third party): 5.7 KB minified, 2.4 KB gz
+
+**In this repo**
+
+- [view-counts.md](view-counts.md): the daily-salt scheme, what isn't counted, and why read counts stay in D1
+- [infrastructure.md](infrastructure.md#analytics-cloudflare-web-analytics-58): today's Web Analytics setup
+- [caching.md](caching.md#validators-126): why the injected beacon drops `ETag`
+- [performance.md](performance.md): `pnpm perf`, for the before-and-after
