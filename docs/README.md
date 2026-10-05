@@ -17,5 +17,6 @@ Planning and reference docs for bhargavshukla.com.
 | [roadmap.md](roadmap.md)                     | Phases, milestones and tickets (GitHub issues)                              |
 | [../CONTEXT.md](../CONTEXT.md)               | The glossary: the site's domain language                                    |
 | [adr/](adr/)                                 | Architecture decisions and why they were made                               |
+| [agents/](agents/)                           | How the agent skills use the issue tracker, triage labels and domain docs   |
 
 Work happens one ticket at a time: each issue gets a branch off an up-to-date `main` and a PR that is merged before the next issue starts.
