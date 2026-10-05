@@ -17,7 +17,7 @@
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { ABYSS_LINE, consoleNote } from '$lib/easter-eggs';
 	import { konamiKeydown, taps } from '$lib/gestures';
-	import { intro } from '$lib/intro.svelte';
+	import { introHeading } from '$lib/intro.svelte';
 	import { pageTransition, reducedMotion } from '$lib/motion';
 	import { wake } from '$lib/eight-bit-sound';
 	import { nav, site } from '$lib/site';
@@ -33,11 +33,9 @@
 
 	const year = new Date().getFullYear();
 
-	// On home the intro's h1 is the name, so the header leaves it out until that heading scrolls
-	// under the sticky phone bar, then fades it in (#59; the heading reports it, src/lib/intro.svelte.ts).
-	// The desktop header isn't sticky, so there it simply stays out. `js:` keeps it visible without
-	// JavaScript.
-	const hideName = $derived(page.route.id === '/' && !page.error && intro.inView);
+	// The header name fade (#59, src/lib/intro.svelte.ts): on home, out while the intro's heading is
+	// on screen. `js:` keeps it visible without JavaScript.
+	const hideName = $derived(page.route.id === '/' && !page.error && introHeading.inView);
 
 	// Page transitions (#60, src/lib/motion.ts).
 	onNavigate(pageTransition);
@@ -110,6 +108,7 @@
 	<!-- Named, so page transitions keep the header still instead of fading it with the page. -->
 	<header
 		style:view-transition-name="site-header"
+		data-top-bar
 		class="sticky top-0 z-10 bar-top md:static md:bg-transparent md:shadow-none print:hidden"
 	>
 		<div class="mx-auto flex h-14 max-w-5xl items-center justify-between px-5 md:h-20 md:px-8">
