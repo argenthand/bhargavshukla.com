@@ -136,6 +136,40 @@ describe('readBeacon', () => {
 		]);
 	});
 
+	it('keeps no query string or fragment in a URL, and only the origin of a referrer', () => {
+		const [event] = readBeacon(
+			JSON.stringify([
+				{
+					event: '$pageview',
+					properties: {
+						$current_url: `${SITE}/blog?q=my+name#top`,
+						$referrer: 'https://mail.example/inbox?user=sam@example.com',
+						$referring_domain: 'mail.example'
+					},
+					age: 0
+				}
+			])
+		);
+		expect(event.properties).toEqual({
+			$current_url: `${SITE}/blog`,
+			$referrer: 'https://mail.example/',
+			$referring_domain: 'mail.example'
+		});
+	});
+
+	it('keeps "$direct" as the referrer, and drops URLs that are not http(s)', () => {
+		const [event] = readBeacon(
+			JSON.stringify([
+				{
+					event: '$pageview',
+					properties: { $current_url: 'javascript:alert(1)', $referrer: '$direct' },
+					age: 0
+				}
+			])
+		);
+		expect(event.properties).toEqual({ $referrer: '$direct' });
+	});
+
 	it('shortens long text', () => {
 		const long = `${SITE}/${'a'.repeat(2000)}`;
 		const [event] = readBeacon(

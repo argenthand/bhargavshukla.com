@@ -4,13 +4,16 @@
 
 import { PALETTES } from './palettes';
 
-/** A property's kind: free text, a number, or one of a few words. */
-type Kind = 'text' | 'number' | readonly string[];
+/**
+ * A property's kind: free text, a number, one of a few words, a page's URL (no query string or
+ * fragment: those can hold what a visitor typed), or a referrer (only the referring site).
+ */
+type Kind = 'text' | 'number' | 'url' | 'referrer' | readonly string[];
 
 export const EGGS = ['8-bit', 'disco', 'tab-lap', 'abyss'] as const;
 
 /** On every event the page sends: where it happened. */
-const PAGE = { $current_url: 'text', $pathname: 'text' } as const;
+const PAGE = { $current_url: 'url', $pathname: 'text' } as const;
 
 /** The UTM parameters a page view carries when its URL has them. */
 export const UTM = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'] as const;
@@ -19,7 +22,7 @@ export const UTM = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', '
 export const PAGE_EVENTS = {
 	$pageview: {
 		...PAGE,
-		$referrer: 'text',
+		$referrer: 'referrer',
 		$referring_domain: 'text',
 		...(Object.fromEntries(UTM.map((key) => [key, 'text'])) as Record<(typeof UTM)[number], 'text'>)
 	},
@@ -43,7 +46,7 @@ export const SERVER_EVENTS = ['contact_sent', 'contact_blocked'] as const;
 export type PageEvent = keyof typeof PAGE_EVENTS;
 export type ServerEvent = (typeof SERVER_EVENTS)[number];
 
-type Value<K> = K extends 'text'
+type Value<K> = K extends 'text' | 'url' | 'referrer'
 	? string
 	: K extends 'number'
 		? number

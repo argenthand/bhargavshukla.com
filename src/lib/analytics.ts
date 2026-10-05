@@ -18,7 +18,11 @@ let queue: Queued[] = [];
 /** Run when the page is hidden, before the queue goes: they add what they've measured. */
 const onHide = new Set<() => void>();
 
-const pageProperties = () => ({ $current_url: location.href, $pathname: location.pathname });
+// No query string or fragment: they can hold what a visitor typed (the Writing page's search).
+const pageProperties = (path = location.pathname) => ({
+	$current_url: location.origin + path,
+	$pathname: path
+});
 
 export function track<E extends PageEvent>(event: E, properties: Properties<E> = {}) {
 	if (!started) return;
@@ -45,33 +49,36 @@ export function pageview() {
 	const utm = Object.fromEntries(
 		UTM.filter((key) => params.has(key)).map((key) => [key, params.get(key)!])
 	);
-	let domain = '$direct';
+	// Only the referring site: a referrer's path and query can hold anything (a webmail inbox, a
+	// search). Browsers usually send only the origin to other sites already.
+	let referrer: URL | undefined;
 	try {
-		if (document.referrer) domain = new URL(document.referrer).host;
+		if (document.referrer) referrer = new URL(document.referrer);
 	} catch {
 		// Left as direct.
 	}
 	track('$pageview', {
-		$referrer: document.referrer || '$direct',
-		$referring_domain: domain,
+		$referrer: referrer ? `${referrer.origin}/` : '$direct',
+		$referring_domain: referrer?.host ?? '$direct',
 		...utm
 	});
 	flush();
 }
 
 /**
- * Time spent reading a post or aside: its visible seconds, sent as `read` each time the page is
- * hidden and when the visitor leaves it, counting from the last report. Returns the cleanup for
- * leaving the page.
+ * Time spent reading a post or aside at `path`: its visible seconds, sent as `read` each time the
+ * page is hidden and when the visitor leaves it, counting from the last report. Returns the
+ * cleanup for leaving the page. The path is the page's own: on leaving, the address bar already
+ * shows the next page.
  */
-export function trackReading(): () => void {
+export function trackReading(path = location.pathname): () => void {
 	let visibleSince: number | undefined = document.hidden ? undefined : performance.now();
 	let ms = 0;
 	const report = () => {
 		if (visibleSince !== undefined) ms += performance.now() - visibleSince;
 		visibleSince = undefined;
 		const seconds = Math.round(ms / 1000);
-		if (seconds >= 1) track('read', { seconds });
+		if (seconds >= 1) track('read', { ...pageProperties(path), seconds });
 		ms = 0;
 	};
 	const onVisible = () => {

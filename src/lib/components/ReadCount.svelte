@@ -16,7 +16,7 @@
 		readCount(path).then((n) => {
 			if (current) count = n;
 		});
-		const stops = track ? [trackRead(path), trackReading()] : [];
+		const stops = track ? [trackRead(path), trackReading(path)] : [];
 		return () => {
 			current = false;
 			for (const stop of stops) stop();

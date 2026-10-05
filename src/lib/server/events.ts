@@ -70,8 +70,25 @@ export function counted(
 	);
 }
 
+/** An http(s) URL, or undefined. */
+function httpUrl(value: unknown): URL | undefined {
+	if (typeof value !== 'string') return undefined;
+	try {
+		const url = new URL(value);
+		return url.protocol === 'https:' || url.protocol === 'http:' ? url : undefined;
+	} catch {
+		return undefined;
+	}
+}
+
 function fits(kind: unknown, value: unknown): unknown {
 	if (kind === 'text') return typeof value === 'string' ? value.slice(0, MAX_TEXT) : undefined;
+	if (kind === 'url') {
+		const url = httpUrl(value);
+		return url && (url.origin + url.pathname).slice(0, MAX_TEXT);
+	}
+	if (kind === 'referrer')
+		return value === '$direct' ? value : httpUrl(value) && `${httpUrl(value)!.origin}/`;
 	if (kind === 'number')
 		return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 	return Array.isArray(kind) && kind.includes(value) ? value : undefined;

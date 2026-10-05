@@ -60,7 +60,7 @@ describe('pageview', () => {
 		history.replaceState(
 			null,
 			'',
-			`${location.pathname}?utm_source=newsletter&utm_medium=email&x=1`
+			`${location.pathname}?utm_source=newsletter&utm_medium=email&x=1#section`
 		);
 		pageview();
 		expect(beacons()).toHaveLength(1);
@@ -68,13 +68,15 @@ describe('pageview', () => {
 		expect(url).toBe('/api/events');
 		expect(event.event).toBe('$pageview');
 		expect(event.properties).toMatchObject({
-			$current_url: location.href,
+			$current_url: location.origin + location.pathname,
 			$pathname: location.pathname,
 			utm_source: 'newsletter',
 			utm_medium: 'email'
 		});
 		expect(event.properties).not.toHaveProperty('x');
-		expect(event.properties.$referrer).toBe(document.referrer || '$direct');
+		expect(event.properties.$referrer).toBe(
+			document.referrer ? `${new URL(document.referrer).origin}/` : '$direct'
+		);
 		expect(event.age).toBeGreaterThanOrEqual(0);
 	});
 });
@@ -166,6 +168,24 @@ describe('trackReading', () => {
 			['read', 42],
 			['read', 8]
 		]);
+	});
+
+	it('sends the post it was reading, even once the visitor has moved on', () => {
+		vi.useFakeTimers({ toFake: ['performance'] });
+		const back = location.pathname;
+		history.replaceState(null, '', '/blog/a-post');
+		const leave = trackReading();
+		vi.advanceTimersByTime(5_000);
+		history.replaceState(null, '', '/blog'); // A client-side navigation away.
+		leave();
+		setVisibility('hidden');
+		history.replaceState(null, '', back);
+		const [event] = sentEvents();
+		expect(event.properties).toMatchObject({
+			$pathname: '/blog/a-post',
+			$current_url: `${location.origin}/blog/a-post`,
+			seconds: 5
+		});
 	});
 
 	it('sends nothing for under a second', () => {

@@ -153,13 +153,16 @@ Choices made while building:
 - **`read` sends the seconds since its last report**, each time the page is hidden and when the reader leaves, so a reader who switches tabs and comes back isn't cut short or counted twice. Total reading time on a page is the sum of `seconds`; time per view is that sum over the page's `$pageview`s.
 - **`$web_vitals` carries the URL of the page that loaded**, not the page open when it's sent: LCP belongs to the first page of a visit, even after client-side navigations.
 - **Timestamps come from the Worker's clock**: each event carries its age in milliseconds, so a wrong clock on the device doesn't move it.
+- **URLs carry no query string or fragment**, and a referrer only its site (`https://www.google.com/`): a query can hold what a visitor typed (the Writing page's search, `?q=`), and a referrer's path can hold anything. Campaign tags are their own properties (`utm_source`…). The beacon trims them and the Worker enforces it (the `url` and `referrer` kinds in `src/lib/events.ts`).
 - **Cost on the page:** about 1.3 KB gz more on every page, plus `web-vitals` (3.0 KB gz), loaded once the page is idle.
 
 **EEA, UK and Switzerland not counted (2026-10-05).** PostHog's DPA is written for a company to sign, and this site is run by an individual; PostHog's advice was to ask a legal adviser whether it fits. Until that's settled, the Worker drops every event from a visitor in the EEA (the EU and its outermost regions, Iceland, Liechtenstein, Norway), the UK (with Gibraltar and the Crown Dependencies) or Switzerland, by `request.cf.country` (`EXCLUDED_COUNTRIES` in `src/lib/server/events.ts`), and from unknown countries and Tor. Nothing about their visits reaches PostHog. Their pages still send the beacon: pages come from the shared edge cache, so the page can't know where its visitor is, and the Worker decides. Cloudflare Web Analytics' EU exclusion is back on. Read counts are unchanged: they stay in D1 and never leave Cloudflare. VPN users count under their VPN's exit country, as with every IP-based check. To count these visitors again, empty the list.
 
 **Not counting your own visits:** the same `noCount` as read counts ([view-counts.md](view-counts.md#built-87)).
 
-**Sessions:** still to check against the PostHog project (the ticket's "Check first"): whether its web analytics dashboard groups these cookieless page views into sessions without `$session_id`. If not, the beacon gets a session ID kept in memory per tab.
+**What PostHog keeps** (checked in PostHog's ingestion code, `nodejs/src/ingestion/common/cookieless/cookieless-manager.ts`, 2026-10-05): in cookieless mode it hashes `$ip`, `$raw_user_agent` and `$host` with the day's salt into the visitor ID, then `stripPIIProperties` deletes `$ip` and `$raw_user_agent` from the event before anything is stored. Each day's salt is a random 128-bit value kept in Redis for up to 96 hours (72 hours of ingestion lag plus a day), then deleted. Side effect: GeoIP and bot detection run after the IP is gone, so PostHog shows **no countries**, and with the raw User-Agent deleted, **no browsers, OSes or devices** either ([data storage](https://posthog.com/docs/privacy/data-storage), [PostHog#48660](https://github.com/PostHog/posthog/issues/48660)).
+
+**Sessions** (the ticket's "Check first", answered from the same code): PostHog makes `$session_id` itself in cookieless mode, a UUIDv7 per visitor hash with a 30-minute inactivity timeout (or one per day in its stateless mode). The beacon doesn't need its own.
 
 ## Sources
 
