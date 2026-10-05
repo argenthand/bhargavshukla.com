@@ -12,6 +12,10 @@
 @utility page-title {
 	@apply text-4xl font-medium tracking-tight text-balance;
 }
+/* A page's title block: the title and what goes under it (posts, the privacy note). */
+@utility page-header {
+	@apply mx-auto mb-7 flex max-w-article flex-col gap-3.5;
+}
 @utility standfirst {
 	@apply text-xl text-muted italic;
 }

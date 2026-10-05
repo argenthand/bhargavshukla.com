@@ -17,7 +17,7 @@
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { pageview, startAnalytics, track } from '$lib/analytics';
 	import { ABYSS_LINE, consoleNote } from '$lib/easter-eggs';
-	import { konamiKeydown, taps } from '$lib/gestures';
+	import { bouncedPastEnd, konamiKeydown, taps } from '$lib/gestures';
 	import { introHeading } from '$lib/intro.svelte';
 	import { pageTransition, reducedMotion } from '$lib/motion';
 	import { wake } from '$lib/eight-bit-sound';
@@ -49,12 +49,10 @@
 	onMount(startAnalytics);
 	afterNavigate(pageview);
 
-	// The abyss (#111) is found by bouncing past the end of the page: Safari reports the bounce as a
-	// scroll beyond the bottom. Once per visit.
+	// The abyss (#111) is found by bouncing past the end of the page (Safari only). Once per visit.
 	let abyssFound = false;
 	function onScroll() {
-		const { scrollHeight } = document.documentElement;
-		if (abyssFound || scrollY + innerHeight < scrollHeight + 40) return;
+		if (abyssFound || !bouncedPastEnd()) return;
 		abyssFound = true;
 		track('easter_egg_found', { egg: 'abyss' });
 	}

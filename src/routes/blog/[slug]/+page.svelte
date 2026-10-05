@@ -49,7 +49,7 @@
 <div class="page">
 	<header
 		class={[
-			'mx-auto mb-7 flex max-w-article flex-col gap-3.5 lg:mb-10 lg:items-center lg:text-center',
+			'page-header lg:mb-10 lg:items-center lg:text-center',
 			showToc && 'lg:max-w-article-wide'
 		]}
 	>

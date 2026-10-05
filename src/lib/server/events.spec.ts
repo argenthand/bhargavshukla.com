@@ -7,6 +7,7 @@ import {
 	isBot,
 	POSTHOG_BATCH_URL,
 	readBeacon,
+	sendServerEvent,
 	sendToPostHog,
 	toPostHog,
 	type PostHogBatch
@@ -250,5 +251,44 @@ describe('contactEvent', () => {
 		['send-failed', undefined]
 	] as const)('%s → %s', (outcome, event) => {
 		expect(contactEvent(outcome)).toBe(event);
+	});
+});
+
+describe('sendServerEvent', () => {
+	const fetcher = vi.fn(async () => new Response('{}'));
+	vi.stubGlobal('fetch', fetcher);
+	const base = { preview: false, ip: '203.0.113.9', token: 'phc_test', skip: false };
+	const form = (origin = SITE) =>
+		new Request(`${SITE}/blog/a?/contact`, {
+			method: 'POST',
+			headers: { origin, 'user-agent': CHROME }
+		});
+
+	it('sends the event for the page it was posted from, in waitUntil', async () => {
+		fetcher.mockClear();
+		const waited: Promise<unknown>[] = [];
+		sendServerEvent('contact_sent', {
+			...base,
+			request: form(),
+			waitUntil: (p) => void waited.push(p)
+		});
+		await Promise.all(waited);
+		const body = JSON.parse(
+			(fetcher.mock.calls[0] as unknown as [string, RequestInit])[1].body as string
+		);
+		expect(body.batch[0]).toMatchObject({
+			event: 'contact_sent',
+			properties: { $pathname: '/blog/a', $current_url: `${SITE}/blog/a`, $ip: '203.0.113.9' }
+		});
+	});
+
+	it.each([
+		['the author’s devices', { skip: true }],
+		['without a token', { token: '' }],
+		['preview mode', { preview: true }]
+	])('sends nothing from %s', (_, overrides) => {
+		const waitUntil = vi.fn();
+		sendServerEvent('contact_sent', { ...base, ...overrides, request: form(), waitUntil });
+		expect(waitUntil).not.toHaveBeenCalled();
 	});
 });

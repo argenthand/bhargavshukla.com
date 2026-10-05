@@ -10,7 +10,7 @@
 <Seo title="Privacy" description={data.privacy.lead} />
 
 <div class="page">
-	<header class="mx-auto mb-7 flex max-w-article flex-col gap-3.5">
+	<header class="page-header">
 		<h1 class="page-title">Privacy</h1>
 		<p class="standfirst">{data.privacy.lead}</p>
 	</header>

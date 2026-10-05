@@ -17,8 +17,8 @@ import {
 	type ContactResult,
 	type ContactValues
 } from '$lib/contact';
-import { NO_COUNT_FIELD, type ServerEvent } from '$lib/events';
-import { contactEvent, counted, sendToPostHog, toPostHog, visitorOf } from './events';
+import { NO_COUNT_FIELD } from '$lib/events';
+import { contactEvent, sendServerEvent } from './events';
 import type { ReadsDb } from './reads';
 import { getContactEmail } from './profile';
 
@@ -180,7 +180,7 @@ export async function sendWithResend(
 }
 
 export const contact: Action = async (event) => {
-	const { platform, locals, fetch, request, url } = event;
+	const { platform, locals, fetch, request } = event;
 	const ip = event.getClientAddress();
 	const db = platform?.env.READS;
 	const limiter = platform?.env.CONTACT_RATE;
@@ -188,14 +188,14 @@ export const contact: Action = async (event) => {
 	const secret = env.TURNSTILE_SECRET || (dev ? TEST_SECRET : '');
 	const data = await request.formData();
 
-	// Sent and blocked are decided here, so the Worker tells PostHog itself (#154), by the beacon's rules.
-	const token = env.POSTHOG_TOKEN;
-	const counts =
-		token && !data.get(NO_COUNT_FIELD) && counted(request, { preview: locals.preview });
-	const tell = (name: ServerEvent) => {
-		const properties = { $current_url: url.origin + url.pathname, $pathname: url.pathname };
-		const batch = toPostHog(token!, [{ event: name, properties }], visitorOf(request, ip));
-		platform?.ctx.waitUntil(sendToPostHog(batch, globalThis.fetch));
+	// Sent and blocked are decided here, so the Worker tells PostHog itself (#154).
+	const analytics = {
+		request,
+		preview: locals.preview,
+		ip,
+		token: env.POSTHOG_TOKEN,
+		skip: Boolean(data.get(NO_COUNT_FIELD)),
+		waitUntil: platform && ((promise: Promise<unknown>) => platform.ctx.waitUntil(promise))
 	};
 
 	return handleContact(data, {
@@ -226,7 +226,7 @@ export const contact: Action = async (event) => {
 		log: (outcome) => {
 			console.log(JSON.stringify({ contact: outcome }));
 			const name = contactEvent(outcome);
-			if (name && counts) tell(name);
+			if (name) sendServerEvent(name, analytics);
 		}
 	});
 };

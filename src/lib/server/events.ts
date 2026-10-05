@@ -164,6 +164,36 @@ export async function handleBeacon(
 	return new Response(null, { status: 204 });
 }
 
+/**
+ * An event decided on the server (the contact card's outcome), for the page that `request` was
+ * posted from: sent in `waitUntil` under the beacon's rules, unless `skip` (the author's devices).
+ */
+export function sendServerEvent(
+	name: ServerEvent,
+	{
+		request,
+		preview,
+		ip,
+		token,
+		skip,
+		waitUntil
+	}: {
+		request: Request;
+		preview: boolean;
+		ip: string;
+		token: string | undefined;
+		skip: boolean;
+		waitUntil: ((promise: Promise<unknown>) => void) | undefined;
+	}
+): void {
+	if (!token || skip || !counted(request, { preview })) return;
+	const { origin, pathname } = new URL(request.url);
+	const properties = { $current_url: origin + pathname, $pathname: pathname };
+	waitUntil?.(
+		sendToPostHog(toPostHog(token, [{ event: name, properties }], visitorOf(request, ip)), fetch)
+	);
+}
+
 /** The contact card's outcomes PostHog hears about: sent, or blocked as spam. */
 export function contactEvent(outcome: ContactOutcome): ServerEvent | undefined {
 	if (outcome === 'sent' || outcome === 'sent-unverified') return 'contact_sent';

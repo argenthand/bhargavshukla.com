@@ -5,7 +5,7 @@ A personal site: long-form writing, short asides and a resume, written in a CMS 
 ## Content
 
 **Content type**:
-A kind of content the CMS holds and the site shows: post, aside, category, tag, profile, resume.
+A kind of content the CMS holds and the site shows: post, aside, category, tag, profile, resume, privacy.
 _Avoid_: model, collection
 
 **Entry**:
@@ -97,6 +97,10 @@ _Avoid_: route map, dependency graph
 **Visitor**:
 Someone on the site on a given day. The same person tomorrow is a new visitor: nobody is recognised across days.
 _Avoid_: user, reader
+
+**Privacy note**:
+The page at /privacy that says what analytics collects and how. Its copy is written in the CMS.
+_Avoid_: privacy policy
 
 **Event**:
 Something a visitor does that's counted: viewing a page, finding an easter egg, choosing a palette, printing the resume, sending the contact card.

@@ -89,3 +89,14 @@ export function konamiKeydown(event: KeyboardEvent) {
 	if (event.target instanceof Element && event.target.closest('[data-konami-pad]')) return;
 	konamiKey(event.key);
 }
+
+/** How far past the end of the page a scroll must go to count as a bounce into the abyss. */
+const BOUNCE_PX = 40;
+
+/**
+ * Whether the page has bounced past its end (the abyss, #111): Safari reports the rubber-band
+ * bounce as a scroll beyond the bottom; other browsers never scroll that far.
+ */
+export function bouncedPastEnd(): boolean {
+	return scrollY + innerHeight >= document.documentElement.scrollHeight + BOUNCE_PX;
+}
