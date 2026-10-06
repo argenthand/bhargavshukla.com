@@ -29,6 +29,7 @@ src/
     analytics/                    events and read counts (#154)
       events.ts, analytics.ts     the events and their properties, shared by the beacon and the Worker; the beacon
       reads.ts, components/       client read counts; ReadCount
+      opt-out.ts                  the author's opt-out (#164), used by the beacon, read counts and the contact card
       server/                     events.ts (checks the beacon, counts in Analytics Engine), reads.ts (D1)
     contact/                      the contact card (#135): rules shared by card and server, Turnstile, the form action
     publishing/                   publish, purge, repopulate, degraded pages (server only)
