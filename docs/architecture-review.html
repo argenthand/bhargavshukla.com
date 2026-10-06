@@ -1,0 +1,887 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Architecture review for bhargavshukla.com</title>
+		<script src="https://cdn.tailwindcss.com"></script>
+		<script type="module">
+			import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+			mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+		</script>
+	</head>
+	<body class="bg-stone-50 font-sans text-slate-900">
+		<main class="mx-auto max-w-5xl space-y-12 px-6 py-12">
+			<header class="space-y-3">
+				<h1 class="font-serif text-4xl">Architecture review</h1>
+				<p class="text-slate-600">
+					bhargavshukla.com · 2026-10-06 · written after the test-coverage series (#171–#177). Where
+					a spec was hard to write is where a module is the wrong shape.
+				</p>
+				<div class="flex flex-wrap gap-4 text-xs tracking-wider text-slate-600 uppercase">
+					<span class="flex items-center gap-1.5"
+						><span class="inline-block h-3 w-5 border border-slate-400 bg-white"></span>
+						module</span
+					>
+					<span class="flex items-center gap-1.5"
+						><span class="inline-block w-5 border-t-2 border-dashed border-slate-500"></span>
+						seam</span
+					>
+					<span class="flex items-center gap-1.5"
+						><span class="inline-block h-3 w-5 border-2 border-red-600 bg-red-50"></span> leak</span
+					>
+					<span class="flex items-center gap-1.5"
+						><span class="inline-block h-3 w-5 border-2 border-amber-500 bg-amber-50"></span>
+						friction</span
+					>
+					<span class="flex items-center gap-1.5"
+						><span class="inline-block h-3 w-5 border-4 border-slate-900 bg-slate-900"></span> deep
+						module</span
+					>
+				</div>
+				<nav class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-600">
+					<a class="underline" href="#easter-eggs-in-look">1. Easter eggs in the look</a
+					><a class="underline" href="#konami-lifecycle">2. Konami lifecycle</a
+					><a class="underline" href="#visible-time">3. Visible-time meter</a
+					><a class="underline" href="#list-query">4. List query</a
+					><a class="underline" href="#spam-check">5. Spam check</a
+					><a class="underline" href="#fake-strapi">6. Fake Strapi</a
+					><a class="underline" href="#preview-handle">7. Preview handle</a>
+				</nav>
+			</header>
+
+			<section id="candidates" class="space-y-12">
+				<article id="easter-eggs-in-look" class="space-y-4 border-t border-slate-300 pt-8">
+					<div class="flex flex-wrap items-baseline gap-3">
+						<span class="font-serif text-3xl text-slate-400">1</span>
+						<h2 class="font-serif text-2xl">
+							Give the easter-egg orchestration a home in the look
+						</h2>
+						<span
+							class="rounded-full border border-emerald-300 bg-emerald-100 px-2 py-0.5 text-xs text-emerald-800"
+							>Strong</span
+						><span
+							class="rounded-full border border-slate-300 bg-white px-2 py-0.5 text-xs text-slate-600"
+							>in-process</span
+						>
+					</div>
+					<ul class="space-y-0.5 font-mono text-sm text-slate-700">
+						<li>src/routes/+layout.svelte (284 lines; easter eggs at 51–103, 211–212, 265)</li>
+						<li>src/routes/tests/layout.svelte.spec.ts (123 lines) + tests/page-state.svelte.ts</li>
+						<li>src/lib/look/index.ts, src/lib/look/components/Controller.svelte</li>
+					</ul>
+					<div class="grid gap-4 md:grid-cols-2">
+						<div>
+							<div class="mb-1.5 text-xs tracking-wider text-red-700 uppercase">Before</div>
+							<div class="flex flex-col gap-1.5">
+								<div class="rounded border-2 border-slate-400 bg-white p-2">
+									<div class="mb-1.5 text-[10px] tracking-wider text-slate-500 uppercase">
+										+layout.svelte (route layout)
+									</div>
+									<div class="flex flex-col gap-1.5">
+										<div class="rounded border border-slate-400 bg-white px-3 py-2">
+											<div class="text-xs font-semibold tracking-wider uppercase">
+												abyss once-per-visit
+											</div>
+											<div class="mt-0.5 text-xs opacity-80">onScroll, abyssFound</div>
+										</div>
+										<div class="rounded border border-slate-400 bg-white px-3 py-2">
+											<div class="text-xs font-semibold tracking-wider uppercase">
+												controller load → tick → open
+											</div>
+											<div class="mt-0.5 text-xs opacity-80">loadController, wake()</div>
+										</div>
+										<div class="rounded border border-slate-400 bg-white px-3 py-2">
+											<div class="text-xs font-semibold tracking-wider uppercase">
+												tab lap choreography
+											</div>
+											<div class="mt-0.5 text-xs opacity-80">WAAPI keyframes, data-lapping</div>
+										</div>
+										<div class="rounded border-2 border-amber-500 bg-amber-50 px-3 py-2">
+											<div class="text-xs font-semibold tracking-wider uppercase">
+												tap wiring + &quot;is current&quot; gate
+											</div>
+											<div class="mt-0.5 text-xs opacity-80">taps(3) footer · taps(5) per tab</div>
+										</div>
+										<div class="rounded border border-slate-400 bg-white px-3 py-2">
+											<div class="text-xs font-semibold tracking-wider uppercase">
+												markup, header, footer, tab bar
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="py-0.5 text-center text-xs text-red-600">
+									↓ deep import past the interface
+								</div>
+								<div class="rounded border-2 border-red-600 bg-red-50 px-3 py-2 text-red-800">
+									<div class="text-xs font-semibold tracking-wider uppercase">
+										$lib/look/components/Controller.svelte
+									</div>
+									<div class="mt-0.5 text-xs opacity-80">
+										dynamic import() — lint rule cannot see it
+									</div>
+								</div>
+								<div class="mt-2 text-xs text-slate-500">
+									Spec mocks: $app/state (hand-built reactive page), $app/navigation,
+									$lib/analytics, $lib/contact, $lib/look
+								</div>
+							</div>
+						</div>
+						<div>
+							<div class="mb-1.5 text-xs tracking-wider text-emerald-700 uppercase">After</div>
+							<div class="flex flex-col gap-1.5">
+								<div class="rounded border border-slate-400 bg-white px-3 py-2">
+									<div class="text-xs font-semibold tracking-wider uppercase">+layout.svelte</div>
+									<div class="mt-0.5 text-xs opacity-80">markup; attaches the gestures</div>
+								</div>
+								<div class="my-1 flex items-center gap-2">
+									<div class="flex-1 border-t-2 border-dashed border-slate-400"></div>
+									<span class="text-[10px] tracking-wider text-slate-500 uppercase"
+										>seam: look interface</span
+									>
+									<div class="flex-1 border-t-2 border-dashed border-slate-400"></div>
+								</div>
+								<div class="rounded border-4 border-slate-900 bg-slate-900 px-3 py-2 text-white">
+									<div class="text-xs font-semibold tracking-wider uppercase">
+										look: easter-egg orchestration
+									</div>
+									<div class="mt-0.5 text-xs opacity-80">
+										abyss · controller open · tab lap · which tab counts
+									</div>
+								</div>
+								<div
+									class="mt-1.5 rounded border border-dashed border-slate-300 bg-slate-50 p-2 text-xs text-slate-400"
+								>
+									gestures · Controller · eight-bit · confetti stay behind the seam
+								</div>
+								<div class="mt-2 text-xs text-slate-500">
+									Layout spec mocks: the router, maybe one more
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="grid gap-4 text-[15px] md:grid-cols-2">
+						<p>
+							<span class="block text-xs tracking-wider text-slate-500 uppercase">Problem</span>The
+							layout is a shallow host for a deep concept: the easter-egg behaviour has no interface
+							of its own, so the whole layout is the test surface. The tab-bar bug (an attachment
+							that read <code>page.url</code> and reset its tap count on every tap) was invisible
+							until a spec mounted the real reactive page.
+						</p>
+						<p>
+							<span class="block text-xs tracking-wider text-slate-500 uppercase">Solution</span
+							>Move the abyss, the controller's load-then-open and the tab lap into the look, behind
+							its existing interface. The layout keeps the markup and attaches the gestures. The
+							look also owns the lazy loading of the Controller, so the layout no longer reaches
+							past the interface.
+						</p>
+					</div>
+					<div class="text-sm text-slate-600">
+						<span class="text-xs tracking-wider text-slate-500 uppercase">Evidence</span>
+						<code>pnpm lint</code> passes on <code>main</code> with
+						<code>import('$lib/look/components/Controller.svelte')</code> in the layout.
+					</div>
+					<ul class="list-disc space-y-0.5 pl-5 text-[15px]">
+						<li>locality: the egg rules live in one module</li>
+						<li>leverage: layout and tests cross one interface</li>
+						<li>layout spec loses 3–4 mocks</li>
+						<li>lap and abyss testable without the router</li>
+						<li>closes a leak past ADR 0002&#x27;s interface</li>
+					</ul>
+					<div class="rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+						Consistent with ADR 0002 (easter eggs belong to <code>look</code>). Its lint rule uses
+						<code>no-restricted-imports</code>, which does not look at
+						<code>import()</code> expressions, so the layout's lazy Controller import passes lint
+						while breaking the rule in spirit.
+					</div>
+				</article>
+				<article id="konami-lifecycle" class="space-y-4 border-t border-slate-300 pt-8">
+					<div class="flex flex-wrap items-baseline gap-3">
+						<span class="font-serif text-3xl text-slate-400">2</span>
+						<h2 class="font-serif text-2xl">Make the Konami wiring something a caller turns on</h2>
+						<span
+							class="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-xs text-amber-800"
+							>Worth exploring</span
+						><span
+							class="rounded-full border border-slate-300 bg-white px-2 py-0.5 text-xs text-slate-600"
+							>in-process</span
+						>
+					</div>
+					<ul class="space-y-0.5 font-mono text-sm text-slate-700">
+						<li>
+							src/lib/look/eight-bit/eight-bit.svelte.ts (onKonami at line 51, sound state at module
+							scope)
+						</li>
+						<li>
+							src/lib/look/eight-bit/eight-bit-sound.ts (module-level AudioContext, idle timer)
+						</li>
+						<li>src/lib/look/easter-eggs/gestures.ts (module-level Konami buffer)</li>
+						<li>src/lib/contact/turnstile.ts (module-level cached promise)</li>
+					</ul>
+					<div class="grid gap-4 md:grid-cols-2">
+						<div>
+							<div class="mb-1.5 text-xs tracking-wider text-red-700 uppercase">Before</div>
+							<div class="flex flex-col gap-1.5">
+								<div class="rounded border-2 border-amber-500 bg-amber-50 px-3 py-2">
+									<div class="text-xs font-semibold tracking-wider uppercase">
+										eight-bit.svelte.ts
+									</div>
+									<div class="mt-0.5 text-xs opacity-80">import ⇒ onKonami(unlock) runs</div>
+								</div>
+								<div class="py-0.5 text-center text-xs text-red-600">
+									↓ works only if something imports it
+								</div>
+								<div class="rounded border-2 border-red-600 bg-red-50 px-3 py-2 text-red-800">
+									<div class="text-xs font-semibold tracking-wider uppercase">
+										whoever imports it first
+									</div>
+									<div class="mt-0.5 text-xs opacity-80">
+										order decides whether the egg is wired
+									</div>
+								</div>
+								<div class="mt-2 text-xs text-slate-500">
+									Specs reload modules with <code>?fresh=n</code>: 5 + 1 + 6 uses
+								</div>
+							</div>
+						</div>
+						<div>
+							<div class="mb-1.5 text-xs tracking-wider text-emerald-700 uppercase">After</div>
+							<div class="flex flex-col gap-1.5">
+								<div class="rounded border-4 border-slate-900 bg-slate-900 px-3 py-2 text-white">
+									<div class="text-xs font-semibold tracking-wider uppercase">look</div>
+									<div class="mt-0.5 text-xs opacity-80">turns the Konami wiring on, and off</div>
+								</div>
+								<div class="my-1 flex items-center gap-2">
+									<div class="flex-1 border-t-2 border-dashed border-slate-400"></div>
+									<span class="text-[10px] tracking-wider text-slate-500 uppercase"
+										>seam: start / stop</span
+									>
+									<div class="flex-1 border-t-2 border-dashed border-slate-400"></div>
+								</div>
+								<div
+									class="rounded border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-slate-400"
+								>
+									<div class="text-xs font-semibold tracking-wider uppercase">
+										eight-bit · sound · gestures
+									</div>
+									<div class="mt-0.5 text-xs opacity-80">start from a known state</div>
+								</div>
+								<div class="mt-2 text-xs text-slate-500">
+									Specs start clean; no cache-busting imports
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="grid gap-4 text-[15px] md:grid-cols-2">
+						<p>
+							<span class="block text-xs tracking-wider text-slate-500 uppercase">Problem</span
+							>Whether the Konami code does anything depends on a module being imported for its side
+							effect. That is invisible in the interface, and it is why three specs load fresh
+							copies of modules to get a known state.
+						</p>
+						<p>
+							<span class="block text-xs tracking-wider text-slate-500 uppercase">Solution</span
+							>Make the registration explicit: something starts the Konami wiring (and can stop it),
+							and the audio state can be reset. This is the same lifecycle the layout hands to the
+							look in candidate 1.
+						</p>
+					</div>
+					<div class="text-sm text-slate-600">
+						<span class="text-xs tracking-wider text-slate-500 uppercase">Evidence</span> Konami
+						buffer: <code>gestures.ts</code> line 69. Fresh-import uses: 5 in
+						<code>eight-bit.svelte.spec.ts</code>, 1 in the sound spec, 6 in
+						<code>turnstile.svelte.spec.ts</code>.
+					</div>
+					<ul class="list-disc space-y-0.5 pl-5 text-[15px]">
+						<li>locality: &quot;when is this wired&quot; in one place</li>
+						<li>no &lt;code&gt;?fresh=n&lt;/code&gt; in specs</li>
+						<li>wiring order stops mattering</li>
+						<li>pairs with candidate 1</li>
+					</ul>
+				</article>
+				<article id="visible-time" class="space-y-4 border-t border-slate-300 pt-8">
+					<div class="flex flex-wrap items-baseline gap-3">
+						<span class="font-serif text-3xl text-slate-400">3</span>
+						<h2 class="font-serif text-2xl">One meter for how long the page has been visible</h2>
+						<span
+							class="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-xs text-amber-800"
+							>Worth exploring</span
+						><span
+							class="rounded-full border border-slate-300 bg-white px-2 py-0.5 text-xs text-slate-600"
+							>in-process</span
+						>
+					</div>
+					<ul class="space-y-0.5 font-mono text-sm text-slate-700">
+						<li>src/lib/analytics/analytics.ts (trackReading, ~79–98)</li>
+						<li>src/lib/analytics/reads.ts (trackRead, 44–69)</li>
+						<li>src/lib/analytics/components/ReadCount.svelte (calls both)</li>
+					</ul>
+					<div class="grid gap-4 md:grid-cols-2">
+						<div>
+							<div class="mb-1.5 text-xs tracking-wider text-red-700 uppercase">Before</div>
+							<div class="rounded-lg border border-slate-200 bg-white p-3">
+								<pre class="mermaid">
+flowchart TB
+  RC[ReadCount] --> TR[trackRead]
+  RC --> TG[trackReading]
+  TR --> V1[visibilitychange + performance.now\npause / resume]
+  TG --> V2[visibilitychange + performance.now\nvisibleSince / ms]
+  TR --> B1[sendBeacon /api/views at 10 s]
+  TG --> B2[track read, on hide or leave]
+  classDef leak stroke:#dc2626,stroke-width:2px;
+  class V1,V2 leak</pre>
+							</div>
+						</div>
+						<div>
+							<div class="mb-1.5 text-xs tracking-wider text-emerald-700 uppercase">After</div>
+							<div class="rounded-lg border border-slate-200 bg-white p-3">
+								<pre class="mermaid">
+flowchart TB
+  RC[ReadCount] --> M[visible-time meter]
+  M --> B1[read beacon at 10 s]
+  M --> B2[reading report on hide or leave]
+  classDef deep fill:#0f172a,color:#fff,stroke:#0f172a,stroke-width:3px;
+  class M deep</pre>
+							</div>
+						</div>
+					</div>
+					<div class="grid gap-4 text-[15px] md:grid-cols-2">
+						<p>
+							<span class="block text-xs tracking-wider text-slate-500 uppercase">Problem</span>Two
+							timers measure the same quantity, visible seconds on the page, with duplicated pause
+							and resume arithmetic and different send channels. They can drift, and both specs test
+							background-tab and hidden-at-start cases separately.
+						</p>
+						<p>
+							<span class="block text-xs tracking-wider text-slate-500 uppercase">Solution</span
+							>Share one measure of visible time. The read beacon fires when it reaches a threshold;
+							the reading report fires when the page hides or the visitor leaves.
+						</p>
+					</div>
+					<div class="text-sm text-slate-600">
+						<span class="text-xs tracking-wider text-slate-500 uppercase">Evidence</span>
+						<code>ReadCount.svelte</code> calls
+						<code>[trackRead(path), trackReading(path)]</code> together; both use
+						<code>document.hidden</code> and <code>performance.now()</code>. They also gate the
+						author's opt-out differently (<code>trackRead</code> checks <code>optedOut()</code>;
+						<code>trackReading</code> relies on <code>startAnalytics</code>).
+					</div>
+					<ul class="list-disc space-y-0.5 pl-5 text-[15px]">
+						<li>locality: visibility rules fixed once</li>
+						<li>leverage: two reports, one meter</li>
+						<li>visibility cases tested once</li>
+						<li>ReadCount spec shrinks</li>
+					</ul>
+				</article>
+				<article id="list-query" class="space-y-4 border-t border-slate-300 pt-8">
+					<div class="flex flex-wrap items-baseline gap-3">
+						<span class="font-serif text-3xl text-slate-400">4</span>
+						<h2 class="font-serif text-2xl">Pull the list pages' query rules out of the pages</h2>
+						<span
+							class="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-xs text-amber-800"
+							>Worth exploring</span
+						><span
+							class="rounded-full border border-slate-300 bg-white px-2 py-0.5 text-xs text-slate-600"
+							>in-process</span
+						>
+					</div>
+					<ul class="space-y-0.5 font-mono text-sm text-slate-700">
+						<li>src/routes/blog/+page.svelte (184 lines)</li>
+						<li>src/routes/asides/+page.svelte (185 lines)</li>
+						<li>src/lib/content/asides.ts (KINDS, isKind, PAGE_SIZE)</li>
+						<li>src/routes/tests/blog.svelte.spec.ts (204), asides.svelte.spec.ts (177)</li>
+					</ul>
+					<div class="grid gap-4 md:grid-cols-2">
+						<div>
+							<div class="mb-1.5 text-xs tracking-wider text-red-700 uppercase">Before</div>
+							<div class="flex flex-col gap-1.5">
+								<div class="rounded border-2 border-slate-400 bg-white p-2">
+									<div class="mb-1.5 text-[10px] tracking-wider text-slate-500 uppercase">
+										blog/+page.svelte
+									</div>
+									<div class="flex flex-col gap-1.5">
+										<div class="rounded border border-slate-400 bg-white px-3 py-2">
+											<div class="text-xs font-semibold tracking-wider uppercase">
+												local q / cat state
+											</div>
+											<div class="mt-0.5 text-xs opacity-80">
+												seeded from page.url, mirrored back with replaceState
+											</div>
+										</div>
+										<div class="rounded border border-slate-400 bg-white px-3 py-2">
+											<div class="text-xs font-semibold tracking-wider uppercase">
+												filter · group by year · build hrefs
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="rounded border-2 border-slate-400 bg-white p-2">
+									<div class="mb-1.5 text-[10px] tracking-wider text-slate-500 uppercase">
+										asides/+page.svelte
+									</div>
+									<div class="flex flex-col gap-1.5">
+										<div class="rounded border border-slate-400 bg-white px-3 py-2">
+											<div class="text-xs font-semibold tracking-wider uppercase">
+												kind / tag / page derived from page.url
+											</div>
+											<div class="mt-0.5 text-xs opacity-80">goto on change</div>
+										</div>
+										<div class="rounded border border-slate-400 bg-white px-3 py-2">
+											<div class="text-xs font-semibold tracking-wider uppercase">
+												isKind guard · clamp page · filter · slice · build hrefs
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="mt-1 text-xs text-red-700">
+									Two ways to do one job. Specs mount each page and mock $app/state.
+								</div>
+							</div>
+						</div>
+						<div>
+							<div class="mb-1.5 text-xs tracking-wider text-emerald-700 uppercase">After</div>
+							<div class="flex flex-col gap-1.5">
+								<div class="rounded border border-slate-400 bg-white px-3 py-2">
+									<div class="text-xs font-semibold tracking-wider uppercase">
+										blog/+page.svelte
+									</div>
+									<div class="mt-0.5 text-xs opacity-80">render, navigate</div>
+								</div>
+								<div class="rounded border border-slate-400 bg-white px-3 py-2">
+									<div class="text-xs font-semibold tracking-wider uppercase">
+										asides/+page.svelte
+									</div>
+									<div class="mt-0.5 text-xs opacity-80">render, navigate</div>
+								</div>
+								<div class="my-1 flex items-center gap-2">
+									<div class="flex-1 border-t-2 border-dashed border-slate-400"></div>
+									<span class="text-[10px] tracking-wider text-slate-500 uppercase"
+										>seam: query in → visible slice + links out</span
+									>
+									<div class="flex-1 border-t-2 border-dashed border-slate-400"></div>
+								</div>
+								<div class="rounded border-4 border-slate-900 bg-slate-900 px-3 py-2 text-white">
+									<div class="text-xs font-semibold tracking-wider uppercase">
+										list query modules (content)
+									</div>
+									<div class="mt-0.5 text-xs opacity-80">
+										parse params · filter · page · group · links
+									</div>
+								</div>
+								<div class="mt-1 text-xs text-slate-500">
+									Plain-function specs; mount specs only for "clicking navigates"
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="grid gap-4 text-[15px] md:grid-cols-2">
+						<p>
+							<span class="block text-xs tracking-wider text-slate-500 uppercase">Problem</span>The
+							rules that turn a URL into a list (param parsing, clamping <code>page</code>, the
+							<code>isKind</code> guard, dropping page 1, category filtering, year grouping) are
+							pure logic with no module of their own. The two pages do the same job in two different
+							ways.
+						</p>
+						<p>
+							<span class="block text-xs tracking-wider text-slate-500 uppercase">Solution</span
+							>Give each list a module that takes the entries and the current query and returns the
+							visible slice and the links. The pages keep rendering and navigating.
+						</p>
+					</div>
+					<div class="text-sm text-slate-600">
+						<span class="text-xs tracking-wider text-slate-500 uppercase">Evidence</span> Blog seeds
+						local state from <code>page.url</code> (lines 16–17) and mirrors it back in an
+						<code>$effect</code> (37–49); asides derives everything from
+						<code>page.url</code> (18–25) and calls <code>goto</code>.
+					</div>
+					<ul class="list-disc space-y-0.5 pl-5 text-[15px]">
+						<li>locality: query rules in one module</li>
+						<li>plain-function specs, no mounting</li>
+						<li>&lt;code&gt;$app/state&lt;/code&gt; mock leaves most specs</li>
+						<li>one way to do list state</li>
+					</ul>
+				</article>
+				<article id="spam-check" class="space-y-4 border-t border-slate-300 pt-8">
+					<div class="flex flex-wrap items-baseline gap-3">
+						<span class="font-serif text-3xl text-slate-400">5</span>
+						<h2 class="font-serif text-2xl">
+							Fold the Turnstile token lifecycle into the contact domain
+						</h2>
+						<span
+							class="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-xs text-amber-800"
+							>Worth exploring</span
+						><span
+							class="rounded-full border border-slate-300 bg-white px-2 py-0.5 text-xs text-slate-600"
+							>ports &amp; adapters</span
+						>
+					</div>
+					<ul class="space-y-0.5 font-mono text-sm text-slate-700">
+						<li>src/lib/contact/components/ContactCard.svelte (326 lines; spam check ~96–135)</li>
+						<li>src/lib/contact/turnstile.ts (script loader only)</li>
+						<li>src/lib/contact/tests/components/ContactCard.svelte.spec.ts (338; 6 mocks)</li>
+					</ul>
+					<div class="grid gap-4 md:grid-cols-2">
+						<div>
+							<div class="mb-1.5 text-xs tracking-wider text-red-700 uppercase">Before</div>
+							<div class="flex flex-col gap-1.5">
+								<div class="rounded border-2 border-slate-400 bg-white p-2">
+									<div class="mb-1.5 text-[10px] tracking-wider text-slate-500 uppercase">
+										ContactCard.svelte
+									</div>
+									<div class="flex flex-col gap-1.5">
+										<div
+											class="rounded border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-slate-400"
+										>
+											<div class="text-xs font-semibold tracking-wider uppercase">
+												field state + checks
+											</div>
+											<div class="mt-0.5 text-xs opacity-80">
+												already deep: checkContact in contact.ts
+											</div>
+										</div>
+										<div class="rounded border-2 border-amber-500 bg-amber-50 px-3 py-2">
+											<div class="text-xs font-semibold tracking-wider uppercase">
+												Turnstile state machine
+											</div>
+											<div class="mt-0.5 text-xs opacity-80">
+												turnstile · widgetId · token · waiting[] · starting
+											</div>
+										</div>
+										<div class="rounded border border-slate-400 bg-white px-3 py-2">
+											<div class="text-xs font-semibold tracking-wider uppercase">tokenFor(ms)</div>
+											<div class="mt-0.5 text-xs opacity-80">
+												timer never cleared when the token arrives
+											</div>
+										</div>
+										<div class="rounded border border-slate-400 bg-white px-3 py-2">
+											<div class="text-xs font-semibold tracking-wider uppercase">enhance flow</div>
+										</div>
+									</div>
+								</div>
+								<div class="rounded border border-slate-400 bg-white px-3 py-2">
+									<div class="text-xs font-semibold tracking-wider uppercase">turnstile.ts</div>
+									<div class="mt-0.5 text-xs opacity-80">loads the script and nothing else</div>
+								</div>
+							</div>
+						</div>
+						<div>
+							<div class="mb-1.5 text-xs tracking-wider text-emerald-700 uppercase">After</div>
+							<div class="flex flex-col gap-1.5">
+								<div class="rounded border-2 border-slate-400 bg-white p-2">
+									<div class="mb-1.5 text-[10px] tracking-wider text-slate-500 uppercase">
+										ContactCard.svelte
+									</div>
+									<div class="flex flex-col gap-1.5">
+										<div class="rounded border border-slate-400 bg-white px-3 py-2">
+											<div class="text-xs font-semibold tracking-wider uppercase">
+												field state + checks
+											</div>
+										</div>
+										<div class="rounded border border-slate-400 bg-white px-3 py-2">
+											<div class="text-xs font-semibold tracking-wider uppercase">enhance flow</div>
+										</div>
+									</div>
+								</div>
+								<div class="my-1 flex items-center gap-2">
+									<div class="flex-1 border-t-2 border-dashed border-slate-400"></div>
+									<span class="text-[10px] tracking-wider text-slate-500 uppercase"
+										>seam: start · give me a token · reset</span
+									>
+									<div class="flex-1 border-t-2 border-dashed border-slate-400"></div>
+								</div>
+								<div class="rounded border-4 border-slate-900 bg-slate-900 px-3 py-2 text-white">
+									<div class="text-xs font-semibold tracking-wider uppercase">
+										spam check (contact)
+									</div>
+									<div class="mt-0.5 text-xs opacity-80">
+										script, widget, token, waiting, expiry
+									</div>
+								</div>
+								<div class="mt-1 text-xs text-slate-500">
+									The race (double focus, late token, reset) tested with fake timers, no form
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="grid gap-4 text-[15px] md:grid-cols-2">
+						<p>
+							<span class="block text-xs tracking-wider text-slate-500 uppercase">Problem</span>The
+							token lifecycle (start once, draw once, keep or expire, wait up to N ms, reset on
+							"send another") is a state machine hidden in the card. A double-start race lived there
+							until PR #175. Today the loader is shallow and the card holds the real behaviour.
+						</p>
+						<p>
+							<span class="block text-xs tracking-wider text-slate-500 uppercase">Solution</span
+							>Move the token-keeping state and the wait-for-token logic next to the script loader,
+							so the card only asks to start and for a token. The SvelteKit form
+							<code>enhance</code> flow stays in the card: it is a real framework seam.
+						</p>
+					</div>
+					<div class="text-sm text-slate-600">
+						<span class="text-xs tracking-wider text-slate-500 uppercase">Evidence</span> Validation
+						is already deep (<code>checkContact</code>, <code>checkField</code> in
+						<code>contact.ts</code>), so it is not part of this candidate. Turnstile is a real
+						adapter pair already (Cloudflare's script in production, a stand-in in specs).
+					</div>
+					<ul class="list-disc space-y-0.5 pl-5 text-[15px]">
+						<li>locality: race-prone state in one module</li>
+						<li>ContactCard drops its turnstile mock</li>
+						<li>timer and reset cases testable alone</li>
+						<li>turnstile.ts stops being shallow</li>
+					</ul>
+				</article>
+				<article id="fake-strapi" class="space-y-4 border-t border-slate-300 pt-8">
+					<div class="flex flex-wrap items-baseline gap-3">
+						<span class="font-serif text-3xl text-slate-400">6</span>
+						<h2 class="font-serif text-2xl">One shared fake Strapi for the specs</h2>
+						<span
+							class="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-xs text-amber-800"
+							>Worth exploring</span
+						><span
+							class="rounded-full border border-slate-300 bg-white px-2 py-0.5 text-xs text-slate-600"
+							>local-substitutable (test support)</span
+						>
+					</div>
+					<ul class="space-y-0.5 font-mono text-sm text-slate-700">
+						<li>src/routes/tests/pages.spec.ts (239)</li>
+						<li>src/lib/publishing/tests/content-map.pages.spec.ts (159)</li>
+						<li>src/lib/content/tests/server/queries.spec.ts (364)</li>
+						<li>src/lib/content/server/strapi.ts (the adapter they fake)</li>
+					</ul>
+					<div class="grid gap-4 md:grid-cols-2">
+						<div>
+							<div class="mb-1.5 text-xs tracking-wider text-red-700 uppercase">Before</div>
+							<div class="flex flex-col gap-1.5">
+								<div class="rounded border border-slate-400 bg-white px-3 py-2">
+									<div class="text-xs font-semibold tracking-wider uppercase">strapi.ts</div>
+									<div class="mt-0.5 text-xs opacity-80">the seam</div>
+								</div>
+								<div class="py-0.5 text-center text-xs text-slate-500">↓ faked at two depths</div>
+								<div class="rounded border-2 border-amber-500 bg-amber-50 px-3 py-2">
+									<div class="text-xs font-semibold tracking-wider uppercase">
+										pages.spec: fetch fake
+									</div>
+									<div class="mt-0.5 text-xs opacity-80">
+										answers map · down · missing · envelope
+									</div>
+								</div>
+								<div class="rounded border-2 border-amber-500 bg-amber-50 px-3 py-2">
+									<div class="text-xs font-semibold tracking-wider uppercase">
+										content-map.pages.spec: fetch fake
+									</div>
+									<div class="mt-0.5 text-xs opacity-80">one ENTRY · same envelope</div>
+								</div>
+								<div class="rounded border-2 border-amber-500 bg-amber-50 px-3 py-2">
+									<div class="text-xs font-semibold tracking-wider uppercase">
+										queries.spec: client fake
+									</div>
+									<div class="mt-0.5 text-xs opacity-80">findAll / find / get over arrays</div>
+								</div>
+								<div class="mt-1 text-xs text-red-700">An envelope change means three edits.</div>
+							</div>
+						</div>
+						<div>
+							<div class="mb-1.5 text-xs tracking-wider text-emerald-700 uppercase">After</div>
+							<div class="flex flex-col gap-1.5">
+								<div class="rounded border border-slate-400 bg-white px-3 py-2">
+									<div class="text-xs font-semibold tracking-wider uppercase">strapi.ts</div>
+									<div class="mt-0.5 text-xs opacity-80">the seam</div>
+								</div>
+								<div class="py-0.5 text-center text-xs text-slate-500">↓ one in-memory adapter</div>
+								<div class="rounded border-4 border-slate-900 bg-slate-900 px-3 py-2 text-white">
+									<div class="text-xs font-semibold tracking-wider uppercase">
+										shared fake Strapi
+									</div>
+									<div class="mt-0.5 text-xs opacity-80">
+										envelope defined once · down / missing everywhere
+									</div>
+								</div>
+								<div class="mt-1 text-xs text-slate-500">
+									Used by all three specs, at whichever depth each needs
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="grid gap-4 text-[15px] md:grid-cols-2">
+						<p>
+							<span class="block text-xs tracking-wider text-slate-500 uppercase">Problem</span>The
+							seam is <code>strapi.ts</code>, but specs fake it at two different depths. Two of them
+							hand-roll the same <code>fetch</code> response envelope, and a fake that drifts from
+							real Strapi is caught nowhere.
+						</p>
+						<p>
+							<span class="block text-xs tracking-wider text-slate-500 uppercase">Solution</span
+							>Keep one in-memory Strapi for specs: usable at the <code>fetch</code> level, and able
+							to hand out a client for the query specs.
+						</p>
+					</div>
+					<div class="text-sm text-slate-600">
+						<span class="text-xs tracking-wider text-slate-500 uppercase">Evidence</span>
+						Test-support code only; no production interface changes. A second adapter (the fake)
+						already exists three times, so the seam is real.
+					</div>
+					<ul class="list-disc space-y-0.5 pl-5 text-[15px]">
+						<li>locality: envelope defined once</li>
+						<li>drift from real Strapi caught once</li>
+						<li>~20–30 lines gone per spec</li>
+						<li>down and missing paths everywhere</li>
+					</ul>
+				</article>
+				<article id="preview-handle" class="space-y-4 border-t border-slate-300 pt-8">
+					<div class="flex flex-wrap items-baseline gap-3">
+						<span class="font-serif text-3xl text-slate-400">7</span>
+						<h2 class="font-serif text-2xl">
+							Move the preview handle (and mergeDrafts) to where they belong
+						</h2>
+						<span
+							class="rounded-full border border-slate-300 bg-slate-100 px-2 py-0.5 text-xs text-slate-700"
+							>Speculative</span
+						><span
+							class="rounded-full border border-slate-300 bg-white px-2 py-0.5 text-xs text-slate-600"
+							>in-process</span
+						>
+					</div>
+					<ul class="space-y-0.5 font-mono text-sm text-slate-700">
+						<li>src/hooks.server.ts (31 lines)</li>
+						<li>src/tests/hooks.server.spec.ts (stubs sequence)</li>
+						<li>src/lib/publishing/server/preview.ts (mergeDrafts, verifyCookie)</li>
+						<li>src/lib/content/server/posts.ts, asides.ts (import mergeDrafts)</li>
+					</ul>
+					<div class="grid gap-4 md:grid-cols-2">
+						<div>
+							<div class="mb-1.5 text-xs tracking-wider text-red-700 uppercase">Before</div>
+							<div class="flex flex-col gap-1.5">
+								<div class="rounded border border-slate-400 bg-white px-3 py-2">
+									<div class="text-xs font-semibold tracking-wider uppercase">hooks.server.ts</div>
+									<div class="mt-0.5 text-xs opacity-80">
+										look · cacheTags · preview private; only handle exported
+									</div>
+								</div>
+								<div class="py-0.5 text-center text-xs text-slate-500">
+									↓ spec re-implements sequence
+								</div>
+								<div
+									class="rounded border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-slate-400"
+								>
+									<div class="text-xs font-semibold tracking-wider uppercase">
+										publishing: verifyCookie, edgeCache
+									</div>
+									<div class="mt-0.5 text-xs opacity-80">already importable and tested</div>
+								</div>
+								<div class="rounded border-2 border-amber-500 bg-amber-50 px-3 py-2">
+									<div class="text-xs font-semibold tracking-wider uppercase">
+										content → publishing
+									</div>
+									<div class="mt-0.5 text-xs opacity-80">
+										mergeDrafts: &quot;content in preview&quot; lives in publishing
+									</div>
+								</div>
+							</div>
+						</div>
+						<div>
+							<div class="mb-1.5 text-xs tracking-wider text-emerald-700 uppercase">After</div>
+							<div class="flex flex-col gap-1.5">
+								<div class="rounded border border-slate-400 bg-white px-3 py-2">
+									<div class="text-xs font-semibold tracking-wider uppercase">hooks.server.ts</div>
+									<div class="mt-0.5 text-xs opacity-80">composes</div>
+								</div>
+								<div class="rounded border-4 border-slate-900 bg-slate-900 px-3 py-2 text-white">
+									<div class="text-xs font-semibold tracking-wider uppercase">
+										publishing: preview handle
+									</div>
+									<div class="mt-0.5 text-xs opacity-80">next to verifyCookie</div>
+								</div>
+								<div class="mt-1 text-xs text-slate-500">
+									Preview cases tested without sequence; mergeDrafts direction reviewed
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="grid gap-4 text-[15px] md:grid-cols-2">
+						<p>
+							<span class="block text-xs tracking-wider text-slate-500 uppercase">Problem</span>The
+							preview handle is private to the hooks file, so its spec re-implements
+							<code>sequence</code> (25 lines). Separately, <code>content</code> imports
+							<code>mergeDrafts</code> from <code>publishing</code>, though merging drafts is about
+							content in preview.
+						</p>
+						<p>
+							<span class="block text-xs tracking-wider text-slate-500 uppercase">Solution</span
+							>Move the preview handle into the publishing domain, and decide whether
+							<code>mergeDrafts</code> belongs to content.
+						</p>
+					</div>
+					<div class="text-sm text-slate-600">
+						<span class="text-xs tracking-wider text-slate-500 uppercase">Evidence</span> Rated
+						Speculative: the handles are 3–10 lines, and the logic they call is already tested. The
+						cost being removed is a one-time stub. No cycle exists today.
+					</div>
+					<ul class="list-disc space-y-0.5 pl-5 text-[15px]">
+						<li>locality: preview rules with verifyCookie</li>
+						<li>one stub fewer in hooks spec</li>
+						<li>import direction reviewed</li>
+					</ul>
+				</article>
+			</section>
+
+			<section class="space-y-3 border-t border-slate-300 pt-8">
+				<h2 class="font-serif text-2xl">Considered and rejected</h2>
+				<ul class="list-disc space-y-1.5 pl-5 text-[15px]">
+					<li>
+						<span class="font-medium">Extract validation from ContactCard.</span>
+						<span class="text-slate-600"
+							>checkContact and checkField are already deep and tested in contact.ts.</span
+						>
+					</li>
+					<li>
+						<span class="font-medium">Share the draft/published fetch ritual.</span>
+						<span class="text-slate-600"
+							>Two call sites with different sorts; extracting moves a few lines without
+							concentrating complexity (deletion test). resume.ts does not merge at all.</span
+						>
+					</li>
+					<li>
+						<span class="font-medium">Flatten site/*.ts.</span>
+						<span class="text-slate-600"
+							>motion, share and site each have one job; deleting any spreads logic to
+							callers.</span
+						>
+					</li>
+					<li>
+						<span class="font-medium">Inline content/asides.ts or palettes.ts.</span>
+						<span class="text-slate-600"
+							>Shared by a page and the server, or by a build script; deleting duplicates.</span
+						>
+					</li>
+					<li>
+						<span class="font-medium">Inline page-load.ts.</span>
+						<span class="text-slate-600"
+							>A real wrapper with a spec that every route would otherwise repeat.</span
+						>
+					</li>
+					<li>
+						<span class="font-medium">Export every hook handle.</span>
+						<span class="text-slate-600">Covered by candidate 7 at lower cost.</span>
+					</li>
+				</ul>
+			</section>
+
+			<section
+				id="top-recommendation"
+				class="space-y-2 rounded-lg border-2 border-slate-900 bg-white p-6"
+			>
+				<div class="text-xs tracking-wider text-slate-500 uppercase">Top recommendation</div>
+				<h2 class="font-serif text-2xl">
+					<a class="underline" href="#easter-eggs-in-look"
+						>1. Give the easter-egg orchestration a home in the look</a
+					>
+				</h2>
+				<p>
+					It has the most mocks (five), the only bug that escaped the earlier specs, and a leak past
+					ADR 0002's interface. Candidate 2 is the same lifecycle seen from the other side, so grill
+					them together.
+				</p>
+			</section>
+		</main>
+	</body>
+</html>
