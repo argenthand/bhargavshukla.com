@@ -268,10 +268,11 @@
 		</span>
 		{#each nav as item (item.href)}
 			<!-- eslint-disable svelte/no-navigation-without-resolve -- nav hrefs are plain strings from site.ts; resolve() needs route literals -->
+			<!-- Every tab counts taps and `current` is checked on the fifth: tapping the current tab navigates to the page it's on, giving `page.url` a new object, so attaching only to the current tab would count from zero again on every tap. -->
 			<a
 				href={item.href}
 				aria-current={current(item.href)}
-				{@attach current(item.href) && taps(5, lap)}
+				{@attach taps(5, () => current(item.href) && lap())}
 				class="relative flex min-h-tab-bar flex-col items-center justify-center gap-1 pt-1 text-xs tracking-wide text-muted aria-[current=page]:font-semibold aria-[current=page]:text-accent"
 			>
 				<Icon name={item.icon} size={22} />
