@@ -136,7 +136,7 @@ Read string config through `$env/dynamic/private` (populated from bindings by `a
 - "No tags → not stored", "non-200 → not stored", "preview → not stored".
 - Content map (`content-map.spec.ts`): webhook → plan for every row in the table above, the targeted URLs to fetch again (page data spelled like the client, live sections only, untrusted slugs ignored), relation tags, entry paths.
 - Content map against the code and the CMS (`content-map.pages.spec.ts`): every route's real loads, against a fake Strapi, read exactly the content types it declares; every route that shows content is declared; content types, drafts and relations match the CMS schemas.
-- Page loads (`src/routes/pages.spec.ts`): every page route exports the contact action; each load against a fake Strapi that answers, has nothing saved, or is down (the table under Degraded pages). The hook's 503 for a degraded page and its 200 for degraded page data are in `edge-cache.spec.ts`.
+- Page loads (`src/routes/tests/pages.spec.ts`): every page route exports the contact action; each load against a fake Strapi that answers, has nothing saved, or is down (the table under Degraded pages). The hook's 503 for a degraded page and its 200 for degraded page data are in `edge-cache.spec.ts`.
 - Purge endpoint: auth, purge failure → 502 without repopulating. Repopulate: its concurrency.
 
 ## Verifying in production

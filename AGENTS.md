@@ -32,7 +32,7 @@ After completing the code, ask the user if they want a playground link. Only cal
 
 ## Code layout
 
-`src/lib` is split by domain (see `docs/routes.md`). Import a domain only through its `index.ts` or `index.server.ts`; ESLint fails on anything deeper. Put specs next to the module they test.
+`src/lib` is split by domain (see `docs/routes.md`). Import a domain only through its `index.ts` or `index.server.ts`; ESLint fails on anything deeper. Put specs in the domain's `tests/` folder, mirroring its layout (routes: `src/routes/tests/`).
 
 ## Agent skills
 
