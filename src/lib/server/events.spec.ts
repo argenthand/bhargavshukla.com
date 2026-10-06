@@ -201,37 +201,52 @@ describe('readBeacon', () => {
 });
 
 describe('toPostHog', () => {
-	it('adds the cookieless placeholder and the visitor fields, and times each event', () => {
-		const now = new Date('2026-10-05T12:00:00.000Z');
-		const batch = toPostHog(
-			'phc_test',
-			[pageview, { event: 'contact_sent', properties: { $pathname: '/' } }],
-			{ ip: '203.0.113.9', userAgent: CHROME, host: 'bhargavshukla.com' },
-			now
-		);
-		const visitor = {
-			$ip: '203.0.113.9',
-			$raw_user_agent: CHROME,
-			$host: 'bhargavshukla.com',
-			$process_person_profile: false
-		};
-		expect(batch).toEqual({
+	const visitor = { ip: '203.0.113.9', userAgent: CHROME, host: 'bhargavshukla.com' };
+	const now = new Date('2026-10-05T12:00:00.000Z');
+
+	it('sends a page view with the cookieless placeholder and the visitor fields, timed by its age', () => {
+		expect(toPostHog('phc_test', [pageview], visitor, now)).toEqual({
 			api_key: 'phc_test',
 			batch: [
 				{
 					event: '$pageview',
 					distinct_id: '$posthog_cookieless',
-					properties: { ...pageview.properties, ...visitor },
+					properties: {
+						...pageview.properties,
+						$ip: '203.0.113.9',
+						$raw_user_agent: CHROME,
+						$host: 'bhargavshukla.com',
+						$process_person_profile: false
+					},
 					timestamp: '2026-10-05T11:59:59.995Z'
-				},
-				{
-					event: 'contact_sent',
-					distinct_id: '$posthog_cookieless',
-					properties: { $pathname: '/', ...visitor },
-					timestamp: '2026-10-05T12:00:00.000Z'
 				}
 			]
 		});
+	});
+
+	it('sends every other event as an anonymous count: no IP, no User-Agent, nothing linking it to a visitor', () => {
+		const { batch } = toPostHog(
+			'phc_test',
+			[
+				{ event: 'contact_sent', properties: { $pathname: '/' } },
+				{ event: 'easter_egg_found', properties: { $pathname: '/', egg: 'disco' } }
+			],
+			visitor,
+			now
+		);
+		for (const event of batch) {
+			expect(event.distinct_id).toMatch(/^[0-9a-f-]{36}$/);
+			expect(event.properties).not.toHaveProperty('$ip');
+			expect(event.properties).not.toHaveProperty('$raw_user_agent');
+			expect(event.properties).toMatchObject({
+				$host: 'bhargavshukla.com',
+				$process_person_profile: false,
+				$geoip_disable: true
+			});
+			expect(event.timestamp).toBe('2026-10-05T12:00:00.000Z');
+		}
+		expect(batch[0].distinct_id).not.toBe(batch[1].distinct_id);
+		expect(batch[1].properties.egg).toBe('disco');
 	});
 });
 
@@ -328,8 +343,10 @@ describe('sendServerEvent', () => {
 		);
 		expect(body.batch[0]).toMatchObject({
 			event: 'contact_sent',
-			properties: { $pathname: '/blog/a', $current_url: `${SITE}/blog/a`, $ip: '203.0.113.9' }
+			properties: { $pathname: '/blog/a', $current_url: `${SITE}/blog/a` }
 		});
+		expect(body.batch[0].properties).not.toHaveProperty('$ip');
+		expect(body.batch[0].properties).not.toHaveProperty('$raw_user_agent');
 	});
 
 	it.each([

@@ -149,7 +149,19 @@ export interface PostHogBatch {
 	}[];
 }
 
-/** Events for PostHog's batch endpoint, timed from when they happened (`age`, from the page). */
+/**
+ * The only events that carry the visitor: page views, for visitors per day, sessions and bounce
+ * rate. Every other event is an anonymous count, so a visitor's day of events can't be put
+ * together, and the contact card's events can't be matched to the email that arrives with them.
+ */
+const VISITOR_EVENTS = new Set(['$pageview']);
+
+/**
+ * Events for PostHog's batch endpoint, timed from when they happened (`age`, from the page).
+ * A page view gets the cookieless placeholder and the IP, User-Agent and host PostHog hashes into
+ * the day's visitor, then deletes. Anything else gets a random ID of its own and no IP or
+ * User-Agent; `$geoip_disable` stops PostHog looking up the address it arrived from (the Worker's).
+ */
 export function toPostHog(
 	token: string,
 	events: { event: string; properties: Record<string, unknown>; age?: number }[],
@@ -158,19 +170,23 @@ export function toPostHog(
 ): PostHogBatch {
 	return {
 		api_key: token,
-		batch: events.map(({ event, properties, age = 0 }) => ({
-			event,
-			distinct_id: '$posthog_cookieless',
-			properties: {
-				...properties,
-				$ip: visitor.ip,
-				$raw_user_agent: visitor.userAgent,
-				$host: visitor.host,
-				// No person profiles: a visitor is a daily hash, never a person.
-				$process_person_profile: false
-			},
-			timestamp: new Date(now.getTime() - age).toISOString()
-		}))
+		batch: events.map(({ event, properties, age = 0 }) => {
+			const withVisitor = VISITOR_EVENTS.has(event);
+			return {
+				event,
+				distinct_id: withVisitor ? '$posthog_cookieless' : crypto.randomUUID(),
+				properties: {
+					...properties,
+					...(withVisitor
+						? { $ip: visitor.ip, $raw_user_agent: visitor.userAgent }
+						: { $geoip_disable: true }),
+					$host: visitor.host,
+					// No person profiles: a visitor is a daily hash, never a person.
+					$process_person_profile: false
+				},
+				timestamp: new Date(now.getTime() - age).toISOString()
+			};
+		})
 	};
 }
 
