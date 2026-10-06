@@ -17,29 +17,12 @@ const MAX_PATH = 200;
 const BOTS =
 	/bot|crawl|spider|slurp|headless|lighthouse|pagespeed|gtmetrix|curl|wget|python|httpclient|okhttp|go-http|axios|node-fetch|undici|facebookexternalhit|embedly|phantomjs|selenium|puppeteer|playwright/i;
 
-/**
- * Visitors not counted, by Cloudflare's country code: the EEA (the EU, plus its outermost regions
- * that have their own codes, Iceland, Liechtenstein and Norway), the UK with Gibraltar and the
- * Crown Dependencies, and Switzerland: places with GDPR or a law like it. Their visits aren't
- * counted at all (docs/analytics.md).
- */
-export const EXCLUDED_COUNTRIES = new Set([
-	// EU
-	...['AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT'],
-	...['LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE'],
-	// EU regions with codes of their own: Åland, French Guiana, Guadeloupe, Martinique, Réunion,
-	// Mayotte, Saint Martin
-	...['AX', 'GF', 'GP', 'MQ', 'RE', 'YT', 'MF'],
-	// The rest of the EEA, the UK and its dependencies, Switzerland
-	...['IS', 'LI', 'NO', 'GB', 'GI', 'IM', 'JE', 'GG', 'CH']
-]);
-
 /** Cloudflare's codes for "unknown" and for Tor, where the visitor could be anywhere. */
 const UNKNOWN_COUNTRIES = new Set(['XX', 'T1']);
 
 /** Whether a visitor's country is counted: not an excluded one, and known. */
 export function countryCounted(country: string | undefined): boolean {
-	return !!country && !EXCLUDED_COUNTRIES.has(country) && !UNKNOWN_COUNTRIES.has(country);
+	return !!country && !UNKNOWN_COUNTRIES.has(country);
 }
 
 export function isBot(userAgent: string): boolean {
