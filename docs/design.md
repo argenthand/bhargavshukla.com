@@ -169,7 +169,7 @@ A palette is a grey family (`--grey-*`) and an accent hue (`--hue-*`), both Tail
 | Plum                    | violet  | zinc    | 7.3             | 7.0            |
 | Ochre                   | amber   | stone   | 5.1             | 11.5           |
 
-Visitors pick one with the colour dot next to the theme toggle (`PalettePicker.svelte`); it's saved in `localStorage` (`palette`) and applied before the first paint by the look's first-paint script, like the theme. Everything that chooses, shows or reads the palette goes through the look (`src/lib/look/look.svelte.ts`, #141). To add a palette: a `:root[data-palette=…]` block in `src/styles/palettes.css` and an entry in `PALETTES` (`src/lib/look/palettes.ts`); the first-paint script picks it up from there.
+Visitors pick one with the colour dot next to the theme toggle (`PalettePicker.svelte`); it's saved in `localStorage` (`palette`) and applied before the first paint by the look's first-paint script, like the theme. Everything that chooses, shows or reads the palette goes through the look (`src/lib/look/look.svelte.ts`, #141). To add a palette: a `:root[data-palette=…]` block in `src/styles/palettes.css` and an entry in `PALETTES` (`src/lib/look/palettes.ts`) and its id in `PALETTE_IDS` (`src/lib/analytics/events.ts`; `events.spec.ts` fails until you do); the first-paint script picks it up from there.
 
 ## Styling rules
 

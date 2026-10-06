@@ -21,7 +21,7 @@ src/
                                   h2/h3 ids + ToC list), image.ts, images.ts (credited external images, #40)
     look/                         the look (#141): theme, chosen palette, 8-bit mode and the easter eggs
       look.svelte.ts              the look: the only writer of its storage and <html> attributes
-      palettes.ts                 PALETTES (#81): plain data, shared with scripts/print-notes.mjs; a leaf analytics imports directly
+      palettes.ts                 PALETTES (#81): plain data, shared with scripts/print-notes.mjs
       boot/                       look-boot.ts, the first-paint script (look-boot.script.js, raw text), put in app.html by the hooks
       eight-bit/                  8-bit mode's sound switch, blips and the Konami unlock (#111)
       easter-eggs/                gestures.ts (quick taps, the Konami code, #143), easter-eggs.ts (copy), disco.ts, intro.svelte.ts
@@ -63,7 +63,7 @@ Every page route's +page.server.ts builds its load with `pageLoad` and exports `
 
 ## How `src/lib` is organised (#157)
 
-Each folder in `src/lib` is one domain from [CONTEXT.md](../CONTEXT.md), and the folder's `index.ts` (and `index.server.ts`, for server code) is its interface. Routes, hooks and other domains import only from there, for example `$lib/look` or `$lib/content/index.server`, never from the files behind it. ESLint enforces this (`eslint.config.js`), including that a domain's client code can't import its own `server/` folder (SvelteKit only guards `index.server`). The one exception is `$lib/look/palettes`, a leaf with no imports, which analytics reads directly so the two interfaces don't import each other.
+Each folder in `src/lib` is one domain from [CONTEXT.md](../CONTEXT.md), and the folder's `index.ts` (and `index.server.ts`, for server code) is its interface. Routes, hooks and other domains import only from there, for example `$lib/look` or `$lib/content/index.server`, never from the files behind it. ESLint enforces this (`eslint.config.js`), including that a domain's client code can't import its own `server/` folder (SvelteKit only guards `index.server`). There are no exceptions. Analytics spells out the palette ids it accepts (`PALETTE_IDS` in `analytics/events.ts`) rather than importing the look, and `analytics/events.spec.ts` fails if they differ from `PALETTES`.
 
 Specs sit next to the module they test. The `.svelte.spec.ts` suffix sends a spec to the browser project; every other spec runs in Node. Specs that cover more than one module are in the domain's `tests/` folder, or in `src/routes/pages.spec.ts` when they exercise the routes.
 

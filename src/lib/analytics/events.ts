@@ -3,12 +3,13 @@
 // (src/lib/analytics/analytics.ts) is typed from this, and the Worker (src/lib/analytics/server/events.ts) drops
 // anything that doesn't fit it.
 
-import { PALETTES } from '$lib/look/palettes';
-
 /** A value's kind: a number, a host name (`github.com`), or one of a few words. */
 type Kind = 'number' | 'host' | readonly string[];
 
 export const EGGS = ['8-bit', 'disco', 'tab-lap', 'abyss'] as const;
+
+/** The look's palette ids, spelled out so analytics never imports the look (#161); events.spec.ts keeps them in step. */
+const PALETTE_IDS = ['newsprint', 'harbour', 'sage', 'plum', 'ochre'] as const;
 
 /** The events a page sends, and the one value each may carry. */
 export const PAGE_EVENTS = {
@@ -16,7 +17,7 @@ export const PAGE_EVENTS = {
 	page_view: { referrer: 'host' },
 	read: { seconds: 'number' },
 	easter_egg_found: { egg: EGGS },
-	palette_chosen: { palette: PALETTES.map((palette) => palette.id) },
+	palette_chosen: { palette: PALETTE_IDS },
 	resume_printed: {},
 	contact_started: {},
 	outbound_link: { host: 'host' }
