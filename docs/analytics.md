@@ -129,7 +129,7 @@ After a few months of numbers, decide whether it's worth it, and if so who sees 
 1. **Tool:** PostHog EU Cloud, free plan, no card.
 2. **Sending:** our own beacon to `/api/events`, forwarded by the Worker. No posthog-js, autocapture or replay.
 3. **Visitors:** PostHog's cookieless server hash mode, with client IP data discarded. No cookies, no banner.
-4. **EU:** visitors included in full. Web Analytics' EU exclusion is turned off now. _Changed while building (#154), below: no visitors from the EEA, the UK or Switzerland until there's a DPA._
+4. **EU:** visitors included in full. Web Analytics' EU exclusion is turned off now. _While building (#154) visitors in the EEA, the UK and Switzerland were left out; since 2026-10-06, with nothing about visitors kept, everyone is counted again._
 5. **Events:** as listed above; the must-haves are easter eggs, palettes, the printed resume and the contact card.
 6. **Not counted:** the read counts' rules, plus bot User-Agents. One `noCount` flag for both.
 7. **Web Analytics:** alongside for four weeks after launch, then off.
@@ -137,7 +137,7 @@ After a few months of numbers, decide whether it's worth it, and if so who sees 
 9. **Web Vitals:** measured with `web-vitals` and sent as `$web_vitals`.
 10. **Post-MVP:** a consent banner for return visitors, decided after a few months of data.
 
-**Changed while building (#154, 2026-10-05/06):** decisions 1–4, 7 and 9 are replaced. No PostHog and, once this is live, no Web Analytics: page views and events are counts in Workers Analytics Engine; visitors in the EEA, the UK and Switzerland aren't counted. No unique visitors, countries, devices or Web Vitals: total counts are what's wanted. 5, 6 and 8 stand (read counts stay in D1; `read` is one of the events).
+**Changed while building (#154, 2026-10-05/06):** decisions 1–4, 7 and 9 are replaced. No PostHog and, once this is live, no Web Analytics: page views and events are counts in Workers Analytics Engine; everyone is counted, EU visitors included (decision 4 stands again). No unique visitors, countries, devices or Web Vitals: total counts are what's wanted. 5, 6 and 8 stand (read counts stay in D1; `read` is one of the events).
 
 ## Built (#154)
 
@@ -160,7 +160,7 @@ Where each event fires: `page_view` on load and after each client-side navigatio
 Choices made while building:
 
 - **`read` sends the seconds since its last report**, each time the page is hidden and when the visitor leaves, for the post it timed (not the page the address bar shows by then). Total reading time on a page is the sum of `seconds`.
-- **Visitors in the EEA, the UK and Switzerland aren't counted** (by `request.cf.country`; `EXCLUDED_COUNTRIES` in `src/lib/server/events.ts`), nor unknown countries and Tor. Their pages still send the beacon (pages come from the shared edge cache, so the page can't know where its visitor is), and the Worker drops it. Cloudflare Web Analytics' own exclusion covers the EU only. To count them, empty the list.
+- **Everyone is counted, wherever they are** (2026-10-06): an event holds nothing about the visitor, so there's nothing to keep from anyone. The EEA, UK and Switzerland exclusion (and the unknown-country and Tor filter that backed it) ran from launch until then.
 - **No query strings anywhere:** the Writing page's search (`?q=`) would otherwise carry what a visitor typed. Campaign tags (`utm_*`) aren't counted; the referring site is.
 - **Cost on the page:** about 1.4 KB gz of JavaScript, and one beacon per page view (plus one when a page with events is hidden). With Web Analytics off, no external script at all.
 

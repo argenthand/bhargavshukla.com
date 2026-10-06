@@ -192,7 +192,6 @@ export const contact: Action = async (event) => {
 	const analytics = {
 		request,
 		preview: locals.preview,
-		country: platform?.cf?.country,
 		skip: Boolean(data.get(NO_COUNT_FIELD)),
 		dataset: platform?.env.EVENTS
 	};

@@ -75,7 +75,7 @@ Page views (with the referring site), easter eggs, palettes, the printed resume,
 
 - **Where:** dataset `bs_events`, binding `EVENTS` in `wrangler.jsonc`. Each event is a data point: the event, the page's path, one value and a number of seconds. Nothing about the visitor (no IP, User-Agent, country or ID). Analytics Engine keeps data for 3 months.
 - **Reading it:** `pnpm stats` (`scripts/stats.mjs`, `--days 1–90`) queries the SQL API with `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_STATS_TOKEN` (an API token with **Account Analytics: Read**) from the environment or `.env`.
-- **Not counted:** visitors in the EEA, the UK and Switzerland (by `request.cf.country`), unknown countries and Tor, bots, preview mode, other hosts, and the author's devices (`noCount`).
+- **Not counted:** bots, preview mode, other hosts, and the author's devices (`noCount`). Where a visitor is doesn't matter: nothing about them is kept.
 - **Cost:** $0: Workers Paid includes 10 M data points and 10 M requests a month. About one beacon per page view (plus one when a page with events is hidden), each a Worker request and one data point per event.
 
 ## Read counts: Cloudflare D1 (#87)
@@ -442,9 +442,9 @@ Before merging #87 (the Worker refuses to deploy with a binding to a database th
 ### Analytics (#154)
 
 1. **Merge.** The deploy creates the `bs_events` dataset on its first write. The CMS deploys the Privacy single type.
-2. In the production admin: Settings → API Tokens → **frontend-read** → add `find` on **Privacy**; then Content Manager → **Privacy**: write the note and save (until then `/privacy`, linked from the footer, is a 404). The first draft is in `cms/scripts/seed.js` (`PRIVACY`).
+2. In the production admin: Settings → API Tokens → **frontend-read** → add `find` on **Privacy**; then Content Manager → **Privacy**: write the note and save (until the token can read it, `/privacy`, linked from the footer, is a 502; then a 404 until the note is saved). The first draft is in `cms/scripts/seed.js` (`PRIVACY`).
 3. For `pnpm stats`: dashboard → My Profile → API Tokens → Create Token → Custom, permission **Account → Account Analytics → Read**, this account only. Put it in `.env` as `CLOUDFLARE_STATS_TOKEN`, with `CLOUDFLARE_ACCOUNT_ID` (Workers & Pages → Account details).
-4. **Check:** from outside the EEA, the UK and Switzerland (or a VPN exit there), and without `noCount`, open a page on bhargavshukla.com; a minute later `pnpm stats --days 1` shows a `page_view`.
+4. **Check:** without `noCount`, open a page on bhargavshukla.com; a minute later `pnpm stats --days 1` shows a `page_view`.
 5. **Then, once the builds have finished**, turn Cloudflare Web Analytics off: dashboard → Analytics & Logs → Web Analytics → `bhargavshukla.com` → turn off automatic setup (or remove the site). **Check:** `curl -s -H 'Accept: text/html' https://bhargavshukla.com/ | grep -c cloudflareinsights` prints `0`, and `curl -sI -H 'Accept: text/html' https://bhargavshukla.com/` shows an `etag` ([caching.md](caching.md#validators-126)).
 
 ### Contact form (#135)

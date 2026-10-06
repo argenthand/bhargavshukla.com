@@ -7,6 +7,5 @@ import type { RequestHandler } from './$types';
 export const POST: RequestHandler = ({ request, locals, platform }) =>
 	handleBeacon(request, {
 		preview: locals.preview,
-		country: platform?.cf?.country,
 		dataset: platform?.env.EVENTS
 	});

@@ -52,7 +52,7 @@ describe('isBot', () => {
 
 describe('counted', () => {
 	it('counts a same-origin request on the site, outside preview, from a browser', () => {
-		expect(counted(beacon([]), { preview: false, country: 'CA' })).toBe(true);
+		expect(counted(beacon([]), { preview: false })).toBe(true);
 	});
 
 	it.each([
@@ -74,22 +74,11 @@ describe('counted', () => {
 		],
 		['a bot', beacon([], { ua: 'Googlebot/2.1' }), false]
 	])('not from %s', (_, request, preview) => {
-		expect(counted(request, { preview, country: 'CA' })).toBe(false);
+		expect(counted(request, { preview })).toBe(false);
 	});
 
-	it.each(['DE', 'FR', 'IE', 'NO', 'IS', 'LI', 'GB', 'CH', 'RE', 'JE'])(
-		'not from a visitor in %s (EEA, UK, Switzerland)',
-		(country) => {
-			expect(counted(beacon([]), { preview: false, country })).toBe(false);
-		}
-	);
-
-	it.each([undefined, 'XX', 'T1'])('not when the country is unknown (%s) or Tor', (country) => {
-		expect(counted(beacon([]), { preview: false, country })).toBe(false);
-	});
-
-	it.each(['US', 'IN', 'AU', 'BR'])('counts a visitor in %s', (country) => {
-		expect(counted(beacon([]), { preview: false, country })).toBe(true);
+	it('pays no attention to where the visitor is: nothing about them is kept', () => {
+		expect(counted(beacon([]), { preview: false })).toBe(true);
 	});
 });
 
@@ -181,7 +170,7 @@ describe('dataPoint', () => {
 });
 
 describe('handleBeacon', () => {
-	const context = { preview: false, country: 'CA' };
+	const context = { preview: false };
 
 	it('answers 204 and writes one data point per counted event', async () => {
 		const events = dataset();
@@ -195,7 +184,6 @@ describe('handleBeacon', () => {
 
 	it.each([
 		['not counted', beacon([egg], { origin: 'https://evil.example' }), context],
-		['from the EU', beacon([egg]), { ...context, country: 'DE' }],
 		['with nothing known in it', beacon([{ event: 'nope', path: '/', properties: {} }]), context]
 	])('answers 204 and writes nothing when %s', async (_, request, ctx) => {
 		const events = dataset();
@@ -220,7 +208,7 @@ describe('handleBeacon', () => {
 });
 
 describe('recordServerEvent', () => {
-	const base = { preview: false, skip: false, country: 'CA' };
+	const base = { preview: false, skip: false };
 	const form = () =>
 		new Request(`${SITE}/blog/a?/contact`, {
 			method: 'POST',
@@ -237,8 +225,7 @@ describe('recordServerEvent', () => {
 
 	it.each([
 		['the author’s devices', { skip: true }],
-		['preview mode', { preview: true }],
-		['the UK', { country: 'GB' }]
+		['preview mode', { preview: true }]
 	])('writes nothing from %s', (_, overrides) => {
 		const events = dataset();
 		recordServerEvent('contact_sent', { ...base, ...overrides, request: form(), dataset: events });
