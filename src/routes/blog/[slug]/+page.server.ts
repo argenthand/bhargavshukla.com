@@ -1,7 +1,12 @@
 import { error } from '@sveltejs/kit';
-import { renderMarkdown } from '$lib/server/markdown';
+import {
+	renderMarkdown,
+	getPost,
+	listPosts,
+	pickNextUp,
+	postPage
+} from '$lib/content/index.server';
 import { pageActions, pageLoad } from '$lib/server/page-load';
-import { getPost, listPosts, pickNextUp, postPage } from '$lib/server/posts';
 import type { PageServerLoad } from './$types';
 
 // The post is required: without Strapi this is the error page. Next up isn't.

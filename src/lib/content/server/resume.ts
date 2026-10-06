@@ -1,7 +1,7 @@
 // The Resume single type (#5). Only the published version is served, except in draft preview (#57).
 
 import { marked, type Tokens } from 'marked';
-import type { Resume } from '$lib/types/content';
+import type { Resume } from '../types';
 import { renderMarkdown } from './markdown';
 import { strapi } from './strapi';
 

@@ -3,9 +3,9 @@
 	// for the second. With no picks the page renders nothing at all.
 	import { resolve } from '$app/paths';
 	import { Icon } from '$lib/site';
-	import PostMeta from '$lib/components/PostMeta.svelte';
-	import { formatDate, isoDay, shownDate } from '$lib/format';
-	import type { PostSummary } from '$lib/types/content';
+	import PostMeta from './PostMeta.svelte';
+	import { formatDate, isoDay, shownDate } from '../format';
+	import type { PostSummary } from '../types';
 
 	let { posts }: { posts: PostSummary[] } = $props();
 

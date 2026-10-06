@@ -5,8 +5,13 @@
 import { env } from '$env/dynamic/private';
 import { error } from '@sveltejs/kit';
 import qs from 'qs';
-import type { Page } from '$lib/types/content';
-import { CONTENT_TYPES, readTags, type ContentType, type SingleType } from './content-map';
+import type { Page } from '../types';
+import {
+	CONTENT_TYPES,
+	readTags,
+	type ContentType,
+	type SingleType
+} from '$lib/server/content-map';
 
 export type Query = Record<string, unknown>;
 

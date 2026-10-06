@@ -2,12 +2,12 @@
 	// One aside (#18, F-asides-*): kind · date, optional title, the body styled by kind, quote
 	// attribution, tags. In the stream the date links to the aside's own page; on that page it doesn't.
 	import { resolve } from '$app/paths';
-	import Prose from '$lib/components/Prose.svelte';
+	import Prose from './Prose.svelte';
 	import ReadCount from '$lib/components/ReadCount.svelte';
-	import { kindLabel } from '$lib/asides';
-	import { formatDate, isoDay } from '$lib/format';
+	import { kindLabel } from '../asides';
+	import { formatDate, isoDay } from '../format';
 	import { titleTransition } from '$lib/site';
-	import type { RenderedAside } from '$lib/types/content';
+	import type { RenderedAside } from '../types';
 
 	let {
 		aside,

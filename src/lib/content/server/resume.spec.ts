@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Resume } from '$lib/types/content';
+import type { Resume } from '../types';
 
 vi.mock('$env/dynamic/private', () => ({ env: {} }));
 

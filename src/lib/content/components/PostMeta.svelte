@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import ReadCount from '$lib/components/ReadCount.svelte';
-	import { formatDate, isoDay, shownDate } from '$lib/format';
-	import type { PostSummary } from '$lib/types/content';
+	import { formatDate, isoDay, shownDate } from '../format';
+	import type { PostSummary } from '../types';
 
 	// Category label · date, as in list rows, featured posts and the Next up card.
 	// In draft preview (#57) an unpublished post says so instead of showing a date. With `reads`

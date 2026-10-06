@@ -1,12 +1,12 @@
 // Aside queries (#18). The stream is small, so /asides loads every published aside once and
 // filters and pages in the browser; each body is rendered to HTML here.
 
-import { kindLabel } from '$lib/asides';
-import { formatDate } from '$lib/format';
-import type { Aside, RenderedAside } from '$lib/types/content';
+import { kindLabel } from '../asides';
+import { formatDate } from '../format';
+import type { Aside, RenderedAside } from '../types';
 import { renderMarkdown } from './markdown';
 import { firstParagraph } from './profile';
-import { mergeDrafts } from './preview';
+import { mergeDrafts } from '$lib/server/preview';
 import { strapi } from './strapi';
 
 const QUERY = {

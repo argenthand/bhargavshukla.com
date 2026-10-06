@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { PostSummary } from '$lib/types/content';
+import type { PostSummary } from '$lib/content';
 import { buildRss, buildSitemap, escapeXml, FEED_SIZE, newest, sitemapEntries } from './feeds';
 
 const post = (n: number, extra: Partial<PostSummary> = {}): PostSummary => ({

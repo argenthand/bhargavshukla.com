@@ -1,7 +1,7 @@
 // The Privacy single type (#154): the privacy note at /privacy, linked from the footer. Its copy
 // is written in Strapi; the page adds only the title.
 
-import type { Privacy } from '$lib/types/content';
+import type { Privacy } from '../types';
 import { renderMarkdown } from './markdown';
 import { strapi } from './strapi';
 

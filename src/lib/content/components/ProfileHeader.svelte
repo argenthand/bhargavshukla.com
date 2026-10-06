@@ -44,7 +44,7 @@
 	// PH-* (#99): one header for the home intro and the resume. Headshot, name and tagline, then the
 	// contacts one per line beside them from md (#96); on phones the contacts wrap under the name.
 	// In print: no photo (no photos on North American resumes, and ATS parsers skip images).
-	import type { getProfile } from '$lib/server/profile';
+	import type { getProfile } from '../server/profile';
 	import { taps } from '$lib/gestures';
 	import { watchIntro } from '$lib/intro.svelte';
 

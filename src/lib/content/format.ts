@@ -1,7 +1,7 @@
 // Dates as the design shows them ("September 22, 2026"), always in UTC so a date-only value
 // like displayDate "2026-08-15" never shifts a day with the server's or reader's timezone.
 
-import type { PostSummary } from '$lib/types/content';
+import type { PostSummary } from './types';
 
 const long = new Intl.DateTimeFormat('en-US', { dateStyle: 'long', timeZone: 'UTC' });
 

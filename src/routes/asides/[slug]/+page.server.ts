@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { getAside } from '$lib/server/asides';
+import { getAside } from '$lib/content/index.server';
 import { pageActions, pageLoad } from '$lib/server/page-load';
 import type { PageServerLoad } from './$types';
 

@@ -1,6 +1,6 @@
-import { listPosts } from '$lib/server/posts';
+import { listPosts } from '$lib/content/index.server';
 import { pageActions, pageLoad } from '$lib/server/page-load';
-import type { Category } from '$lib/types/content';
+import type { Category } from '$lib/content';
 import type { PageServerLoad } from './$types';
 
 // Every published post; search and the category filter run in the browser (docs/design.md → Routes).

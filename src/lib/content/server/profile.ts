@@ -1,6 +1,6 @@
 // The Profile single type (#42): home intro and contact links; the resume header reuses them.
 
-import type { Profile } from '$lib/types/content';
+import type { Profile } from '../types';
 import { resolveUpload } from './image';
 import { renderMarkdown } from './markdown';
 import { strapi } from './strapi';

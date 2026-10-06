@@ -1,11 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import NextUp from '$lib/components/NextUp.svelte';
-	import Prose from '$lib/components/Prose.svelte';
+	import { NextUp, Prose, Toc, formatDate, isoDay, shownDate, updatedDate } from '$lib/content';
 	import { BackToTop, Seo, titleTransition, CARD, cardUrl } from '$lib/site';
 	import ReadCount from '$lib/components/ReadCount.svelte';
-	import Toc from '$lib/components/Toc.svelte';
-	import { formatDate, isoDay, shownDate, updatedDate } from '$lib/format';
 
 	let { data } = $props();
 

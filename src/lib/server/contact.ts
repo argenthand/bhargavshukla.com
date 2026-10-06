@@ -20,7 +20,7 @@ import {
 import { NO_COUNT_FIELD } from '$lib/events';
 import { contactEvent, recordServerEvent } from './events';
 import type { ReadsDb } from './reads';
-import { getContactEmail } from './profile';
+import { getContactEmail } from '$lib/content/index.server';
 
 /** Sends a day without a Turnstile token (no JavaScript, or a bot), and in all. */
 export const DAILY_CAP = { unverified: 10, all: 50 };

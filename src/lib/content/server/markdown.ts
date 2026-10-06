@@ -21,8 +21,8 @@ import typescript from 'shiki/langs/typescript.mjs';
 import yaml from 'shiki/langs/yaml.mjs';
 import githubDark from 'shiki/themes/github-dark.mjs';
 import githubLight from 'shiki/themes/github-light.mjs';
-import { responsive } from '$lib/images';
-import type { Heading } from '$lib/types/content';
+import { responsive } from './images';
+import type { Heading } from '../types';
 
 const highlighter = createHighlighterCoreSync({
 	themes: [githubLight, githubDark],

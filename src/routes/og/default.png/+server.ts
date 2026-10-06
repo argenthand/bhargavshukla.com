@@ -7,7 +7,7 @@ import {
 	pngResponse,
 	renderCard
 } from '$lib/site/index.server';
-import { getProfile } from '$lib/server/profile';
+import { getProfile } from '$lib/content/index.server';
 import { site } from '$lib/site';
 import type { RequestHandler } from './$types';
 

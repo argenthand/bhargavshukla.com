@@ -1,4 +1,4 @@
-import { listAsides } from '$lib/server/asides';
+import { listAsides } from '$lib/content/index.server';
 import { pageActions, pageLoad } from '$lib/server/page-load';
 import type { PageServerLoad } from './$types';
 

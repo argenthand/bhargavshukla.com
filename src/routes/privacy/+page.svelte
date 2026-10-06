@@ -1,7 +1,7 @@
 <script lang="ts">
 	// PRIV-* (#154, docs/analytics.md): the privacy note, linked from the footer. The copy (the lead
 	// and the sections) comes from the Strapi Privacy single type.
-	import Prose from '$lib/components/Prose.svelte';
+	import { Prose } from '$lib/content';
 	import { Seo } from '$lib/site';
 
 	let { data } = $props();

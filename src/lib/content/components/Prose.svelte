@@ -1,5 +1,5 @@
 <script lang="ts">
-	// Rendered Markdown (src/lib/server/markdown.ts) in the article styles from docs/design.md,
+	// Rendered Markdown (src/lib/content/server/markdown.ts) in the article styles from docs/design.md,
 	// plus its two tools (#61): the code blocks' Copy button and, in posts, the headings' "#" links,
 	// which copy the section URL. Both confirm on screen for a moment and through the status region.
 	import { replaceState } from '$app/navigation';

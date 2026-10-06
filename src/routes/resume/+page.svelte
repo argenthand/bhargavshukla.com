@@ -6,11 +6,10 @@
 	import { onMount, tick } from 'svelte';
 	import { track } from '$lib/analytics';
 	import { Icon, Seo, site } from '$lib/site';
-	import ProfileHeader, { profileContacts } from '$lib/components/ProfileHeader.svelte';
+	import { ProfileHeader, profileContacts, formatMonth } from '$lib/content';
 	import { decodeContact } from '$lib/contact';
-	import { formatMonth } from '$lib/format';
 	import { look } from '$lib/look.svelte';
-	import type { Employer, Role } from '$lib/server/resume';
+	import type { Employer, Role } from '$lib/content/index.server';
 
 	let { data } = $props();
 

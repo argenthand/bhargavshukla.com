@@ -1,9 +1,9 @@
 // Post queries shared by the home page, /blog and /blog/[slug].
 
-import { shownDate } from '$lib/format';
-import type { Post, PostSummary } from '$lib/types/content';
+import { shownDate } from '../format';
+import type { Post, PostSummary } from '../types';
 import { resolveImage } from './image';
-import { mergeDrafts } from './preview';
+import { mergeDrafts } from '$lib/server/preview';
 import { mediaUrl, strapi } from './strapi';
 
 /** `drafts`: in preview (#57), also show unpublished posts and unpublished edits. */

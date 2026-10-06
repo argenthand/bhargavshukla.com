@@ -1,6 +1,6 @@
 // Asides (#18): kinds and their labels, shared by the pages and the server.
 
-import type { AsideKind } from '$lib/types/content';
+import type { AsideKind } from './types';
 
 export const KINDS: { value: AsideKind; label: string; plural: string }[] = [
 	{ value: 'code', label: 'Code', plural: 'Code' },

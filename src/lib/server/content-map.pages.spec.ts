@@ -77,9 +77,9 @@ const resume = await import('../../routes/resume/+page.server');
 const privacy = await import('../../routes/privacy/+page.server');
 const rss = await import('../../routes/rss.xml/+server');
 const sitemap = await import('../../routes/sitemap.xml/+server');
-const { getProfile } = await import('./profile');
-const { getPost } = await import('./posts');
-const { getAside } = await import('./asides');
+const { getProfile } = await import('$lib/content/server/profile');
+const { getPost } = await import('$lib/content/server/posts');
+const { getAside } = await import('$lib/content/server/asides');
 
 /** Calls a load or GET with the parts of SvelteKit's event they use. */
 const run =

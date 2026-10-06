@@ -4,9 +4,8 @@
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import AsideItem from '$lib/components/AsideItem.svelte';
+	import { AsideItem, isKind, KINDS, PAGE_SIZE } from '$lib/content';
 	import { Icon, Seo, motionMs } from '$lib/site';
-	import { isKind, KINDS, PAGE_SIZE } from '$lib/asides';
 	import { cubicOut } from 'svelte/easing';
 	import { flip } from 'svelte/animate';
 	import { fade } from 'svelte/transition';

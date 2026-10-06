@@ -1,7 +1,7 @@
 // Turns a shared.image component (#40) into what the page renders.
 
-import { creditHref, responsive, SOURCE_NAMES } from '$lib/images';
-import type { ImageField, Media, ResolvedImage } from '$lib/types/content';
+import { creditHref, responsive, SOURCE_NAMES } from './images';
+import type { ImageField, Media, ResolvedImage } from '../types';
 import { mediaUrl } from './strapi';
 
 export function resolveImage(image: ImageField | null | undefined): ResolvedImage | null {

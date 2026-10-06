@@ -1,9 +1,8 @@
 // RSS feed and sitemap (#56): plain XML strings from content the routes have already fetched.
 // Links use the production origin (site.url), like canonical URLs.
 
-import { shownDate } from '$lib/format';
+import { shownDate, type PostSummary } from '$lib/content';
 import { site } from '../site';
-import type { PostSummary } from '$lib/types/content';
 
 /** How many posts the feed carries. */
 export const FEED_SIZE = 20;

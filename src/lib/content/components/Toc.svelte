@@ -6,7 +6,7 @@
 	// between entries (#61), without it the current entry's own border is red.
 	import type { Attachment } from 'svelte/attachments';
 	import { Icon, reducedMotion } from '$lib/site';
-	import type { Heading } from '$lib/types/content';
+	import type { Heading } from '../types';
 
 	let { headings, variant }: { headings: Heading[]; variant: 'pill' | 'sidebar' } = $props();
 
