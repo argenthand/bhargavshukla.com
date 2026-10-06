@@ -58,7 +58,7 @@ src/
     api/print-contact/+server.ts  the printed resume's email, encoded (#135)
     api/events/+server.ts         the analytics beacon's events → Analytics Engine, always 204 (#154)
 
-Every page route's +page.server.ts builds its load with `pageLoad` and exports `actions = pageActions` (`src/lib/publishing/server/page-load.ts`, #142): drafts in preview, degraded pages when Strapi is down (caching.md → Degraded pages), and the contact card's form (#135, contact.md).
+Every page route's +page.server.ts builds its load with `pageLoad` and exports `actions = pageActions` (`src/lib/contact/server/contact.ts`, from the contact domain; #142): drafts in preview, degraded pages when Strapi is down (caching.md → Degraded pages), and the contact card's form (#135, contact.md).
 ```
 
 ## How `src/lib` is organised (#157)

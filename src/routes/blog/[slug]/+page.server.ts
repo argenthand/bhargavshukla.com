@@ -6,7 +6,8 @@ import {
 	pickNextUp,
 	postPage
 } from '$lib/content/index.server';
-import { pageActions, pageLoad } from '$lib/publishing/index.server';
+import { pageActions } from '$lib/contact/index.server';
+import { pageLoad } from '$lib/publishing/index.server';
 import type { PageServerLoad } from './$types';
 
 // The post is required: without Strapi this is the error page. Next up isn't.

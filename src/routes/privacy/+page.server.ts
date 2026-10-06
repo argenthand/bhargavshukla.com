@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
-import { pageActions, pageLoad } from '$lib/publishing/index.server';
+import { pageActions } from '$lib/contact/index.server';
+import { pageLoad } from '$lib/publishing/index.server';
 import { getPrivacy } from '$lib/content/index.server';
 import type { PageServerLoad } from './$types';
 

@@ -1,5 +1,5 @@
 // The contact card's form action (#135, docs/contact.md). Every page route exports it through
-// `pageActions` (page-load.ts): the card sits in the layout, and layouts can't have actions. With
+// `pageActions`: the card sits in the layout, and layouts can't have actions. With
 // JavaScript the card posts in the background; without it, the browser posts to the page it's on
 // and gets that page back, scrolled to the card, with the result.
 //
@@ -18,7 +18,12 @@ import {
 	type ContactValues
 } from '../contact';
 import { NO_COUNT_FIELD } from '$lib/analytics';
-import { contactEvent, recordServerEvent, type ReadsDb } from '$lib/analytics/index.server';
+import {
+	contactEvent,
+	recordServerEvent,
+	type ContactOutcome,
+	type ReadsDb
+} from '$lib/analytics/index.server';
 import { getContactEmail } from '$lib/content/index.server';
 
 /** Sends a day without a Turnstile token (no JavaScript, or a bot), and in all. */
@@ -33,17 +38,6 @@ export const MESSAGES = {
 	cap: 'The form has had a busy day. Try again tomorrow, or find me on LinkedIn.',
 	send: "Couldn't send: the mail service didn't answer. Your message is still here; try again in a minute."
 };
-
-/** What a send ended as, logged for Workers Logs (and the analytics in #136). */
-export type ContactOutcome =
-	| 'sent'
-	| 'sent-unverified'
-	| 'invalid'
-	| 'honeypot'
-	| 'rate-limited'
-	| 'turnstile-failed'
-	| 'capped'
-	| 'send-failed';
 
 export interface ContactDeps {
 	/** True while this visitor (by IP) may send; false once they hit the limit. */
@@ -227,3 +221,6 @@ export const contact: Action = async (event) => {
 		}
 	});
 };
+
+/** The contact card is on every page (#135) and layouts can't have actions, so every page has it. */
+export const pageActions = { contact };
