@@ -1,7 +1,6 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
-import type { EventsDataset } from '$lib/server/events';
-import type { ReadsDb } from '$lib/server/reads';
+import type { EventsDataset, ReadsDb } from '$lib/analytics/index.server';
 
 declare global {
 	namespace App {

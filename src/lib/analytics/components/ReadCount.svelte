@@ -3,8 +3,8 @@
 	// read is also counted after 10 seconds of reading, and its reading time goes to analytics
 	// (#154). JavaScript only. The space is held while the count loads, and stays (empty) when
 	// there's none to show, so nothing on the page moves.
-	import { trackReading } from '$lib/analytics';
-	import { formatReads, readCount, trackRead } from '$lib/reads';
+	import { trackReading } from '../analytics';
+	import { formatReads, readCount, trackRead } from '../reads';
 
 	let { path, track = false }: { path: string; track?: boolean } = $props();
 

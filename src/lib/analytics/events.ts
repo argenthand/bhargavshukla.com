@@ -1,9 +1,9 @@
 // Events (#154, docs/analytics.md; CONTEXT.md → Analytics): what a page's beacon may send. Each
 // event is a count: its name, the page it happened on, and at most one value. The beacon
-// (src/lib/analytics.ts) is typed from this, and the Worker (src/lib/server/events.ts) drops
+// (src/lib/analytics/analytics.ts) is typed from this, and the Worker (src/lib/analytics/server/events.ts) drops
 // anything that doesn't fit it.
 
-import { PALETTES } from './palettes';
+import { PALETTES } from '$lib/palettes';
 
 /** A value's kind: a number, a host name (`github.com`), or one of a few words. */
 type Kind = 'number' | 'host' | readonly string[];

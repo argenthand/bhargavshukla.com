@@ -23,9 +23,7 @@
 		type ContactResult,
 		type ContactValues
 	} from '$lib/contact';
-	import { track } from '$lib/analytics';
-	import { NO_COUNT_FIELD } from '$lib/events';
-	import { optedOut } from '$lib/reads';
+	import { track, NO_COUNT_FIELD, optedOut } from '$lib/analytics';
 	import { loadTurnstile, TEST_SITE_KEY, type Turnstile } from '$lib/turnstile';
 	import { Icon } from '$lib/site';
 

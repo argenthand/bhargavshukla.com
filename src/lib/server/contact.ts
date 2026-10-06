@@ -17,9 +17,8 @@ import {
 	type ContactResult,
 	type ContactValues
 } from '$lib/contact';
-import { NO_COUNT_FIELD } from '$lib/events';
-import { contactEvent, recordServerEvent } from './events';
-import type { ReadsDb } from './reads';
+import { NO_COUNT_FIELD } from '$lib/analytics';
+import { contactEvent, recordServerEvent, type ReadsDb } from '$lib/analytics/index.server';
 import { getContactEmail } from '$lib/content/index.server';
 
 /** Sends a day without a Turnstile token (no JavaScript, or a bot), and in all. */

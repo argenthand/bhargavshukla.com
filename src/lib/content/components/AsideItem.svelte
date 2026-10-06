@@ -3,7 +3,7 @@
 	// attribution, tags. In the stream the date links to the aside's own page; on that page it doesn't.
 	import { resolve } from '$app/paths';
 	import Prose from './Prose.svelte';
-	import ReadCount from '$lib/components/ReadCount.svelte';
+	import { ReadCount } from '$lib/analytics';
 	import { kindLabel } from '../asides';
 	import { formatDate, isoDay } from '../format';
 	import { titleTransition } from '$lib/site';

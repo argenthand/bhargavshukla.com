@@ -2,7 +2,7 @@
 	import { resolve } from '$app/paths';
 	import { NextUp, Prose, Toc, formatDate, isoDay, shownDate, updatedDate } from '$lib/content';
 	import { BackToTop, Seo, titleTransition, CARD, cardUrl } from '$lib/site';
-	import ReadCount from '$lib/components/ReadCount.svelte';
+	import { ReadCount } from '$lib/analytics';
 
 	let { data } = $props();
 

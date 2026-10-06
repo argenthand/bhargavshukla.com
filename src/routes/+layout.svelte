@@ -40,7 +40,7 @@
 	// A note for whoever opens DevTools (#63).
 	onMount(consoleNote);
 
-	// Analytics (#154, src/lib/analytics.ts): started before the first page view, which
+	// Analytics (#154, src/lib/analytics/analytics.ts): started before the first page view, which
 	// afterNavigate sends on load and after every client-side navigation.
 	onMount(startAnalytics);
 	afterNavigate(pageView);

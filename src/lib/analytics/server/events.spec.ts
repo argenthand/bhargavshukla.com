@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { MAX_BATCH } from '$lib/events';
+import { MAX_BATCH } from '../events';
 import {
 	contactEvent,
 	counted,

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import ReadCount from '$lib/components/ReadCount.svelte';
+	import { ReadCount } from '$lib/analytics';
 	import { formatDate, isoDay, shownDate } from '../format';
 	import type { PostSummary } from '../types';
 

@@ -4,7 +4,7 @@
 
 import { dev } from '$app/environment';
 import { json } from '@sveltejs/kit';
-import { readCounts, recordRead, type ReadTarget } from '$lib/server/reads';
+import { readCounts, recordRead, type ReadTarget } from '$lib/analytics/index.server';
 import { strapi } from '$lib/content/index.server';
 import { site } from '$lib/site';
 import type { RequestHandler } from './$types';

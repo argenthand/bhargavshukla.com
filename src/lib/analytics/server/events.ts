@@ -3,9 +3,9 @@
 // the page and its one value. Nothing about the visitor is written: no IP, no User-Agent, no
 // country, no ID. Nothing here throws: analytics is never worth an error.
 
-import { MAX_BATCH, PAGE_EVENTS, type ServerEvent } from '$lib/events';
+import { MAX_BATCH, PAGE_EVENTS, type ServerEvent } from '../events';
 import { site } from '$lib/site';
-import type { ContactOutcome } from './contact';
+import type { ContactOutcome } from '$lib/server/contact';
 
 const PRODUCTION_HOST = new URL(site.url).host;
 /** A beacon is a few small events; anything bigger isn't from our page. */
