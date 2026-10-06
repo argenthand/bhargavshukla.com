@@ -408,7 +408,7 @@ Return visits now revalidate: the browser asks whether the page changed and gets
 
 ### Analytics beacon (#154)
 
-The beacon adds about 1.3 KB gz to every page, plus `web-vitals` (3.0 KB gz), loaded once the page is idle; beacons go out with `sendBeacon`, which never holds up the page ([analytics.md](analytics.md#built-154)). Production before #154, 2026-10-05, `pnpm perf`, 3 runs, medians, JS on:
+The beacon adds about 1.4 KB gz to the site's JavaScript (all client chunks, measured against `main`); there's no Web Vitals library, since Cloudflare Web Analytics measures those. Beacons go out with `sendBeacon`, which never holds up the page, and only when a page with events is hidden ([analytics.md](analytics.md#built-154)). Production before #154, 2026-10-05, `pnpm perf`, 3 runs, medians, JS on:
 
 | Network | First visit: home          | Tap Writing | Return visit: home |
 | ------- | -------------------------- | ----------- | ------------------ |

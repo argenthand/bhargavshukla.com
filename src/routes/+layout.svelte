@@ -4,7 +4,7 @@
 	import '$lib/fonts/fonts.css';
 	import './layout.css';
 	import { onMount, tick, type Component } from 'svelte';
-	import { afterNavigate, onNavigate } from '$app/navigation';
+	import { onNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import ContactCard from '$lib/components/ContactCard.svelte';
@@ -15,7 +15,7 @@
 	import Toast from '$lib/components/Toast.svelte';
 	import PalettePicker from '$lib/components/PalettePicker.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
-	import { pageview, startAnalytics, track } from '$lib/analytics';
+	import { startAnalytics, track } from '$lib/analytics';
 	import { ABYSS_LINE, consoleNote } from '$lib/easter-eggs';
 	import { bouncedPastEnd, konamiKeydown, taps } from '$lib/gestures';
 	import { introHeading } from '$lib/intro.svelte';
@@ -44,10 +44,8 @@
 	// A note for whoever opens DevTools (#63).
 	onMount(consoleNote);
 
-	// Analytics (#154, src/lib/analytics.ts): started before the first page view, which
-	// afterNavigate sends on load and after every client-side navigation.
+	// Analytics events (#154, src/lib/analytics.ts). Page views are Cloudflare Web Analytics'.
 	onMount(startAnalytics);
-	afterNavigate(pageview);
 
 	// The abyss (#111) is found by bouncing past the end of the page (Safari only). Once per visit.
 	let abyssFound = false;

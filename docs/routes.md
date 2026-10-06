@@ -29,12 +29,12 @@ src/
       edge-cache.ts               cache key, bypass rules, TTL constants
       purge.ts                    webhook payload → tags; Cloudflare purge API call
       feeds.ts                    RSS and sitemap XML builders (#56)
-      events.ts                   analytics: checks the beacon's events, forwards them to PostHog EU (#154)
+      events.ts                   analytics: checks the beacon's events, counts them in Analytics Engine (#154)
       preview.ts                  draft preview: signed links and cookies, mergeDrafts (#57)
       og.ts                       share cards: satori (0.32) + resvg-wasm templates and renderer (#62)
     share.ts                      share card size and URLs (cardUrl), for <Seo>
     events.ts                     the analytics events and their properties, shared by the beacon and the Worker (#154)
-    analytics.ts                  the analytics beacon: page views, events, reading time, Web Vitals (#154)
+    analytics.ts                  the analytics beacon: easter eggs, palettes, the resume, the contact card, reading time (#154)
   routes/
     +layout.svelte                header nav (md+) and bottom tab bar (below md), footer; preview banner
     +layout.server.ts             { preview } for the banner (#57)
@@ -56,7 +56,7 @@ src/
     api/preview/exit/+server.ts   preview banner "Exit" → clears the cookie
     api/views/+server.ts          read counts (#87): GET counts for some pages, POST the 10-second beacon
     api/print-contact/+server.ts  the printed resume's email, encoded (#135)
-    api/events/+server.ts         the analytics beacon's events → PostHog, always 204 (#154)
+    api/events/+server.ts         the analytics beacon's events → Analytics Engine, always 204 (#154)
 
 Every page route's +page.server.ts builds its load with `pageLoad` and exports `actions = pageActions` (`src/lib/server/page-load.ts`, #142): drafts in preview, degraded pages when Strapi is down (caching.md → Degraded pages), and the contact card's form (#135, contact.md).
 ```

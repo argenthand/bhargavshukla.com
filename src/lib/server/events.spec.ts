@@ -3,14 +3,12 @@ import { MAX_BATCH } from '$lib/events';
 import {
 	contactEvent,
 	counted,
+	dataPoint,
 	handleBeacon,
 	isBot,
-	POSTHOG_BATCH_URL,
 	readBeacon,
-	sendServerEvent,
-	sendToPostHog,
-	toPostHog,
-	type PostHogBatch
+	recordServerEvent,
+	type EventsDataset
 } from './events';
 
 const SITE = 'https://bhargavshukla.com';
@@ -25,11 +23,13 @@ function beacon(body: unknown, { origin = SITE, url = `${SITE}/api/events`, ua =
 	});
 }
 
-const pageview = {
-	event: '$pageview',
-	properties: { $current_url: `${SITE}/blog/a`, $pathname: '/blog/a', $referrer: '$direct' },
-	age: 5
-};
+const egg = { event: 'easter_egg_found', path: '/', properties: { egg: 'disco' } };
+
+/** A fake Analytics Engine dataset that keeps what's written. */
+function dataset() {
+	const points: Parameters<EventsDataset['writeDataPoint']>[0][] = [];
+	return { points, writeDataPoint: (point: (typeof points)[number]) => void points.push(point) };
+}
 
 describe('isBot', () => {
 	it.each([
@@ -94,213 +94,147 @@ describe('counted', () => {
 });
 
 describe('readBeacon', () => {
-	it('keeps known events with their known properties', () => {
-		const events = [
-			pageview,
-			{ event: 'easter_egg_found', properties: { $pathname: '/', egg: 'disco' }, age: 0 },
-			{ event: 'read', properties: { $pathname: '/blog/a', seconds: 42 }, age: 10 }
+	it('keeps known events as counts: the page, and the one value each event may carry', () => {
+		const body = [
+			egg,
+			{ event: 'read', path: '/blog/a', properties: { seconds: 42 } },
+			{ event: 'palette_chosen', path: '/blog', properties: { palette: 'sage' } },
+			{ event: 'outbound_link', path: '/', properties: { host: 'github.com' } },
+			{ event: 'resume_printed', path: '/resume', properties: {} }
 		];
-		expect(readBeacon(JSON.stringify(events))).toEqual(events);
+		expect(readBeacon(JSON.stringify(body))).toEqual([
+			{ event: 'easter_egg_found', path: '/', value: 'disco', seconds: 0 },
+			{ event: 'read', path: '/blog/a', value: '', seconds: 42 },
+			{ event: 'palette_chosen', path: '/blog', value: 'sage', seconds: 0 },
+			{ event: 'outbound_link', path: '/', value: 'github.com', seconds: 0 },
+			{ event: 'resume_printed', path: '/resume', value: '', seconds: 0 }
+		]);
 	});
 
 	it('drops unknown events, and events only the server sends', () => {
 		const body = [
-			{ event: 'hacked', properties: {}, age: 0 },
-			{ event: 'contact_sent', properties: {}, age: 0 },
-			{ event: '$identify', properties: {}, age: 0 },
-			pageview
+			{ event: 'hacked', path: '/', properties: {} },
+			{ event: 'contact_sent', path: '/', properties: {} },
+			{ event: '$pageview', path: '/', properties: {} },
+			egg
 		];
-		expect(readBeacon(JSON.stringify(body))).toEqual([pageview]);
-	});
-
-	it('drops properties that are unknown, of the wrong kind or not one of the allowed words', () => {
-		const body = [
-			{
-				event: 'easter_egg_found',
-				properties: {
-					egg: 'secret',
-					$ip: '1.2.3.4',
-					distinct_id: 'me',
-					$pathname: 7,
-					$current_url: `${SITE}/`
-				},
-				age: 0
-			},
-			{ event: 'read', properties: { seconds: 'many' }, age: 0 },
-			{ event: 'read', properties: { seconds: Infinity }, age: 0 }
-		];
-		expect(readBeacon(JSON.stringify(body))).toEqual([
-			{ event: 'easter_egg_found', properties: { $current_url: `${SITE}/` }, age: 0 },
-			{ event: 'read', properties: {}, age: 0 },
-			{ event: 'read', properties: {}, age: 0 }
+		expect(readBeacon(JSON.stringify(body)).map((count) => count.event)).toEqual([
+			'easter_egg_found'
 		]);
 	});
 
-	it('keeps no query string or fragment in a URL, and only the origin of a referrer', () => {
-		const [event] = readBeacon(
-			JSON.stringify([
-				{
-					event: '$pageview',
-					properties: {
-						$current_url: `${SITE}/blog?q=my+name#top`,
-						$referrer: 'https://mail.example/inbox?user=sam@example.com',
-						$referring_domain: 'mail.example'
-					},
-					age: 0
-				}
-			])
-		);
-		expect(event.properties).toEqual({
-			$current_url: `${SITE}/blog`,
-			$referrer: 'https://mail.example/',
-			$referring_domain: 'mail.example'
-		});
-	});
-
-	it('keeps "$direct" as the referrer, and drops URLs that are not http(s)', () => {
-		const [event] = readBeacon(
-			JSON.stringify([
-				{
-					event: '$pageview',
-					properties: { $current_url: 'javascript:alert(1)', $referrer: '$direct' },
-					age: 0
-				}
-			])
-		);
-		expect(event.properties).toEqual({ $referrer: '$direct' });
-	});
-
-	it('shortens long text', () => {
-		const long = `${SITE}/${'a'.repeat(2000)}`;
-		const [event] = readBeacon(
-			JSON.stringify([{ event: '$pageview', properties: { $current_url: long }, age: 0 }])
-		);
-		expect((event.properties.$current_url as string).length).toBe(500);
-	});
-
-	it('keeps an age between now and a day ago', () => {
-		const ages = [-5, 'soon', 2 * 86_400_000, 1500.7].map((age) => ({
-			event: 'contact_started',
-			properties: {},
-			age
-		}));
-		expect(readBeacon(JSON.stringify(ages)).map((event) => event.age)).toEqual([
-			0, 0, 86_400_000, 1501
+	it('keeps nothing but the allowed value: other properties, wrong kinds and unknown words go', () => {
+		const body = [
+			{ event: 'easter_egg_found', path: '/', properties: { egg: 'secret', ip: '1.2.3.4' } },
+			{ event: 'read', path: '/', properties: { seconds: 'many' } },
+			{ event: 'read', path: '/', properties: { seconds: Infinity } },
+			{ event: 'read', path: '/', properties: { seconds: -5 } },
+			{ event: 'outbound_link', path: '/', properties: { host: 'evil.example/path?q=1' } }
+		];
+		expect(readBeacon(JSON.stringify(body)).map(({ value, seconds }) => [value, seconds])).toEqual([
+			['', 0],
+			['', 0],
+			['', 0],
+			['', 0],
+			['', 0]
 		]);
 	});
 
 	it.each([
+		['a query string', '/blog?q=my+name'],
+		['a fragment', '/blog#top'],
+		['a full URL', 'https://bhargavshukla.com/blog'],
+		['no leading slash', 'blog'],
+		['not text', 7],
+		['too long', `/${'a'.repeat(300)}`]
+	])('drops an event whose path has %s', (_, path) => {
+		expect(readBeacon(JSON.stringify([{ ...egg, path }]))).toEqual([]);
+	});
+
+	it.each([
 		['not JSON', '{'],
-		['not a list', JSON.stringify(pageview)],
-		['too many events', JSON.stringify(Array(MAX_BATCH + 1).fill(pageview))],
-		['too big', JSON.stringify([{ ...pageview, padding: 'x'.repeat(20_000) }])],
-		['not objects', JSON.stringify(['$pageview', null])]
+		['not a list', JSON.stringify(egg)],
+		['too many events', JSON.stringify(Array(MAX_BATCH + 1).fill(egg))],
+		['too big', JSON.stringify([{ ...egg, padding: 'x'.repeat(20_000) }])],
+		['not objects', JSON.stringify(['easter_egg_found', null])]
 	])('reads nothing from a body that is %s', (_, body) => {
 		expect(readBeacon(body)).toEqual([]);
 	});
 });
 
-describe('toPostHog', () => {
-	const visitor = { ip: '203.0.113.9', userAgent: CHROME, host: 'bhargavshukla.com' };
-	const now = new Date('2026-10-05T12:00:00.000Z');
-
-	it('sends a page view with the cookieless placeholder and the visitor fields, timed by its age', () => {
-		expect(toPostHog('phc_test', [pageview], visitor, now)).toEqual({
-			api_key: 'phc_test',
-			batch: [
-				{
-					event: '$pageview',
-					distinct_id: '$posthog_cookieless',
-					properties: {
-						...pageview.properties,
-						$ip: '203.0.113.9',
-						$raw_user_agent: CHROME,
-						$host: 'bhargavshukla.com',
-						$process_person_profile: false
-					},
-					timestamp: '2026-10-05T11:59:59.995Z'
-				}
-			]
+describe('dataPoint', () => {
+	it('is the event, the page and its value: nothing about the visitor', () => {
+		expect(dataPoint({ event: 'read', path: '/blog/a', value: '', seconds: 42 })).toEqual({
+			indexes: ['read'],
+			blobs: ['read', '/blog/a', ''],
+			doubles: [42]
 		});
-	});
-
-	it('sends every other event as an anonymous count: no IP, no User-Agent, nothing linking it to a visitor', () => {
-		const { batch } = toPostHog(
-			'phc_test',
-			[
-				{ event: 'contact_sent', properties: { $pathname: '/' } },
-				{ event: 'easter_egg_found', properties: { $pathname: '/', egg: 'disco' } }
-			],
-			visitor,
-			now
-		);
-		for (const event of batch) {
-			expect(event.distinct_id).toMatch(/^[0-9a-f-]{36}$/);
-			expect(event.properties).not.toHaveProperty('$ip');
-			expect(event.properties).not.toHaveProperty('$raw_user_agent');
-			expect(event.properties).toMatchObject({
-				$host: 'bhargavshukla.com',
-				$process_person_profile: false,
-				$geoip_disable: true
-			});
-			expect(event.timestamp).toBe('2026-10-05T12:00:00.000Z');
-		}
-		expect(batch[0].distinct_id).not.toBe(batch[1].distinct_id);
-		expect(batch[1].properties.egg).toBe('disco');
-	});
-});
-
-describe('sendToPostHog', () => {
-	it('posts the batch to the EU endpoint as JSON', async () => {
-		const fetcher = vi.fn(async () => new Response('{"status":"Ok"}'));
-		const batch: PostHogBatch = { api_key: 'phc_test', batch: [] };
-		await sendToPostHog(batch, fetcher);
-		expect(fetcher).toHaveBeenCalledWith(POSTHOG_BATCH_URL, {
-			method: 'POST',
-			headers: { 'content-type': 'application/json' },
-			body: JSON.stringify(batch)
-		});
-		expect(POSTHOG_BATCH_URL).toBe('https://eu.i.posthog.com/batch/');
-	});
-
-	it('logs, rather than throws, when PostHog fails', async () => {
-		const error = vi.spyOn(console, 'error').mockImplementation(() => {});
-		await sendToPostHog({ api_key: 'phc_test', batch: [] }, async () => {
-			throw new Error('down');
-		});
-		await sendToPostHog(
-			{ api_key: 'phc_test', batch: [] },
-			async () => new Response('', { status: 500 })
-		);
-		expect(error).toHaveBeenCalledTimes(2);
-		error.mockRestore();
 	});
 });
 
 describe('handleBeacon', () => {
-	const context = { preview: false, ip: '203.0.113.9', token: 'phc_test', country: 'CA' };
+	const context = { preview: false, country: 'CA' };
 
-	it('answers 204 and forwards what it accepted', async () => {
-		const send = vi.fn();
-		const response = await handleBeacon(beacon([pageview]), context, send);
+	it('answers 204 and writes one data point per counted event', async () => {
+		const events = dataset();
+		const response = await handleBeacon(beacon([egg, egg]), { ...context, dataset: events });
 		expect(response.status).toBe(204);
-		expect(send).toHaveBeenCalledTimes(1);
-		const [batch] = send.mock.calls[0] as [PostHogBatch];
-		expect(batch.api_key).toBe('phc_test');
-		expect(batch.batch.map((event) => event.event)).toEqual(['$pageview']);
-		expect(batch.batch[0].properties.$ip).toBe('203.0.113.9');
-		expect(batch.batch[0].properties.$host).toBe('bhargavshukla.com');
+		expect(events.points).toEqual([
+			{ indexes: ['easter_egg_found'], blobs: ['easter_egg_found', '/', 'disco'], doubles: [0] },
+			{ indexes: ['easter_egg_found'], blobs: ['easter_egg_found', '/', 'disco'], doubles: [0] }
+		]);
 	});
 
 	it.each([
-		['not counted', beacon([pageview], { origin: 'https://evil.example' }), context],
-		['without a token', beacon([pageview]), { ...context, token: '' }],
-		['from the EU', beacon([pageview]), { ...context, country: 'DE' }],
-		['with nothing known in it', beacon([{ event: 'nope', properties: {}, age: 0 }]), context]
-	])('answers 204 and forwards nothing when %s', async (_, request, ctx) => {
-		const send = vi.fn();
-		expect((await handleBeacon(request, ctx, send)).status).toBe(204);
-		expect(send).not.toHaveBeenCalled();
+		['not counted', beacon([egg], { origin: 'https://evil.example' }), context],
+		['from the EU', beacon([egg]), { ...context, country: 'DE' }],
+		['with nothing known in it', beacon([{ event: 'nope', path: '/', properties: {} }]), context]
+	])('answers 204 and writes nothing when %s', async (_, request, ctx) => {
+		const events = dataset();
+		expect((await handleBeacon(request, { ...ctx, dataset: events })).status).toBe(204);
+		expect(events.points).toEqual([]);
+	});
+
+	it('answers 204 without a dataset (vite dev), and when writing fails', async () => {
+		expect((await handleBeacon(beacon([egg]), { ...context, dataset: undefined })).status).toBe(
+			204
+		);
+		const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+		const failing = {
+			writeDataPoint: () => {
+				throw new Error('limit');
+			}
+		};
+		expect((await handleBeacon(beacon([egg]), { ...context, dataset: failing })).status).toBe(204);
+		expect(error).toHaveBeenCalled();
+		error.mockRestore();
+	});
+});
+
+describe('recordServerEvent', () => {
+	const base = { preview: false, skip: false, country: 'CA' };
+	const form = () =>
+		new Request(`${SITE}/blog/a?/contact`, {
+			method: 'POST',
+			headers: { origin: SITE, 'user-agent': CHROME }
+		});
+
+	it('writes the event for the page the card was sent from', () => {
+		const events = dataset();
+		recordServerEvent('contact_sent', { ...base, request: form(), dataset: events });
+		expect(events.points).toEqual([
+			{ indexes: ['contact_sent'], blobs: ['contact_sent', '/blog/a', ''], doubles: [0] }
+		]);
+	});
+
+	it.each([
+		['the author’s devices', { skip: true }],
+		['preview mode', { preview: true }],
+		['the UK', { country: 'GB' }]
+	])('writes nothing from %s', (_, overrides) => {
+		const events = dataset();
+		recordServerEvent('contact_sent', { ...base, ...overrides, request: form(), dataset: events });
+		expect(events.points).toEqual([]);
 	});
 });
 
@@ -316,47 +250,5 @@ describe('contactEvent', () => {
 		['send-failed', undefined]
 	] as const)('%s → %s', (outcome, event) => {
 		expect(contactEvent(outcome)).toBe(event);
-	});
-});
-
-describe('sendServerEvent', () => {
-	const fetcher = vi.fn(async () => new Response('{}'));
-	vi.stubGlobal('fetch', fetcher);
-	const base = { preview: false, ip: '203.0.113.9', token: 'phc_test', skip: false, country: 'CA' };
-	const form = (origin = SITE) =>
-		new Request(`${SITE}/blog/a?/contact`, {
-			method: 'POST',
-			headers: { origin, 'user-agent': CHROME }
-		});
-
-	it('sends the event for the page it was posted from, in waitUntil', async () => {
-		fetcher.mockClear();
-		const waited: Promise<unknown>[] = [];
-		sendServerEvent('contact_sent', {
-			...base,
-			request: form(),
-			waitUntil: (p) => void waited.push(p)
-		});
-		await Promise.all(waited);
-		const body = JSON.parse(
-			(fetcher.mock.calls[0] as unknown as [string, RequestInit])[1].body as string
-		);
-		expect(body.batch[0]).toMatchObject({
-			event: 'contact_sent',
-			properties: { $pathname: '/blog/a', $current_url: `${SITE}/blog/a` }
-		});
-		expect(body.batch[0].properties).not.toHaveProperty('$ip');
-		expect(body.batch[0].properties).not.toHaveProperty('$raw_user_agent');
-	});
-
-	it.each([
-		['the author’s devices', { skip: true }],
-		['without a token', { token: '' }],
-		['preview mode', { preview: true }],
-		['the UK', { country: 'GB' }]
-	])('sends nothing from %s', (_, overrides) => {
-		const waitUntil = vi.fn();
-		sendServerEvent('contact_sent', { ...base, ...overrides, request: form(), waitUntil });
-		expect(waitUntil).not.toHaveBeenCalled();
 	});
 });

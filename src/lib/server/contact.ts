@@ -18,7 +18,7 @@ import {
 	type ContactValues
 } from '$lib/contact';
 import { NO_COUNT_FIELD } from '$lib/events';
-import { contactEvent, sendServerEvent } from './events';
+import { contactEvent, recordServerEvent } from './events';
 import type { ReadsDb } from './reads';
 import { getContactEmail } from './profile';
 
@@ -188,15 +188,13 @@ export const contact: Action = async (event) => {
 	const secret = env.TURNSTILE_SECRET || (dev ? TEST_SECRET : '');
 	const data = await request.formData();
 
-	// Sent and blocked are decided here, so the Worker tells PostHog itself (#154).
+	// Sent and blocked are decided here, so the Worker counts them itself (#154).
 	const analytics = {
 		request,
 		preview: locals.preview,
-		ip,
-		token: env.POSTHOG_TOKEN,
-		skip: Boolean(data.get(NO_COUNT_FIELD)),
 		country: platform?.cf?.country,
-		waitUntil: platform && ((promise: Promise<unknown>) => platform.ctx.waitUntil(promise))
+		skip: Boolean(data.get(NO_COUNT_FIELD)),
+		dataset: platform?.env.EVENTS
 	};
 
 	return handleContact(data, {
@@ -227,7 +225,7 @@ export const contact: Action = async (event) => {
 		log: (outcome) => {
 			console.log(JSON.stringify({ contact: outcome }));
 			const name = contactEvent(outcome);
-			if (name) sendServerEvent(name, analytics);
+			if (name) recordServerEvent(name, analytics);
 		}
 	});
 };

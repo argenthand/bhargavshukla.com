@@ -2,17 +2,10 @@
 // out. sendBeacon is faked; visibility is set by hand.
 
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
-import { MAX_BATCH } from './events';
+import { MAX_BATCH, type BeaconEvent } from './events';
 import { NO_COUNT_KEY } from './reads';
 
-const vitals = vi.hoisted(() => ({
-	onLCP: vi.fn(),
-	onINP: vi.fn(),
-	onCLS: vi.fn()
-}));
-vi.mock('web-vitals', () => vitals);
-
-const { pageview, startAnalytics, track, trackReading } = await import('./analytics');
+const { startAnalytics, track, trackReading } = await import('./analytics');
 
 let sendBeacon: MockInstance<Navigator['sendBeacon']>;
 let stop: () => void;
@@ -29,15 +22,11 @@ function setVisibility(state: DocumentVisibilityState) {
 	document.dispatchEvent(new Event('visibilitychange'));
 }
 
-interface Sent {
-	event: string;
-	properties: Record<string, unknown>;
-	age: number;
-}
-
 /** Every beacon sent so far: [url, events]. */
 const beacons = () =>
-	sendBeacon.mock.calls.map(([url, body]) => [url, JSON.parse(body as string) as Sent[]] as const);
+	sendBeacon.mock.calls.map(
+		([url, body]) => [url, JSON.parse(body as string) as BeaconEvent[]] as const
+	);
 const sentEvents = () => beacons().flatMap(([, events]) => events);
 
 beforeEach(() => {
@@ -55,58 +44,33 @@ afterEach(() => {
 	document.body.replaceChildren();
 });
 
-describe('pageview', () => {
-	it('sends the page view at once, with the page, the referrer and UTM parameters', () => {
-		history.replaceState(
-			null,
-			'',
-			`${location.pathname}?utm_source=newsletter&utm_medium=email&x=1#section`
-		);
-		pageview();
-		expect(beacons()).toHaveLength(1);
-		const [[url, [event]]] = beacons();
-		expect(url).toBe('/api/events');
-		expect(event.event).toBe('$pageview');
-		expect(event.properties).toMatchObject({
-			$current_url: location.origin + location.pathname,
-			$pathname: location.pathname,
-			utm_source: 'newsletter',
-			utm_medium: 'email'
-		});
-		expect(event.properties).not.toHaveProperty('x');
-		expect(event.properties.$referrer).toBe(
-			document.referrer ? `${new URL(document.referrer).origin}/` : '$direct'
-		);
-		expect(event.age).toBeGreaterThanOrEqual(0);
-	});
-});
-
 describe('track', () => {
-	it('queues events until the page is hidden, then sends them together', () => {
+	it('queues events until the page is hidden, then sends them together to /api/events', () => {
 		track('palette_chosen', { palette: 'sage' });
 		track('easter_egg_found', { egg: 'disco' });
 		expect(sendBeacon).not.toHaveBeenCalled();
 
 		setVisibility('hidden');
-		expect(beacons()).toHaveLength(1);
-		expect(sentEvents().map((e) => [e.event, e.properties.palette ?? e.properties.egg])).toEqual([
-			['palette_chosen', 'sage'],
-			['easter_egg_found', 'disco']
+		expect(beacons()).toEqual([
+			[
+				'/api/events',
+				[
+					{ event: 'palette_chosen', path: location.pathname, properties: { palette: 'sage' } },
+					{ event: 'easter_egg_found', path: location.pathname, properties: { egg: 'disco' } }
+				]
+			]
 		]);
-		expect(sentEvents()[0].properties.$pathname).toBe(location.pathname);
 
 		setVisibility('visible');
 		setVisibility('hidden');
 		expect(beacons()).toHaveLength(1);
 	});
 
-	it('says how long ago each event happened', () => {
-		vi.useFakeTimers({ toFake: ['performance'] });
+	it('sends the path only: no query string or fragment', () => {
+		history.replaceState(null, '', `${location.pathname}?q=my+name#top`);
 		track('contact_started');
-		vi.advanceTimersByTime(3000);
-		track('resume_printed');
 		setVisibility('hidden');
-		expect(sentEvents().map((e) => e.age)).toEqual([3000, 0]);
+		expect(sentEvents()[0].path).toBe(location.pathname);
 	});
 
 	it('sends early once a beacon is full', () => {
@@ -117,9 +81,9 @@ describe('track', () => {
 		expect(sentEvents()).toHaveLength(MAX_BATCH + 1);
 	});
 
-	it('sends a followed link to another site at once, with its host', () => {
+	it('sends a followed link to another site at once, with its host only', () => {
 		const away = document.body.appendChild(document.createElement('a'));
-		away.href = 'https://github.com/argenthand';
+		away.href = 'https://github.com/argenthand?tab=repositories';
 		away.addEventListener('click', (event) => event.preventDefault());
 		const home = document.body.appendChild(document.createElement('a'));
 		home.href = '/blog';
@@ -127,8 +91,8 @@ describe('track', () => {
 
 		home.click();
 		away.click();
-		expect(sentEvents().map((e) => [e.event, e.properties.host])).toEqual([
-			['outbound_link', 'github.com']
+		expect(sentEvents()).toEqual([
+			{ event: 'outbound_link', path: location.pathname, properties: { host: 'github.com' } }
 		]);
 	});
 });
@@ -138,7 +102,6 @@ describe('noCount', () => {
 		stop();
 		localStorage.setItem(NO_COUNT_KEY, '1');
 		stop = startAnalytics();
-		pageview();
 		track('contact_started');
 		setVisibility('hidden');
 		expect(sendBeacon).not.toHaveBeenCalled();
@@ -146,8 +109,8 @@ describe('noCount', () => {
 
 	it('sends nothing before it starts (on the server, or before hydration)', () => {
 		stop();
-		pageview();
 		track('contact_started');
+		setVisibility('hidden');
 		expect(sendBeacon).not.toHaveBeenCalled();
 		stop = startAnalytics();
 	});
@@ -180,12 +143,9 @@ describe('trackReading', () => {
 		leave();
 		setVisibility('hidden');
 		history.replaceState(null, '', back);
-		const [event] = sentEvents();
-		expect(event.properties).toMatchObject({
-			$pathname: '/blog/a-post',
-			$current_url: `${location.origin}/blog/a-post`,
-			seconds: 5
-		});
+		expect(sentEvents()).toEqual([
+			{ event: 'read', path: '/blog/a-post', properties: { seconds: 5 } }
+		]);
 	});
 
 	it('sends nothing for under a second', () => {
@@ -195,30 +155,5 @@ describe('trackReading', () => {
 		leave();
 		setVisibility('hidden');
 		expect(sendBeacon).not.toHaveBeenCalled();
-	});
-});
-
-describe('web vitals', () => {
-	it('loads web-vitals once the page is idle, and sends what it has when first hidden, for the page that loaded', async () => {
-		await vi.waitFor(() => expect(vitals.onCLS).toHaveBeenCalled());
-		vitals.onLCP.mock.calls.at(-1)![0]({ name: 'LCP', value: 812.5 });
-		vitals.onCLS.mock.calls.at(-1)![0]({ name: 'CLS', value: 0.02 });
-		const landingPath = location.pathname;
-		history.pushState(null, '', '/elsewhere'); // A client-side navigation before leaving.
-		setVisibility('hidden');
-		history.replaceState(null, '', landingPath);
-		const [event] = sentEvents();
-		expect(event.event).toBe('$web_vitals');
-		expect(event.properties).toMatchObject({
-			$web_vitals_LCP_value: 812.5,
-			$web_vitals_CLS_value: 0.02
-		});
-		expect(event.properties).not.toHaveProperty('$web_vitals_INP_value');
-		expect(event.properties.$pathname).toBe(landingPath);
-
-		setVisibility('visible');
-		vitals.onINP.mock.calls.at(-1)![0]({ name: 'INP', value: 40 });
-		setVisibility('hidden');
-		expect(sentEvents().filter((e) => e.event === '$web_vitals')).toHaveLength(1);
 	});
 });

@@ -10,6 +10,7 @@
 		"preview-link": "node scripts/preview-link.mjs",
 		"print-notes": "node scripts/print-notes.mjs",
 		"perf": "node scripts/perf.mjs",
+		"stats": "node scripts/stats.mjs",
 		"fonts": "node scripts/fonts.mjs",
 		"build": "vite build",
 		"preview": "vite preview",
@@ -73,7 +74,6 @@
 		"@fontsource/newsreader": "^5.3.0",
 		"@resvg/resvg-wasm": "^2.6.2",
 		"canvas-confetti": "^1.9.4",
-		"satori": "^0.32.0",
-		"web-vitals": "^6.2.2"
+		"satori": "^0.32.0"
 	}
 }
