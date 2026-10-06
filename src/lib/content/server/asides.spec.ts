@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('$env/dynamic/private', () => ({ env: {} }));
 
-const { asideLabel } = await import('./asides');
+const { asideLabel, firstParagraph } = await import('./asides');
 
 const base = { publishedAt: '2026-10-01T09:00:00Z', sourceTitle: null, title: null, body: '' };
 
@@ -24,5 +24,19 @@ describe('asideLabel', () => {
 		expect(asideLabel({ ...base, kind: 'code', body: '```sh\nls\n```' })).toBe(
 			'Code from October 1, 2026'
 		);
+	});
+});
+
+describe('firstParagraph', () => {
+	it('takes the first paragraph as plain text', () => {
+		expect(firstParagraph('Hello **there**, see [my site](https://x.y).\n\nSecond one.')).toBe(
+			'Hello there, see my site.'
+		);
+	});
+
+	it('cuts long text at a word boundary to fit a meta description', () => {
+		const text = firstParagraph('word '.repeat(60), 30);
+		expect(text.length).toBeLessThanOrEqual(30);
+		expect(text).toBe('word word word word word word…');
 	});
 });

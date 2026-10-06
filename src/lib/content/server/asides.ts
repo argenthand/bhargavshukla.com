@@ -5,9 +5,21 @@ import { kindLabel } from '../asides';
 import { formatDate } from '../format';
 import type { Aside, RenderedAside } from '../types';
 import { renderMarkdown } from './markdown';
-import { firstParagraph } from './profile';
 import { mergeDrafts } from '$lib/publishing/index.server';
 import { strapi } from './strapi';
+
+/** A Markdown text's first paragraph as plain text, cut at a word to fit a meta description. */
+export function firstParagraph(markdown: string, max = 160): string {
+	const text = (markdown.trim().split(/\n\s*\n/)[0] ?? '')
+		.replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+		.replace(/[*_`#>]/g, '')
+		.replace(/\s+/g, ' ')
+		.trim();
+	if (text.length <= max) return text;
+	const cut = text.slice(0, max - 1);
+	// Drop the last word only if the cut went through the middle of it.
+	return `${/\s/.test(text[max - 1]) ? cut.trimEnd() : cut.replace(/\s+\S*$/, '')}…`;
+}
 
 const QUERY = {
 	fields: [

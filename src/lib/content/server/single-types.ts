@@ -1,28 +1,18 @@
-// The Profile single type (#42): home intro and contact links; the resume header reuses them.
+// The single types that pages show as a header or a note: the Profile (#42), the home intro and
+// contact links, which the resume header reuses; and the Privacy note (#154). The Resume has its own
+// module: its grouping is logic of its own.
 
-import type { Profile } from '../types';
+import type { Privacy, Profile, ProfilePage } from '../types';
 import { resolveUpload } from './image';
 import { renderMarkdown } from './markdown';
+import { firstParagraph } from './asides';
 import { strapi } from './strapi';
-
-/** The bio's first paragraph as plain text, cut at a word to fit a meta description. */
-export function firstParagraph(markdown: string, max = 160): string {
-	const text = (markdown.trim().split(/\n\s*\n/)[0] ?? '')
-		.replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
-		.replace(/[*_`#>]/g, '')
-		.replace(/\s+/g, ' ')
-		.trim();
-	if (text.length <= max) return text;
-	const cut = text.slice(0, max - 1);
-	// Drop the last word only if the cut went through the middle of it.
-	return `${/\s/.test(text[max - 1]) ? cut.trimEnd() : cut.replace(/\s+\S*$/, '')}…`;
-}
 
 /**
  * The profile for pages. Never the email (#135): pages show the contact card instead, and the
  * address is only fetched for the printed resume (`/api/print-contact`) and the form's own mail.
  */
-export async function getProfile(locals: App.Locals) {
+export async function getProfile(locals: App.Locals): Promise<ProfilePage | undefined> {
 	const profile = await strapi(locals).get<Omit<Profile, 'email'>>('profile', {
 		fields: ['name', 'tagline', 'bio', 'linkedin', 'github'],
 		populate: {
@@ -48,4 +38,11 @@ export async function getContactEmail(locals: App.Locals): Promise<string | null
 		fields: ['email']
 	});
 	return profile?.email ?? null;
+}
+
+/** The privacy note, or undefined until it's saved in Strapi. Its copy is written there; the page adds only the title. */
+export async function getPrivacy(locals: App.Locals) {
+	const privacy = await strapi(locals).get<Privacy>('privacy', { fields: ['lead', 'body'] });
+	if (!privacy) return undefined;
+	return { lead: privacy.lead, html: renderMarkdown(privacy.body ?? '').html };
 }
