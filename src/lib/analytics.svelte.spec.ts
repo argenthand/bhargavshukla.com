@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } fr
 import { MAX_BATCH, type BeaconEvent } from './events';
 import { NO_COUNT_KEY } from './reads';
 
-const { startAnalytics, track, trackReading } = await import('./analytics');
+const { pageView, startAnalytics, track, trackReading } = await import('./analytics');
 
 let sendBeacon: MockInstance<Navigator['sendBeacon']>;
 let stop: () => void;
@@ -42,6 +42,52 @@ afterEach(() => {
 	history.replaceState(null, '', location.pathname);
 	vi.useRealTimers();
 	document.body.replaceChildren();
+});
+
+describe('pageView', () => {
+	it('sends the page view at once: the path, and the referring site on the first page only', () => {
+		const referrer = vi
+			.spyOn(document, 'referrer', 'get')
+			.mockReturnValue('https://www.google.com/search?q=bhargav');
+		history.replaceState(null, '', `${location.pathname}?utm_source=newsletter`);
+		pageView();
+		expect(beacons()).toEqual([
+			[
+				'/api/events',
+				[
+					{
+						event: 'page_view',
+						path: location.pathname,
+						properties: { referrer: 'www.google.com' }
+					}
+				]
+			]
+		]);
+		pageView(); // A client-side navigation: the referrer is still Google's, but it's not news.
+		expect(sentEvents()[1]).toEqual({
+			event: 'page_view',
+			path: location.pathname,
+			properties: {}
+		});
+		referrer.mockRestore();
+	});
+
+	it('leaves out a referrer that is this site (a full reload or a link from another page here)', () => {
+		const referrer = vi
+			.spyOn(document, 'referrer', 'get')
+			.mockReturnValue(`${location.origin}/blog`);
+		pageView();
+		expect(sentEvents()[0].properties).toEqual({});
+		referrer.mockRestore();
+	});
+
+	it('sends nothing on the author’s devices', () => {
+		stop();
+		localStorage.setItem(NO_COUNT_KEY, '1');
+		stop = startAnalytics();
+		pageView();
+		expect(sendBeacon).not.toHaveBeenCalled();
+	});
 });
 
 describe('track', () => {

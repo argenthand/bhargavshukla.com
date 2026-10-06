@@ -61,22 +61,22 @@ These must survive the move. `scripts/check-dns.sh` holds the same list.
 
 ## Analytics: Cloudflare Web Analytics (#58)
 
-Page views and Web Vitals for good (#154): the site's own events are counted separately, in Analytics Engine (below; [analytics.md](analytics.md)).
+**To be turned off after #154 deploys** (runbook below): page views are counted by our own beacon in Analytics Engine since then, past ad blockers, and turning this off removes the one external script on the site. Until then:
 
 - **Where:** dashboard → Analytics & Logs → Web Analytics → `bhargavshukla.com`. Page views, page paths, referrers, countries, browsers and devices, plus Core Web Vitals (LCP, INP, CLS) per page.
 - **Setup: automatic, no code.** Cloudflare injects the beacon (`static.cloudflareinsights.com/beacon.min.js`) into HTML responses as they leave the zone, after the Worker, so it is not in the repo, never in `vite dev` or `wrangler dev`, and never stored in our edge cache (pages are stored before injection; each response gets it once). SPA tracking is on (`"spa"` in `data-cf-beacon`), so client-side navigations count. The beacon reports to `bhargavshukla.com/cdn-cgi/rum`, which Cloudflare answers before the Worker.
 - **Validators:** injecting the beacon rewrites the HTML, so Cloudflare drops the page's `ETag` for browser requests; `Last-Modified` gives them the 304 instead ([caching.md](caching.md#validators-126)).
-- **Privacy:** no cookies and no localStorage (checked on a fresh visit), so no consent banner. **EU exclusion on** (turned off in #136, back on in #154): Cloudflare's setting covers the EU only, so visitors from the UK, Switzerland, Iceland, Norway and Liechtenstein are still in these numbers; the event counts below leave all of them out.
+- **Privacy:** no cookies and no localStorage (checked on a fresh visit), so no consent banner. EU visitors were counted from #136 until it's turned off.
 - **Checking it:** requests without a browser `Accept: text/html` header get no beacon. Ad blockers and DNS blocklists (Pi-hole and the like) block `static.cloudflareinsights.com`, so those visits don't show up; on such a network, test with another resolver (for example Chromium's `--host-resolver-rules`).
 
 ## Analytics events: Workers Analytics Engine (#154)
 
-Easter eggs, palettes, the printed resume, the contact card, reading time and outbound links: counted by the Worker ([analytics.md](analytics.md#built-154)).
+Page views (with the referring site), easter eggs, palettes, the printed resume, the contact card, reading time and outbound links: counted by the Worker ([analytics.md](analytics.md#built-154)).
 
 - **Where:** dataset `bs_events`, binding `EVENTS` in `wrangler.jsonc`. Each event is a data point: the event, the page's path, one value and a number of seconds. Nothing about the visitor (no IP, User-Agent, country or ID). Analytics Engine keeps data for 3 months.
 - **Reading it:** `pnpm stats` (`scripts/stats.mjs`, `--days 1–90`) queries the SQL API with `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_STATS_TOKEN` (an API token with **Account Analytics: Read**) from the environment or `.env`.
 - **Not counted:** visitors in the EEA, the UK and Switzerland (by `request.cf.country`), unknown countries and Tor, bots, preview mode, other hosts, and the author's devices (`noCount`).
-- **Cost:** $0: Workers Paid includes 10 M data points a month. Each beacon is a Worker request, sent only when a page with events is hidden (or a link leaves the site), inside the included 10 M requests.
+- **Cost:** $0: Workers Paid includes 10 M data points and 10 M requests a month. About one beacon per page view (plus one when a page with events is hidden), each a Worker request and one data point per event.
 
 ## Read counts: Cloudflare D1 (#87)
 
@@ -441,11 +441,11 @@ Before merging #87 (the Worker refuses to deploy with a binding to a database th
 
 ### Analytics (#154)
 
-1. Cloudflare dashboard → Web Analytics → `bhargavshukla.com`: turn the **EU exclusion** back on.
-2. **Merge.** The deploy creates the `bs_events` dataset on its first write. The CMS deploys the Privacy single type.
-3. In the production admin: Settings → API Tokens → **frontend-read** → add `find` on **Privacy**; then Content Manager → **Privacy**: write the note and save (until then `/privacy`, linked from the footer, is a 404). The first draft is in `cms/scripts/seed.js` (`PRIVACY`).
-4. For `pnpm stats`: dashboard → My Profile → API Tokens → Create Token → Custom, permission **Account → Account Analytics → Read**, this account only. Put it in `.env` as `CLOUDFLARE_STATS_TOKEN`, with `CLOUDFLARE_ACCOUNT_ID` (Workers & Pages → Account details).
-5. **Check:** from outside the EEA, the UK and Switzerland (or a VPN exit there), and without `noCount`, choose a palette on bhargavshukla.com and switch tabs; a minute later `pnpm stats --days 1` shows `palette_chosen`.
+1. **Merge.** The deploy creates the `bs_events` dataset on its first write. The CMS deploys the Privacy single type.
+2. In the production admin: Settings → API Tokens → **frontend-read** → add `find` on **Privacy**; then Content Manager → **Privacy**: write the note and save (until then `/privacy`, linked from the footer, is a 404). The first draft is in `cms/scripts/seed.js` (`PRIVACY`).
+3. For `pnpm stats`: dashboard → My Profile → API Tokens → Create Token → Custom, permission **Account → Account Analytics → Read**, this account only. Put it in `.env` as `CLOUDFLARE_STATS_TOKEN`, with `CLOUDFLARE_ACCOUNT_ID` (Workers & Pages → Account details).
+4. **Check:** from outside the EEA, the UK and Switzerland (or a VPN exit there), and without `noCount`, open a page on bhargavshukla.com; a minute later `pnpm stats --days 1` shows a `page_view`.
+5. **Then, once the builds have finished**, turn Cloudflare Web Analytics off: dashboard → Analytics & Logs → Web Analytics → `bhargavshukla.com` → turn off automatic setup (or remove the site). **Check:** `curl -s -H 'Accept: text/html' https://bhargavshukla.com/ | grep -c cloudflareinsights` prints `0`, and `curl -sI -H 'Accept: text/html' https://bhargavshukla.com/` shows an `etag` ([caching.md](caching.md#validators-126)).
 
 ### Contact form (#135)
 

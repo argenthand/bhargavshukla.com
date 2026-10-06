@@ -1,9 +1,9 @@
 // The analytics beacon (#154, docs/analytics.md): events queue in memory and go to /api/events with
 // `navigator.sendBeacon`, where the Worker counts them. Each event is its name, the page's path
-// and at most one value. A beacon goes out when the page is hidden, when it's full, and when a
-// link leaves the site. Nothing is stored in the browser, and the author's devices (`noCount`)
-// send nothing. Until `startAnalytics` runs (on the server, before hydration) every call does
-// nothing. Page views and Web Vitals aren't sent: Cloudflare Web Analytics counts those.
+// and at most one value. A beacon goes out on each page view, when the page is hidden, when it's
+// full, and when a link leaves the site. Nothing is stored in the browser, and the author's
+// devices (`noCount`) send nothing. Until `startAnalytics` runs (on the server, before hydration)
+// every call does nothing.
 
 import {
 	EVENTS_PATH,
@@ -38,6 +38,28 @@ function flush() {
 		// Plain text, as the read counts' beacon: no preflight, and the Worker reads it as JSON.
 		navigator.sendBeacon(EVENTS_PATH, JSON.stringify(queue.splice(0, MAX_BATCH)));
 	}
+}
+
+/** The first page view of this page load has gone: later ones are client-side navigations. */
+let landed = false;
+
+/**
+ * A page view: on load and after each client-side navigation, sent at once. The first carries the
+ * site that sent the visitor here (its host only), unless that's this site.
+ */
+export function pageView() {
+	let referrer = '';
+	if (!landed) {
+		landed = true;
+		try {
+			const host = document.referrer && new URL(document.referrer).host;
+			if (host && host !== location.host) referrer = host;
+		} catch {
+			// No referrer.
+		}
+	}
+	track('page_view', referrer ? { referrer } : {});
+	flush();
 }
 
 /**
@@ -93,6 +115,7 @@ export function startAnalytics(): () => void {
 	document.addEventListener('auxclick', outbound, { capture: true });
 	return () => {
 		started = false;
+		landed = false;
 		queue = [];
 		onHide.clear();
 		document.removeEventListener('visibilitychange', onHidden);

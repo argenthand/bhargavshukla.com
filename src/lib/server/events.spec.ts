@@ -100,14 +100,16 @@ describe('readBeacon', () => {
 			{ event: 'read', path: '/blog/a', properties: { seconds: 42 } },
 			{ event: 'palette_chosen', path: '/blog', properties: { palette: 'sage' } },
 			{ event: 'outbound_link', path: '/', properties: { host: 'github.com' } },
-			{ event: 'resume_printed', path: '/resume', properties: {} }
+			{ event: 'resume_printed', path: '/resume', properties: {} },
+			{ event: 'page_view', path: '/', properties: { referrer: 'www.google.com' } }
 		];
 		expect(readBeacon(JSON.stringify(body))).toEqual([
 			{ event: 'easter_egg_found', path: '/', value: 'disco', seconds: 0 },
 			{ event: 'read', path: '/blog/a', value: '', seconds: 42 },
 			{ event: 'palette_chosen', path: '/blog', value: 'sage', seconds: 0 },
 			{ event: 'outbound_link', path: '/', value: 'github.com', seconds: 0 },
-			{ event: 'resume_printed', path: '/resume', value: '', seconds: 0 }
+			{ event: 'resume_printed', path: '/resume', value: '', seconds: 0 },
+			{ event: 'page_view', path: '/', value: 'www.google.com', seconds: 0 }
 		]);
 	});
 
@@ -129,9 +131,15 @@ describe('readBeacon', () => {
 			{ event: 'read', path: '/', properties: { seconds: 'many' } },
 			{ event: 'read', path: '/', properties: { seconds: Infinity } },
 			{ event: 'read', path: '/', properties: { seconds: -5 } },
-			{ event: 'outbound_link', path: '/', properties: { host: 'evil.example/path?q=1' } }
+			{ event: 'outbound_link', path: '/', properties: { host: 'evil.example/path?q=1' } },
+			{
+				event: 'page_view',
+				path: '/',
+				properties: { referrer: 'https://mail.example/inbox?u=sam' }
+			}
 		];
 		expect(readBeacon(JSON.stringify(body)).map(({ value, seconds }) => [value, seconds])).toEqual([
+			['', 0],
 			['', 0],
 			['', 0],
 			['', 0],

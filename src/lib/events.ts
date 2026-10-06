@@ -1,8 +1,7 @@
 // Events (#154, docs/analytics.md; CONTEXT.md → Analytics): what a page's beacon may send. Each
 // event is a count: its name, the page it happened on, and at most one value. The beacon
 // (src/lib/analytics.ts) is typed from this, and the Worker (src/lib/server/events.ts) drops
-// anything that doesn't fit it. Page views and Web Vitals aren't here: Cloudflare Web Analytics
-// counts those.
+// anything that doesn't fit it.
 
 import { PALETTES } from './palettes';
 
@@ -13,6 +12,8 @@ export const EGGS = ['8-bit', 'disco', 'tab-lap', 'abyss'] as const;
 
 /** The events a page sends, and the one value each may carry. */
 export const PAGE_EVENTS = {
+	/** `referrer`: the site that sent the visitor here, on the first page of a visit only. */
+	page_view: { referrer: 'host' },
 	read: { seconds: 'number' },
 	easter_egg_found: { egg: EGGS },
 	palette_chosen: { palette: PALETTES.map((palette) => palette.id) },

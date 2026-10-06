@@ -30,10 +30,10 @@ const PRIVACY = {
   lead: 'No cookies, nothing stored on your device, and nothing kept that could identify you.',
   body: [
     '## Page views',
-    'Cloudflare, which runs this site, counts page views with Cloudflare Web Analytics: the page, the site that sent you here, your country, your browser, operating system and type of device, and how quickly the page loaded. It uses no cookies and stores nothing on your device. Visitors in the EU aren\'t included.',
+    'This site counts the pages you view, and on the first page of a visit, the site that sent you here (its name, like www.google.com, nothing more).',
     '## Things you do here',
-    'A few things are counted on their own: finding an easter egg, choosing a palette, printing the resume, starting or sending a message, following a link to another site (its address, not the page), and how long you spend reading a post.',
-    "Each is only the thing, the page it happened on and when. Nothing about you is kept, not even your IP address, so it can't be linked to you or to anything else you did here. The counts stay with this site, on Cloudflare, for three months. Visitors in the European Economic Area, the UK and Switzerland aren't counted.",
+    'A few things you do are counted too: finding an easter egg, choosing a palette, printing the resume, starting or sending a message, following a link to another site (its address, not the page), and how long you spend reading a post.',
+    "Each count, page views included, is only the thing, the page it happened on and when. Nothing about you is kept, not even your IP address, so it can't be linked to you or to anything else you did here. The counts stay with this site, on Cloudflare, for three months. Visitors in the European Economic Area, the UK and Switzerland aren't counted.",
     '## Read counts',
     'The count on a post ("1.2K reads") is kept by this site, on Cloudflare. To count each reader once a day, it keeps a hash of your IP address and browser with a secret that changes every day; both are deleted the next day. Only the number stays.',
     '## Questions',

@@ -2,7 +2,7 @@
 // The analytics events' counts (#154, docs/analytics.md), from Workers Analytics Engine's SQL API.
 // Each data point is one event: blob1 the event, blob2 the page, blob3 its value, double1 its
 // seconds (read). `_sample_interval` undoes Analytics Engine's sampling, so counts are sums of it.
-// Page views and Web Vitals are in Cloudflare Web Analytics, not here.
+// page_view's value is the referring site (first page of a visit only).
 //
 // Needs CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_STATS_TOKEN (an API token with Account Analytics:
 // Read) in the environment or .env.
@@ -61,6 +61,13 @@ const counts = await query(`
 	GROUP BY blob1, blob3
 	ORDER BY blob1, n DESC`);
 
+const pages = await query(`
+	SELECT blob2 AS page, SUM(_sample_interval) AS views
+	FROM ${DATASET} WHERE blob1 = 'page_view' AND ${since}
+	GROUP BY blob2
+	ORDER BY views DESC
+	LIMIT 20`);
+
 const reading = await query(`
 	SELECT blob2 AS page, SUM(_sample_interval) AS reports, SUM(double1 * _sample_interval) AS seconds
 	FROM ${DATASET} WHERE blob1 = 'read' AND ${since}
@@ -73,6 +80,13 @@ console.log(
 	table(
 		['Event', 'Value', 'Count'],
 		counts.map(({ event, value, n }) => [event, value || '–', Number(n)])
+	)
+);
+console.log('\nPage views by page (top 20)\n');
+console.log(
+	table(
+		['Page', 'Views'],
+		pages.map(({ page, views }) => [page, Number(views)])
 	)
 );
 console.log('\nReading time by page (top 20)\n');
