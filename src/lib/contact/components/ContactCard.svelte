@@ -85,8 +85,12 @@
 	let token = '';
 	let waiting: ((token: string) => void)[] = [];
 
+	// Set while the script loads: a second focus before then must not draw a second widget.
+	let starting = false;
+
 	async function startSpamCheck() {
-		if (turnstile || !siteKey || !widget) return;
+		if (turnstile || starting || !siteKey || !widget) return;
+		starting = true;
 		try {
 			turnstile = await loadTurnstile();
 			widgetId = turnstile.render(widget!, {
@@ -106,6 +110,8 @@
 			// Blocked (an ad blocker, a network filter): the send goes without a token, as unverified.
 			turnstile = undefined;
 			console.warn(err);
+		} finally {
+			starting = false;
 		}
 	}
 
