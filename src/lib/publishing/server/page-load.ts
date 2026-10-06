@@ -11,7 +11,7 @@
 // shows. `satisfies` types the event from the route's own `$types`.
 
 import type { ServerLoadEvent } from '@sveltejs/kit';
-import { contact } from '$lib/server/contact';
+import { contact } from '$lib/contact/index.server';
 
 /** The contact card is on every page (#135) and layouts can't have actions, so every page has it. */
 export const pageActions = { contact };

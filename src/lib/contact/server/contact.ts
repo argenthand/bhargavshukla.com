@@ -16,7 +16,7 @@ import {
 	HONEYPOT,
 	type ContactResult,
 	type ContactValues
-} from '$lib/contact';
+} from '../contact';
 import { NO_COUNT_FIELD } from '$lib/analytics';
 import { contactEvent, recordServerEvent, type ReadsDb } from '$lib/analytics/index.server';
 import { getContactEmail } from '$lib/content/index.server';

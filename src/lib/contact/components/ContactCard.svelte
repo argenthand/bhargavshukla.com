@@ -22,9 +22,9 @@
 		type ContactField,
 		type ContactResult,
 		type ContactValues
-	} from '$lib/contact';
+	} from '../contact';
 	import { track, NO_COUNT_FIELD, optedOut } from '$lib/analytics';
-	import { loadTurnstile, TEST_SITE_KEY, type Turnstile } from '$lib/turnstile';
+	import { loadTurnstile, TEST_SITE_KEY, type Turnstile } from '../turnstile';
 	import { Icon } from '$lib/site';
 
 	const SEND_FAILED = "Couldn't send just now. Your message is still here; try again in a minute.";

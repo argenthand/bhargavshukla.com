@@ -7,7 +7,7 @@
 	import { afterNavigate, onNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import ContactCard from '$lib/components/ContactCard.svelte';
+	import { ContactCard } from '$lib/contact';
 	import { Icon, NavProgress, Toast, pageTransition, reducedMotion, nav, site } from '$lib/site';
 	import EightBitBanner from '$lib/components/EightBitBanner.svelte';
 	import Shortcuts from '$lib/components/Shortcuts.svelte';
