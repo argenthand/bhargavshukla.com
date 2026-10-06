@@ -3,8 +3,8 @@
 	// Canonical and og:url always use the production origin and drop the query string, so
 	// /blog?q=… and preview hosts never compete with the real page.
 	import { page } from '$app/state';
-	import { CARD, cardUrl } from '$lib/share';
-	import { site } from '$lib/site';
+	import { CARD, cardUrl } from '../share';
+	import { site } from '../site';
 
 	interface Props {
 		/** Page title; the site name is appended. Omit on the home page. */

@@ -3,8 +3,8 @@
 	// in the bottom-right corner, above the tab bar on phones. Its red ring fills as the article
 	// scrolls past. It appears once the post title is out of view; pressing it goes back to the title
 	// and moves focus there. Only with JavaScript, and never in print.
-	import Icon from '$lib/components/Icon.svelte';
-	import { reducedMotion } from '$lib/motion';
+	import Icon from './Icon.svelte';
+	import { reducedMotion } from '../motion';
 
 	let { article, title }: { article?: HTMLElement; title?: HTMLElement } = $props();
 

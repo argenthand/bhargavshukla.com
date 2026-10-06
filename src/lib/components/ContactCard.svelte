@@ -27,7 +27,7 @@
 	import { NO_COUNT_FIELD } from '$lib/events';
 	import { optedOut } from '$lib/reads';
 	import { loadTurnstile, TEST_SITE_KEY, type Turnstile } from '$lib/turnstile';
-	import Icon from './Icon.svelte';
+	import { Icon } from '$lib/site';
 
 	const SEND_FAILED = "Couldn't send just now. Your message is still here; try again in a minute.";
 	const EMPTY: ContactValues = { from: '', subject: '', message: '' };

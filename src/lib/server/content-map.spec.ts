@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Sections hidden from the nav, for the live-section cases; every section is live otherwise.
 const hidden = vi.hoisted(() => new Set<string>());
-vi.mock('$lib/site', () => ({ isLive: (href: string) => !hidden.has(href) }));
+vi.mock('$lib/site/site', () => ({ isLive: (href: string) => !hidden.has(href) }));
 
 const { dataUrl, entryAt, planPublish, readTags } = await import('./content-map');
 

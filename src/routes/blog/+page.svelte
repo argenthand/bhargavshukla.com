@@ -2,15 +2,12 @@
 	import { resolve } from '$app/paths';
 	import { replaceState } from '$app/navigation';
 	import { page } from '$app/state';
-	import Icon from '$lib/components/Icon.svelte';
+	import { Icon, Seo, motionMs, titleTransition, site } from '$lib/site';
 	import PostMeta from '$lib/components/PostMeta.svelte';
-	import Seo from '$lib/components/Seo.svelte';
 	import { shownDate, yearOf } from '$lib/format';
-	import { motionMs, titleTransition } from '$lib/motion';
 	import { cubicOut } from 'svelte/easing';
 	import { flip } from 'svelte/animate';
 	import { fade } from 'svelte/transition';
-	import { site } from '$lib/site';
 
 	let { data } = $props();
 

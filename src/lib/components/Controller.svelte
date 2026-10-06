@@ -3,7 +3,7 @@
 	// line open it, so phones can enter the Konami code too. The layout loads it on the first tap. No instructions: anyone who grew up with
 	// one knows what to press. A popover, so a tap outside, Esc or × closes it. Presses blip; the
 	// strip echoes the last few. ↑↑↓↓←→←→ B A starts 8-bit mode.
-	import Icon from '$lib/components/Icon.svelte';
+	import { Icon } from '$lib/site';
 	import { blip } from '$lib/eight-bit.svelte';
 	import { konamiKey } from '$lib/gestures';
 	import { keepAwake } from '$lib/eight-bit-sound';

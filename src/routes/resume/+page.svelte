@@ -5,12 +5,10 @@
 	import { page } from '$app/state';
 	import { onMount, tick } from 'svelte';
 	import { track } from '$lib/analytics';
-	import Icon from '$lib/components/Icon.svelte';
+	import { Icon, Seo, site } from '$lib/site';
 	import ProfileHeader, { profileContacts } from '$lib/components/ProfileHeader.svelte';
 	import { decodeContact } from '$lib/contact';
-	import Seo from '$lib/components/Seo.svelte';
 	import { formatMonth } from '$lib/format';
-	import { site } from '$lib/site';
 	import { look } from '$lib/look.svelte';
 	import type { Employer, Role } from '$lib/server/resume';
 

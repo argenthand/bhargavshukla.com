@@ -2,7 +2,7 @@
 // Links use the production origin (site.url), like canonical URLs.
 
 import { shownDate } from '$lib/format';
-import { site } from '$lib/site';
+import { site } from '../site';
 import type { PostSummary } from '$lib/types/content';
 
 /** How many posts the feed carries. */

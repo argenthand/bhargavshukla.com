@@ -2,7 +2,7 @@
 	// Recommended reading (docs/design.md): a Next up card for the first pick and an "Also:" line
 	// for the second. With no picks the page renders nothing at all.
 	import { resolve } from '$app/paths';
-	import Icon from '$lib/components/Icon.svelte';
+	import { Icon } from '$lib/site';
 	import PostMeta from '$lib/components/PostMeta.svelte';
 	import { formatDate, isoDay, shownDate } from '$lib/format';
 	import type { PostSummary } from '$lib/types/content';

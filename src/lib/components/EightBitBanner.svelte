@@ -4,7 +4,7 @@
 	// (`eight-bit:`, screen only), so a page that loads in 8-bit mode has it from the first paint,
 	// without a shift, and paper never does (#147).
 	// While the mode is on, buttons and links blip when pressed.
-	import Icon from '$lib/components/Icon.svelte';
+	import { Icon } from '$lib/site';
 	import { blip, setSound, sound } from '$lib/eight-bit.svelte';
 	import { look } from '$lib/look.svelte';
 

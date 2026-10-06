@@ -2,7 +2,7 @@
 	// The easter eggs' one-line message (#63, #111): the Konami code, 8-bit mode and the palette
 	// disco show it with `showToast` (toast.svelte.ts). The layout renders it once (#143). A
 	// `role="status"`, so screen readers hear it.
-	import { toast } from '$lib/toast.svelte';
+	import { toast } from '../toast.svelte';
 </script>
 
 <p

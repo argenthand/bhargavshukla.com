@@ -4,10 +4,9 @@
 // prints in the palette underneath.
 
 import { track } from '$lib/analytics';
-import { reducedMotion } from '$lib/motion';
+import { reducedMotion, showToast } from '$lib/site';
 import { play, type Sound } from '$lib/eight-bit-sound';
 import { look } from '$lib/look.svelte';
-import { showToast } from '$lib/toast.svelte';
 
 const SOUND_KEY = 'eight-bit-sound';
 

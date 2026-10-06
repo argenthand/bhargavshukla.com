@@ -5,8 +5,7 @@
 	// Both highlight the section being read (aria-current="location"); with JS one red marker slides
 	// between entries (#61), without it the current entry's own border is red.
 	import type { Attachment } from 'svelte/attachments';
-	import Icon from '$lib/components/Icon.svelte';
-	import { reducedMotion } from '$lib/motion';
+	import { Icon, reducedMotion } from '$lib/site';
 	import type { Heading } from '$lib/types/content';
 
 	let { headings, variant }: { headings: Heading[]; variant: 'pill' | 'sidebar' } = $props();

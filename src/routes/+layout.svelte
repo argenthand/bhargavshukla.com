@@ -8,20 +8,16 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import ContactCard from '$lib/components/ContactCard.svelte';
-	import Icon from '$lib/components/Icon.svelte';
-	import NavProgress from '$lib/components/NavProgress.svelte';
+	import { Icon, NavProgress, Toast, pageTransition, reducedMotion, nav, site } from '$lib/site';
 	import EightBitBanner from '$lib/components/EightBitBanner.svelte';
 	import Shortcuts from '$lib/components/Shortcuts.svelte';
-	import Toast from '$lib/components/Toast.svelte';
 	import PalettePicker from '$lib/components/PalettePicker.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { pageView, startAnalytics, track } from '$lib/analytics';
 	import { ABYSS_LINE, consoleNote } from '$lib/easter-eggs';
 	import { bouncedPastEnd, konamiKeydown, taps } from '$lib/gestures';
 	import { introHeading } from '$lib/intro.svelte';
-	import { pageTransition, reducedMotion } from '$lib/motion';
 	import { wake } from '$lib/eight-bit-sound';
-	import { nav, site } from '$lib/site';
 
 	let { children, data } = $props();
 
@@ -38,7 +34,7 @@
 	// on screen. `js:` keeps it visible without JavaScript.
 	const hideName = $derived(page.route.id === '/' && !page.error && introHeading.inView);
 
-	// Page transitions (#60, src/lib/motion.ts).
+	// Page transitions (#60, src/lib/site/motion.ts).
 	onNavigate(pageTransition);
 
 	// A note for whoever opens DevTools (#63).

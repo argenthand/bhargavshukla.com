@@ -6,9 +6,8 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import Icon from '$lib/components/Icon.svelte';
+	import { Icon, nav } from '$lib/site';
 	import { leaveKeyAlone } from '$lib/gestures';
-	import { nav } from '$lib/site';
 
 	/** How long `g` waits for its second key. */
 	const SEQUENCE_MS = 1500;

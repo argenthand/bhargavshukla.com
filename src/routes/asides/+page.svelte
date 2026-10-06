@@ -5,10 +5,8 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import AsideItem from '$lib/components/AsideItem.svelte';
-	import Icon from '$lib/components/Icon.svelte';
-	import Seo from '$lib/components/Seo.svelte';
+	import { Icon, Seo, motionMs } from '$lib/site';
 	import { isKind, KINDS, PAGE_SIZE } from '$lib/asides';
-	import { motionMs } from '$lib/motion';
 	import { cubicOut } from 'svelte/easing';
 	import { flip } from 'svelte/animate';
 	import { fade } from 'svelte/transition';

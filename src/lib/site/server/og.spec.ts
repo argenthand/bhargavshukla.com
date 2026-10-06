@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cardUrl } from '$lib/share';
+import { cardUrl } from '../share';
 import { asideCard, defaultCard, headshotSrc, postCard, renderCard, titleSize } from './og';
 
 /** Width and height from a PNG's IHDR chunk. */

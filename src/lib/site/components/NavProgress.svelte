@@ -3,7 +3,7 @@
 	// network never looks like a frozen tab. CSS waits `--delay-progress` before showing it, so quick
 	// navigations never flash it; when the page arrives it fills the width and fades out.
 	import { navigating } from '$app/state';
-	import { motionMs } from '$lib/motion';
+	import { motionMs } from '../motion';
 
 	/** Fill from wherever the bar got to, then fade; nothing if it never showed. */
 	function finish(node: HTMLElement) {

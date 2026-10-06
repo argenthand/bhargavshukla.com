@@ -3,7 +3,7 @@
 	// to the next (light → dark → system) and the highlight slides there. Its position and the
 	// selected icon come from `data-theme-pref` on <html> (theme-toggle-* in src/styles/utilities.css), which the
 	// inline script sets before the first paint, so it's right from the start. JavaScript only.
-	import Icon from '$lib/components/Icon.svelte';
+	import { Icon } from '$lib/site';
 	import { look, nextTheme, THEMES, type Theme } from '$lib/look.svelte';
 
 	const LABELS: Record<Theme, string> = { light: 'Light', dark: 'Dark', system: 'System' };

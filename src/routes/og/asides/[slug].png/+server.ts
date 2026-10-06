@@ -9,7 +9,7 @@ import {
 	loadHeadshot,
 	pngResponse,
 	renderCard
-} from '$lib/server/og';
+} from '$lib/site/index.server';
 import { getProfile } from '$lib/server/profile';
 import type { RequestHandler } from './$types';
 

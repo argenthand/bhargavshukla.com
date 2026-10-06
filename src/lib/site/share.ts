@@ -1,5 +1,5 @@
 // Share cards (#62): where they live and how big they are. Rendered by $lib/server/og.ts.
-import { site } from '$lib/site';
+import { site } from './site';
 
 export const CARD = { width: 1200, height: 630 } as const;
 

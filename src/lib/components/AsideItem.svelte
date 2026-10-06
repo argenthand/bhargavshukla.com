@@ -6,7 +6,7 @@
 	import ReadCount from '$lib/components/ReadCount.svelte';
 	import { kindLabel } from '$lib/asides';
 	import { formatDate, isoDay } from '$lib/format';
-	import { titleTransition } from '$lib/motion';
+	import { titleTransition } from '$lib/site';
 	import type { RenderedAside } from '$lib/types/content';
 
 	let {

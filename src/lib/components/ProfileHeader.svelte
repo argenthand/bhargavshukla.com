@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import type { IconName } from './Icon.svelte';
+	import { type IconName, site, Icon } from '$lib/site';
 
 	export type Contact = {
 		href: string;
@@ -47,8 +47,6 @@
 	import type { getProfile } from '$lib/server/profile';
 	import { taps } from '$lib/gestures';
 	import { watchIntro } from '$lib/intro.svelte';
-	import { site } from '$lib/site';
-	import Icon from './Icon.svelte';
 
 	type Props = {
 		profile: Awaited<ReturnType<typeof getProfile>>;

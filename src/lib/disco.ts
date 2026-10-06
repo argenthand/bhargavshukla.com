@@ -4,9 +4,8 @@
 // this on the fifth quick tap on the dot, so it costs nothing otherwise.
 
 import { track } from '$lib/analytics';
-import { reducedMotion } from '$lib/motion';
+import { reducedMotion, showToast } from '$lib/site';
 import { look, PALETTES } from '$lib/look.svelte';
-import { showToast } from '$lib/toast.svelte';
 
 /** Every other palette in picker order, ending back on the current one. */
 export function discoOrder<T>(palettes: readonly T[], current: T): T[] {

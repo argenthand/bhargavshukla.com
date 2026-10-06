@@ -2,13 +2,10 @@
 	import { resolve } from '$app/paths';
 	import NextUp from '$lib/components/NextUp.svelte';
 	import Prose from '$lib/components/Prose.svelte';
-	import BackToTop from '$lib/components/BackToTop.svelte';
+	import { BackToTop, Seo, titleTransition, CARD, cardUrl } from '$lib/site';
 	import ReadCount from '$lib/components/ReadCount.svelte';
-	import Seo from '$lib/components/Seo.svelte';
 	import Toc from '$lib/components/Toc.svelte';
 	import { formatDate, isoDay, shownDate, updatedDate } from '$lib/format';
-	import { titleTransition } from '$lib/motion';
-	import { CARD, cardUrl } from '$lib/share';
 
 	let { data } = $props();
 

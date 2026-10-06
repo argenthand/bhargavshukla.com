@@ -11,8 +11,8 @@ import satori, { init } from 'satori/standalone';
 import regular from '@fontsource/newsreader/files/newsreader-latin-400-normal.woff?inline';
 import italic from '@fontsource/newsreader/files/newsreader-latin-400-italic.woff?inline';
 import semibold from '@fontsource/newsreader/files/newsreader-latin-600-normal.woff?inline';
-import { CARD } from '$lib/share';
-import { site } from '$lib/site';
+import { CARD } from '../share';
+import { site } from '../site';
 
 const COLORS = { red: '#b91c1c', text: '#171717', muted: '#525252', avatar: '#d4d4d4' };
 
