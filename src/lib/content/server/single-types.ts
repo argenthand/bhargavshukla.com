@@ -4,8 +4,7 @@
 
 import type { Privacy, Profile, ProfilePage } from '../types';
 import { resolveUpload } from './image';
-import { renderMarkdown } from './markdown';
-import { firstParagraph } from './asides';
+import { firstParagraph, renderMarkdown } from './markdown';
 import { strapi } from './strapi';
 
 /**

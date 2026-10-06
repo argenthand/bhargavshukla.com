@@ -177,3 +177,16 @@ export function renderMarkdown(
 	const html = marked.parse(markdown, { async: false });
 	return { html, headings };
 }
+
+/** A Markdown text's first paragraph as plain text, cut at a word to fit a meta description. */
+export function firstParagraph(markdown: string, max = 160): string {
+	const text = (markdown.trim().split(/\n\s*\n/)[0] ?? '')
+		.replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+		.replace(/[*_`#>]/g, '')
+		.replace(/\s+/g, ' ')
+		.trim();
+	if (text.length <= max) return text;
+	const cut = text.slice(0, max - 1);
+	// Drop the last word only if the cut went through the middle of it.
+	return `${/\s/.test(text[max - 1]) ? cut.trimEnd() : cut.replace(/\s+\S*$/, '')}…`;
+}
