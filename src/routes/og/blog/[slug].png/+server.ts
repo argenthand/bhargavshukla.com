@@ -1,7 +1,7 @@
 // A post's share card (#62, F-og-post). Tagged type:post, type:category and type:profile through
 // strapi(), so publishing re-renders it after the purge.
 import { error } from '@sveltejs/kit';
-import { formatDate, shownDate } from '$lib/format';
+import { formatDate, shownDate } from '$lib/content';
 import {
 	cardProfile,
 	headshotSrc,
@@ -9,9 +9,8 @@ import {
 	pngResponse,
 	postCard,
 	renderCard
-} from '$lib/server/og';
-import { getPost } from '$lib/server/posts';
-import { getProfile } from '$lib/server/profile';
+} from '$lib/site/index.server';
+import { getPost, getProfile } from '$lib/content/index.server';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ locals, params }) => {

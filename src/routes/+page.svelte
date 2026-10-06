@@ -1,11 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import Icon from '$lib/components/Icon.svelte';
-	import PostMeta from '$lib/components/PostMeta.svelte';
-	import ProfileHeader, { profileContacts } from '$lib/components/ProfileHeader.svelte';
-	import Seo from '$lib/components/Seo.svelte';
-	import { titleTransition } from '$lib/motion';
-	import { isLive, site } from '$lib/site';
+	import { Icon, Seo, titleTransition, isLive, site } from '$lib/site';
+	import { PostMeta, ProfileHeader, profileContacts } from '$lib/content';
 
 	let { data } = $props();
 

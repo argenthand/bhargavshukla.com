@@ -1,7 +1,7 @@
 // An aside's share card (#62, F-og-aside): its title, or the opening of its text (a quote in italics).
 import { error } from '@sveltejs/kit';
-import { kindLabel } from '$lib/asides';
-import { getAside } from '$lib/server/asides';
+import { kindLabel } from '$lib/content';
+import { getAside, getProfile } from '$lib/content/index.server';
 import {
 	asideCard,
 	cardProfile,
@@ -9,8 +9,7 @@ import {
 	loadHeadshot,
 	pngResponse,
 	renderCard
-} from '$lib/server/og';
-import { getProfile } from '$lib/server/profile';
+} from '$lib/site/index.server';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ locals, params }) => {

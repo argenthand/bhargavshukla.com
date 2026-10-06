@@ -1,5 +1,5 @@
-import { listAsides } from '$lib/server/asides';
-import { pageActions, pageLoad } from '$lib/server/page-load';
+import { listAsides } from '$lib/content/index.server';
+import { pageActions, pageLoad } from '$lib/publishing/index.server';
 import type { PageServerLoad } from './$types';
 
 // Every published aside; the kind/tag filters and paging run in the browser from the URL.

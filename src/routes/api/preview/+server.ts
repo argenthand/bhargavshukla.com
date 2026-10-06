@@ -1,9 +1,14 @@
 // Strapi's "Open preview" target (#57): a short-lived link signed by the CMS (cms/config/admin.ts)
-// turns preview on with a signed cookie, then opens the page. See $lib/server/preview.ts.
+// turns preview on with a signed cookie, then opens the page. See $lib/publishing/server/preview.ts.
 
 import { env } from '$env/dynamic/private';
 import { error, redirect } from '@sveltejs/kit';
-import { COOKIE_TTL_S, PREVIEW_COOKIE, previewCookie, verifyLink } from '$lib/server/preview';
+import {
+	COOKIE_TTL_S,
+	PREVIEW_COOKIE,
+	previewCookie,
+	verifyLink
+} from '$lib/publishing/index.server';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ url, cookies }) => {

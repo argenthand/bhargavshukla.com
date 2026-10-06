@@ -6,8 +6,8 @@ import {
 	loadHeadshot,
 	pngResponse,
 	renderCard
-} from '$lib/server/og';
-import { getProfile } from '$lib/server/profile';
+} from '$lib/site/index.server';
+import { getProfile } from '$lib/content/index.server';
 import { site } from '$lib/site';
 import type { RequestHandler } from './$types';
 

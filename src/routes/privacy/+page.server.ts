@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
-import { pageActions, pageLoad } from '$lib/server/page-load';
-import { getPrivacy } from '$lib/server/privacy';
+import { pageActions, pageLoad } from '$lib/publishing/index.server';
+import { getPrivacy } from '$lib/content/index.server';
 import type { PageServerLoad } from './$types';
 
 // The note is the page: until it's saved in Strapi this is a 404, and without Strapi the error page.

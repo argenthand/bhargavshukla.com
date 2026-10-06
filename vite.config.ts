@@ -23,7 +23,7 @@ export default defineConfig({
 		})
 	],
 	// Share cards (#62): leave .wasm imports to wrangler, which bundles them as WebAssembly modules
-	// (Workers can't compile WebAssembly from bytes at runtime). See src/lib/server/og.ts.
+	// (Workers can't compile WebAssembly from bytes at runtime). See src/lib/site/server/og.ts.
 	build: { rollupOptions: { external: (id) => id.endsWith('.wasm') } },
 	test: {
 		expect: { requireAssertions: true },
@@ -43,7 +43,7 @@ export default defineConfig({
 						}
 					},
 					include: ['src/**/*.svelte.{test,spec}.{js,ts}'],
-					exclude: ['src/lib/server/**']
+					exclude: ['src/lib/**/server/**']
 				}
 			},
 

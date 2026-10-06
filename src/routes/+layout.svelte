@@ -7,21 +7,22 @@
 	import { afterNavigate, onNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import ContactCard from '$lib/components/ContactCard.svelte';
-	import Icon from '$lib/components/Icon.svelte';
-	import NavProgress from '$lib/components/NavProgress.svelte';
-	import EightBitBanner from '$lib/components/EightBitBanner.svelte';
-	import Shortcuts from '$lib/components/Shortcuts.svelte';
-	import Toast from '$lib/components/Toast.svelte';
-	import PalettePicker from '$lib/components/PalettePicker.svelte';
-	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
+	import { ContactCard } from '$lib/contact';
+	import { Icon, NavProgress, Toast, pageTransition, reducedMotion, nav, site } from '$lib/site';
+	import {
+		EightBitBanner,
+		Shortcuts,
+		PalettePicker,
+		ThemeToggle,
+		ABYSS_LINE,
+		consoleNote,
+		bouncedPastEnd,
+		konamiKeydown,
+		taps,
+		introHeading,
+		wake
+	} from '$lib/look';
 	import { pageView, startAnalytics, track } from '$lib/analytics';
-	import { ABYSS_LINE, consoleNote } from '$lib/easter-eggs';
-	import { bouncedPastEnd, konamiKeydown, taps } from '$lib/gestures';
-	import { introHeading } from '$lib/intro.svelte';
-	import { pageTransition, reducedMotion } from '$lib/motion';
-	import { wake } from '$lib/eight-bit-sound';
-	import { nav, site } from '$lib/site';
 
 	let { children, data } = $props();
 
@@ -34,17 +35,17 @@
 
 	const year = new Date().getFullYear();
 
-	// The header name fade (#59, src/lib/intro.svelte.ts): on home, out while the intro's heading is
+	// The header name fade (#59, src/lib/look/easter-eggs/intro.svelte.ts): on home, out while the intro's heading is
 	// on screen. `js:` keeps it visible without JavaScript.
 	const hideName = $derived(page.route.id === '/' && !page.error && introHeading.inView);
 
-	// Page transitions (#60, src/lib/motion.ts).
+	// Page transitions (#60, src/lib/site/motion.ts).
 	onNavigate(pageTransition);
 
 	// A note for whoever opens DevTools (#63).
 	onMount(consoleNote);
 
-	// Analytics (#154, src/lib/analytics.ts): started before the first page view, which
+	// Analytics (#154, src/lib/analytics/analytics.ts): started before the first page view, which
 	// afterNavigate sends on load and after every client-side navigation.
 	onMount(startAnalytics);
 	afterNavigate(pageView);
@@ -60,13 +61,13 @@
 	// The phone tab bar's marker slides to the current tab (#60).
 	const currentTab = $derived(nav.findIndex((item) => current(item.href)));
 
-	// Easter eggs (#111; gestures in src/lib/gestures.ts, #143). Three quick taps on the © line open
+	// Easter eggs (#111; gestures in src/lib/look/easter-eggs/gestures.ts, #143). Three quick taps on the © line open
 	// the controller; five on the current tab send its marker round the bar and back (not with
 	// reduced motion). The controller loads on the first tap and opens on the third; the audio
 	// starts inside that tap, as iOS requires.
 	let Controller = $state<Component<Record<string, never>, { open: () => void }>>();
 	let controller = $state<{ open: () => void }>();
-	const loadController = () => import('$lib/components/Controller.svelte');
+	const loadController = () => import('$lib/look/components/Controller.svelte');
 
 	function openController() {
 		wake();

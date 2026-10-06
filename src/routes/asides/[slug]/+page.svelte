@@ -1,10 +1,8 @@
 <script lang="ts">
 	// One aside (F-aside-*): back to the stream, the aside, then Newer / Older.
 	import { resolve } from '$app/paths';
-	import AsideItem from '$lib/components/AsideItem.svelte';
-	import Icon from '$lib/components/Icon.svelte';
-	import Seo from '$lib/components/Seo.svelte';
-	import { CARD, cardUrl } from '$lib/share';
+	import { AsideItem } from '$lib/content';
+	import { Icon, Seo, CARD, cardUrl } from '$lib/site';
 
 	let { data } = $props();
 </script>

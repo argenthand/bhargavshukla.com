@@ -1,8 +1,7 @@
 // Sitemap (#56): only pages that return 200. Asides and Resume are fetched (and listed) only while
 // their section is live, so a hidden section adds no request and no cache tag.
-import { buildSitemap, sitemapEntries } from '$lib/server/feeds';
-import { listPosts } from '$lib/server/posts';
-import { strapi } from '$lib/server/strapi';
+import { buildSitemap, sitemapEntries } from '$lib/site/index.server';
+import { listPosts, strapi } from '$lib/content/index.server';
 import { isLive } from '$lib/site';
 import type { RequestHandler } from './$types';
 

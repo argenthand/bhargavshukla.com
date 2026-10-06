@@ -10,8 +10,8 @@
 
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import satori from 'satori';
-import { PALETTES } from '../src/lib/palettes.ts';
-import { site } from '../src/lib/site.ts';
+import { PALETTES } from '../src/lib/look/palettes.ts';
+import { site } from '../src/lib/site/site.ts';
 
 const OUT = 'static/print-notes';
 const SIZE = 12; // px: the footer's text-xs

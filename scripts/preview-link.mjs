@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Draft preview on localhost (#98): prints the link Strapi's "Open preview" would open, signed with
 // the LOCAL PREVIEW_SECRET (.env, or .env.<mode> when it sets one), never the production one.
-// Same signed text as `linkPayload` in src/lib/server/preview.ts and `previewLink` in
+// Same signed text as `linkPayload` in src/lib/publishing/server/preview.ts and `previewLink` in
 // cms/config/admin.ts: keep the three in step.
 //
 //   pnpm preview-link /resume          # http://localhost:5173/api/preview?path=/resume&…

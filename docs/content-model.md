@@ -26,7 +26,7 @@ The home intro and contact links (#42). Home and resume share one header built f
 | `linkedin` | string               | optional; full URL                                                                                                                                                                                                                                        |
 | `github`   | string               | optional; full URL                                                                                                                                                                                                                                        |
 
-Until the profile is saved, or when Strapi can't be reached, the home page shows the name from `src/lib/site.ts` and no bio or links.
+Until the profile is saved, or when Strapi can't be reached, the home page shows the name from `src/lib/site/site.ts` and no bio or links.
 
 ### Privacy — `privacy` (Draft & Publish off)
 
@@ -125,7 +125,7 @@ Short-form (#18): a code snippet, a quote, a practical tip or a thought, anythin
 ## Writing in Markdown
 
 - Code fences take the language and an optional filename: ` ```ts rotation.ts `. The block header shows both, with a Copy button.
-- Highlighted languages: TypeScript (`ts`), JavaScript (`js`), TSX, Svelte, Python (`py`), Bash (`sh`), SQL, Go, C, C++, C# (`cs`), JSON, YAML, Dockerfile. Anything else renders as plain text. The list lives in `src/lib/server/markdown.ts`, and each language adds to the Worker size.
+- Highlighted languages: TypeScript (`ts`), JavaScript (`js`), TSX, Svelte, Python (`py`), Bash (`sh`), SQL, Go, C, C++, C# (`cs`), JSON, YAML, Dockerfile. Anything else renders as plain text. The list lives in `src/lib/content/server/markdown.ts`, and each language adds to the Worker size.
 - `##` and `###` headings feed the table of contents, which appears once a post has two or more `##` sections.
 
 ## Images (#40)

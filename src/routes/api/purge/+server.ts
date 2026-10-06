@@ -1,9 +1,8 @@
 // Strapi webhook target (#17, #123): purges cached pages by content type, then repopulates the
-// pages that show it in the background. See $lib/server/purge.ts and content-map.ts.
+// pages that show it in the background. See $lib/publishing/server/purge.ts and content-map.ts.
 
 import { env } from '$env/dynamic/private';
-import { handlePurge } from '$lib/server/purge';
-import { repopulate } from '$lib/server/repopulate';
+import { handlePurge, repopulate } from '$lib/publishing/index.server';
 import type { RequestHandler } from './$types';
 
 /** The Worker's own default entrypoint (`ctx.exports`): a request to itself, through its cache. */

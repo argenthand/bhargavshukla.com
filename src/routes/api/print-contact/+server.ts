@@ -4,7 +4,7 @@
 
 import { json } from '@sveltejs/kit';
 import { encodeContact } from '$lib/contact';
-import { getContactEmail } from '$lib/server/profile';
+import { getContactEmail } from '$lib/content/index.server';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ locals }) => {
