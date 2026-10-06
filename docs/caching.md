@@ -27,14 +27,14 @@ Publishing any post purges `type:post`, which clears every page that shows posts
 
 `App.Locals { cacheTags: Set<string> }`. `App.Platform` (`ctx`, `caches`, `cf`) comes from `@sveltejs/adapter-cloudflare`. `wrangler types` is not used: its 600 KB of runtime types clash with the DOM types the Svelte code needs, and string config comes through `$env/dynamic/private` anyway.
 
-### 2. Strapi client — `src/lib/server/strapi.ts`
+### 2. Strapi client — `src/lib/content/server/strapi.ts`
 
-- Content types, their REST paths and their relations live in the **content map** (`src/lib/server/content-map.ts`, #140; see [CONTEXT.md](../CONTEXT.md)).
+- Content types, their REST paths and their relations live in the **content map** (`src/lib/publishing/server/content-map.ts`, #140; see [CONTEXT.md](../CONTEXT.md)).
 - `strapi(locals).find(type, query)` builds the URL with `qs`, sends `Authorization: Bearer ${STRAPI_TOKEN}`, and adds the content map's `readTags(type, query)` to `locals.cacheTags`: `type:<content type>`.
 - Populating a relation adds its content type's tag too, by the name the CMS gives it (a post's `category` → `type:category`, `related` → `type:post`; an aside's `tags` → `type:tag`), so renaming a category purges every page that shows it. Tags are per content type, not per entry ([ADR 0001](adr/0001-purge-by-content-type.md)).
 - `hooks.server.ts` creates `locals.cacheTags` for every request; the edge cache (#16) turns it into the `Cache-Tag` header.
 
-### 3. Hook — `src/hooks.server.ts` + `src/lib/server/edge-cache.ts`
+### 3. Hook — `src/hooks.server.ts` + `src/lib/publishing/server/edge-cache.ts`
 
 `handle = sequence(cacheTags, preview, edgeCache)`. `edgeCache` doesn't store anything itself; it sets the headers Workers Cache follows:
 
@@ -64,7 +64,7 @@ Tracking parameters (`?utm_source=…`) make a separate entry: the key can't be 
 
 ### Degraded pages (#142)
 
-When Strapi can't be reached, a page shows what it can instead of failing: a **degraded page** (CONTEXT.md). Every page load goes through `pageLoad` in `src/lib/server/page-load.ts`, and a route marks what it can do without by catching it with `degrade(value)`:
+When Strapi can't be reached, a page shows what it can instead of failing: a **degraded page** (CONTEXT.md). Every page load goes through `pageLoad` in `src/lib/publishing/server/page-load.ts`, and a route marks what it can do without by catching it with `degrade(value)`:
 
 | Page               | Required  | Without Strapi                                                                                           |
 | ------------------ | --------- | -------------------------------------------------------------------------------------------------------- |
@@ -80,7 +80,7 @@ When Strapi can't be reached, a page shows what it can instead of failing: a **d
 - **Only a `200` becomes a `503`**: if a load degrades and then fails or redirects, that status stands.
 - **An unsaved profile or resume** isn't degraded: it's a normal page, cached as usual. Saving it is a publish, which purges the pages that show it.
 
-### Draft preview (#57) — `src/lib/server/preview.ts`
+### Draft preview (#57) — `src/lib/publishing/server/preview.ts`
 
 1. **Link.** Strapi's **Open preview** (draft tab) calls `preview.config.handler` in [`cms/config/admin.ts`](../cms/config/admin.ts), which mints `https://bhargavshukla.com/api/preview?path=/blog/<slug>&exp=<now+5 min>&sig=<HMAC>` for posts, asides and the resume (other types get no button). The secret itself never appears in a URL. The published tab opens the live page.
 2. **Cookie.** `/api/preview` checks the signature (`crypto.subtle.verify`, constant time), that `path` is a site path (`/x`, never `//host`), and that `exp` is in the future but at most 10 minutes away. It then sets `__preview=<exp>.<HMAC>` (HttpOnly, Secure, SameSite=Lax, 2 hours) and redirects (303) to the page. A bad link gets 401.
@@ -98,7 +98,7 @@ The CMS and the site share `PREVIEW_SECRET`; the signed text is `link\n<path>\n<
 
 `/api/*` keeps its own headers. `GET /api/views` returns `Cache-Control: public, max-age=60`, so Workers Cache answers repeats for a minute without running the Worker. A popular page costs about one D1 read a minute. The beacon (`POST`) is never cached. Pages themselves don't change: the count is fetched after load.
 
-### 4. Purge endpoint — `src/routes/api/purge/+server.ts` + `src/lib/server/purge.ts`
+### 4. Purge endpoint — `src/routes/api/purge/+server.ts` + `src/lib/publishing/server/purge.ts`
 
 - **Auth:** `Authorization: Bearer ${PURGE_SECRET}`, compared with `crypto.subtle.timingSafeEqual`; otherwise 401.
 - **Payload** (Strapi 5): `{ event, model, uid, entry }`, sent as JSON. The content map's `planPublish(body)` reads the content type from `uid` (`api::post.post` → `post`); uids the site never reads (plugins, users) are ignored. Send JSON when calling it by hand: SvelteKit's CSRF check answers 403 to a form-encoded cross-site POST.
@@ -112,7 +112,7 @@ The CMS and the site share `PREVIEW_SECRET`; the signed text is `link\n<path>\n<
   | body `{ "all": true }`                             | purge everything, then repopulate (manual escape hatch)                                                                                  |
 
 - **Purge:** `ctx.cache.purge({ tags })`, or `{ purgeEverything: true }` for `{ "all": true }`. It propagates worldwide within seconds and uses the Free plan's purge rate limits, plenty for one purge per publish.
-- **Repopulate** (`src/lib/server/repopulate.ts`): after a successful purge, in the background (`ctx.waitUntil`), the endpoint requests pages again through the Worker's own cache (`ctx.exports.default.fetch`, a loopback request). The content map decides which (#140): the **key pages** that show the published content type, in live sections only, each as the page and as its page data; the published post or aside's own page (from `entry.slug`); then RSS and the sitemap if they show it. A tag edit fetches Asides again, not the resume; `{ "all": true }` fetches every key page. The next visitor gets the new version from cache. Page data URLs are spelled as the SvelteKit client sends them (`dataUrl`): the key is the query string verbatim. Other pages render on their next visit. `Repopulate: n/m ok …` in the logs lists each URL with its `cf-cache-status`.
+- **Repopulate** (`src/lib/publishing/server/repopulate.ts`): after a successful purge, in the background (`ctx.waitUntil`), the endpoint requests pages again through the Worker's own cache (`ctx.exports.default.fetch`, a loopback request). The content map decides which (#140): the **key pages** that show the published content type, in live sections only, each as the page and as its page data; the published post or aside's own page (from `entry.slug`); then RSS and the sitemap if they show it. A tag edit fetches Asides again, not the resume; `{ "all": true }` fetches every key page. The next visitor gets the new version from cache. Page data URLs are spelled as the SvelteKit client sends them (`dataUrl`): the key is the query string verbatim. Other pages render on their next visit. `Repopulate: n/m ok …` in the logs lists each URL with its `cf-cache-status`.
 - Respond 200 on success or when there's nothing to purge, 502 when the purge fails, 500 when Workers Cache isn't available (`cache.enabled` missing from `wrangler.jsonc`), and log every outcome (`Purge: …` in `wrangler tail` and Workers Logs). Strapi doesn't retry webhooks, so failures must be visible.
 - The handler lives in `purge.ts` (`handlePurge(request, secret, purge, repopulate)`) so it's tested without Workers; `+server.ts` passes in `ctx.cache.purge` and the repopulate step. `crypto.subtle.timingSafeEqual` is Workers-only: both sides are SHA-256 hashed first (equal lengths), with a constant-time loop in Node.
 

@@ -57,7 +57,7 @@ These must survive the move. `scripts/check-dns.sh` holds the same list.
 
 - **`www` → apex:** a proxied placeholder record `www` AAAA `100::`, plus a Redirect Rule (Rules → Redirect Rules → "Redirect from WWW to root" template): 301, keep the path and query string. The rule only matches `https://www…`; Always Use HTTPS upgrades `http://www…` first (two hops), otherwise it reaches the `100::` placeholder and fails with a 523.
 - **Workers Paid** ($5/month) since #62: share cards take ~20–70 ms of CPU to render, over the Free plan's 10 ms per request. Paid allows 30 s by default and a 10 MB compressed Worker. With satori, resvg-wasm and three Newsreader weights the Worker is ~1.6 MB compressed (`pnpm exec wrangler deploy --dry-run`); before #62 it was ~0.4 MB.
-- **WebAssembly on Workers:** Workers can't compile WebAssembly from bytes at runtime, so `vite.config.ts` leaves `.wasm` imports external and wrangler bundles them as modules; `src/lib/server/og.ts` imports them lazily (SvelteKit's build analysis runs in Node, which can't load them). satori stays on **0.32**: 0.33 added harfbuzzjs, which loads its WebAssembly in a way Workers refuse.
+- **WebAssembly on Workers:** Workers can't compile WebAssembly from bytes at runtime, so `vite.config.ts` leaves `.wasm` imports external and wrangler bundles them as modules; `src/lib/site/server/og.ts` imports them lazily (SvelteKit's build analysis runs in Node, which can't load them). satori stays on **0.32**: 0.33 added harfbuzzjs, which loads its WebAssembly in a way Workers refuse.
 
 ## Analytics: Cloudflare Web Analytics (#58)
 
@@ -327,7 +327,7 @@ If the whole VPS is gone: provision a new one (#10), set up the compose file and
 
 1. **Token:** production admin → Settings → API Tokens → Create new API Token. Name `frontend-read`, duration **Unlimited**, type **Custom**, permissions: Post `find` + `findOne`, Category `find` + `findOne` (nothing else). Strapi shows the token once.
 2. **Secret on the Worker:** Cloudflare → Workers & Pages → `bs-blog` → Settings → Variables and Secrets → Add → type **Secret**, name `STRAPI_TOKEN`, paste the token. Don't put it anywhere else. Secrets survive Workers Builds deploys; `STRAPI_URL` is a plain var in [`wrangler.jsonc`](../wrangler.jsonc).
-3. **Merge** the PR that sets `STRAPI_URL` and turns on Writing (`live: true` in `src/lib/site.ts`). The secret must exist first, or `/blog` returns 500.
+3. **Merge** the PR that sets `STRAPI_URL` and turns on Writing (`live: true` in `src/lib/site/site.ts`). The secret must exist first, or `/blog` returns 500.
 
 Checks:
 
@@ -352,7 +352,7 @@ Check: the home page shows the bio and links again, and `https://cms.bhargavshuk
 1. **Deploy the CMS** once the `CMS image` workflow for the merge commit has finished: `docker compose pull && docker compose up -d` on the VPS.
 2. **Token:** production admin → Settings → API Tokens → `frontend-read` → add **Resume `find`** → Save.
 3. **Content, in your own time:** Content Manager → Single Types → Resume. Save drafts as often as you like; nothing shows until **Publish**. Until then `/resume` is a 404 and the Resume nav link stays hidden.
-4. **Show it:** once published, set `live: true` for Resume in `src/lib/site.ts` (a one-line PR). That adds it to the nav, the phone tab bar and the home intro's links.
+4. **Show it:** once published, set `live: true` for Resume in `src/lib/site/site.ts` (a one-line PR). That adds it to the nav, the phone tab bar and the home intro's links.
 
 ### Credited images (#40)
 
@@ -366,7 +366,7 @@ The post `cover` changes from a media field to the `shared.image` component, so 
 1. Deploy the CMS once the `CMS image` workflow for the merge commit has finished: `docker compose pull && docker compose up -d`.
 2. **Token:** production admin → Settings → API Tokens → `frontend-read` → add **Aside `find` + `findOne`** and **Tag `find` + `findOne`** → Save.
 3. **Content:** Content Manager → Tag (a few to start), then Aside → write and **Publish** at least one.
-4. **Show it:** set `live: true` for Asides in `src/lib/site.ts` (a one-line PR). Until then `/asides` works but isn't linked.
+4. **Show it:** set `live: true` for Asides in `src/lib/site/site.ts` (a one-line PR). Until then `/asides` works but isn't linked.
 
 ### Home headshot (#59)
 
