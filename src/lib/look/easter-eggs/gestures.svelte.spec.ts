@@ -3,10 +3,10 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { unlock } = vi.hoisted(() => ({ unlock: vi.fn() }));
-vi.mock('../eight-bit/eight-bit.svelte', () => ({ unlock }));
+import { konamiKey, konamiKeydown, onKonami, taps } from './gestures';
 
-const { taps, konamiKeydown, konamiKey } = await import('./gestures');
+const unlock = vi.fn();
+onKonami(unlock);
 
 const CODE = [
 	'ArrowUp',
@@ -89,7 +89,7 @@ describe('the Konami code', () => {
 	const press = (key: string, target: Element = document.body, init: KeyboardEventInit = {}) =>
 		target.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, ...init }));
 
-	it('unlocks on the last key, even after other keys, and starts over', () => {
+	it('reports on the last key, even after other keys, and starts over', () => {
 		for (const key of ['x', 'ArrowUp', ...CODE]) press(key);
 		expect(unlock).toHaveBeenCalledTimes(1);
 		press('a');
