@@ -10,6 +10,7 @@
 		"preview-link": "node scripts/preview-link.mjs",
 		"print-notes": "node scripts/print-notes.mjs",
 		"perf": "node scripts/perf.mjs",
+		"stats": "node scripts/stats.mjs",
 		"fonts": "node scripts/fonts.mjs",
 		"build": "vite build",
 		"preview": "vite preview",

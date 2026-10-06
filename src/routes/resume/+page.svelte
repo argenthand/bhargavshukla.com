@@ -4,6 +4,7 @@
 	// Content comes from the Strapi Resume; the header is the shared ProfileHeader (#99) from the Profile.
 	import { page } from '$app/state';
 	import { onMount, tick } from 'svelte';
+	import { track } from '$lib/analytics';
 	import Icon from '$lib/components/Icon.svelte';
 	import ProfileHeader, { profileContacts } from '$lib/components/ProfileHeader.svelte';
 	import { decodeContact } from '$lib/contact';
@@ -78,6 +79,9 @@
 </script>
 
 <Seo title="Resume" description={resume?.summary || profile?.bioSummary || site.description} />
+
+<!-- Printed or saved as PDF (#154): browsers fire the same event for both. -->
+<svelte:window onbeforeprint={() => track('resume_printed')} />
 
 <svelte:head>
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -- a constant, not content -->

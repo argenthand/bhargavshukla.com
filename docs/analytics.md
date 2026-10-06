@@ -1,6 +1,8 @@
 # Analytics (#136)
 
-Exploration: count what visitors do (easter eggs, palettes, the printed resume, the contact card) and replace Cloudflare Web Analytics with numbers ad blockers can't hide. This doc compares tools, picks how events reach them, and covers privacy, cost and what changes for read counts. It ends with the decisions made. No code yet: a build ticket follows.
+Exploration: count what visitors do (easter eggs, palettes, the printed resume, the contact card) and replace Cloudflare Web Analytics with numbers ad blockers can't hide. This doc compares tools, picks how events reach them, and covers privacy, cost and what changes for read counts. It ends with the decisions made and what was built (#154).
+
+> **Built differently (#154): no PostHog, and no Web Analytics.** PostHog's data processing agreement is written for a company to sign, and this site is run by one person who isn't retaining a legal adviser for it. So nothing about visitors goes to a third party: the Worker counts page views and the site's own events in Workers Analytics Engine, with nothing about the visitor, and Cloudflare Web Analytics is turned off once that's live (one external script fewer, and page views past ad blockers). The exploration below is kept as written; [Built (#154)](#built-154) is what runs.
 
 Prices and limits checked 2026-10-05.
 
@@ -127,13 +129,42 @@ After a few months of numbers, decide whether it's worth it, and if so who sees 
 1. **Tool:** PostHog EU Cloud, free plan, no card.
 2. **Sending:** our own beacon to `/api/events`, forwarded by the Worker. No posthog-js, autocapture or replay.
 3. **Visitors:** PostHog's cookieless server hash mode, with client IP data discarded. No cookies, no banner.
-4. **EU:** visitors included in full. Web Analytics' EU exclusion is turned off now.
+4. **EU:** visitors included in full. Web Analytics' EU exclusion is turned off now. _Changed while building (#154), below: no visitors from the EEA, the UK or Switzerland until there's a DPA._
 5. **Events:** as listed above; the must-haves are easter eggs, palettes, the printed resume and the contact card.
 6. **Not counted:** the read counts' rules, plus bot User-Agents. One `noCount` flag for both.
 7. **Web Analytics:** alongside for four weeks after launch, then off.
 8. **Read counts:** stay in D1; PostHog gets a `read` event.
 9. **Web Vitals:** measured with `web-vitals` and sent as `$web_vitals`.
 10. **Post-MVP:** a consent banner for return visitors, decided after a few months of data.
+
+**Changed while building (#154, 2026-10-05/06):** decisions 1–4, 7 and 9 are replaced. No PostHog and, once this is live, no Web Analytics: page views and events are counts in Workers Analytics Engine; visitors in the EEA, the UK and Switzerland aren't counted. No unique visitors, countries, devices or Web Vitals: total counts are what's wanted. 5, 6 and 8 stand (read counts stay in D1; `read` is one of the events).
+
+## Built (#154)
+
+**Everything stays on Cloudflare, and nothing about a visitor is kept.** The Worker counts page views (with the referring site) and the site's own events in Workers Analytics Engine. Cloudflare Web Analytics is turned off once this is live ([infrastructure.md](infrastructure.md#analytics-154), step 5): ad blockers hid part of its page views, and its script was the one external script on the site.
+
+| Piece                                                                     | What it does                                                                                                                                                                                                                                                                                                                                                                            |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`src/lib/events.ts`](../src/lib/events.ts)                               | The events a page may send and the one value each may carry (a number, a host name, or one of a few words: the eggs, the palette ids). The beacon is typed from it and the Worker checks against it. `contact_sent` and `contact_blocked` are server-only.                                                                                                                              |
+| [`src/lib/analytics.ts`](../src/lib/analytics.ts)                         | The beacon: `startAnalytics` (the root layout, once; nothing with `noCount`), `track` (queued), `trackReading`. Each event is `{ event, path, properties }`: the path only, never a query string or fragment. `pageView` (from `afterNavigate`) is sent at once; the rest go with `navigator.sendBeacon` when the page is hidden, when 10 are waiting, and when a link leaves the site. |
+| [`src/lib/server/events.ts`](../src/lib/server/events.ts)                 | `counted` (same origin, bhargavshukla.com, outside preview, not a bot, not an excluded country), `readBeacon` (at most 10 events and 16 KB; unknown events dropped; a path with `?` or `#` dropped; only the event's one value kept, if it's the right kind), `dataPoint`, `handleBeacon`, `recordServerEvent`.                                                                         |
+| [`src/routes/api/events/+server.ts`](../src/routes/api/events/+server.ts) | `POST`: always 204; writes each counted event to the `EVENTS` dataset (`bs_events`).                                                                                                                                                                                                                                                                                                    |
+| [`src/lib/server/contact.ts`](../src/lib/server/contact.ts)               | Counts `contact_sent` (sent, verified or not) and `contact_blocked` (Turnstile failed, or the honeypot was filled) after the card's checks, by the same rules. The card adds a `no-count` field on the author's devices.                                                                                                                                                                |
+| [`scripts/stats.mjs`](../scripts/stats.mjs)                               | `pnpm stats [--days N]`: counts by event and value, and reading time by page, from Analytics Engine's SQL API ([infrastructure.md](infrastructure.md#analytics-events-workers-analytics-engine-154)).                                                                                                                                                                                   |
+| [`src/routes/privacy/`](../src/routes/privacy/+page.svelte)               | The privacy note (PRIV-\* on the design canvas), linked from the footer next to RSS. Its copy is the Strapi **Privacy** single type ([content-model.md](content-model.md#privacy--privacy-draft--publish-off)).                                                                                                                                                                         |
+
+**A data point** is `index1` the event (Analytics Engine samples by it), `blob1` the event, `blob2` the page's path, `blob3` the value (`disco`, `sage`, `github.com`, a referring site like `www.google.com`, or empty), `double1` the seconds (`read` only), and the time Analytics Engine writes it. That's all: no IP, User-Agent, country, visitor ID or session. So an event can't be tied to a person, to that person's other events, or to the email the contact card sends. What that costs: "how many different visitors did X" and funnels; what's left: how often each thing happened, and rates such as sent ÷ started.
+
+Where each event fires: `page_view` on load and after each client-side navigation (the referring site's host on the first one of a page load only, and never this site); `easter_egg_found` in `unlock` (8-bit, each time the code turns it on; not again while it's on), `disco` and the layout (`tab-lap`; `abyss` when Safari reports a scroll past the end, once per visit; `bouncedPastEnd` in `gestures.ts`); `palette_chosen` in the palette picker; `resume_printed` on `beforeprint` on `/resume`; `contact_started` on the card's first input (again after Send another); `read` from `ReadCount` wherever it counts reads; `outbound_link` on a click or middle-click on a link to another site (its host only).
+
+Choices made while building:
+
+- **`read` sends the seconds since its last report**, each time the page is hidden and when the visitor leaves, for the post it timed (not the page the address bar shows by then). Total reading time on a page is the sum of `seconds`.
+- **Visitors in the EEA, the UK and Switzerland aren't counted** (by `request.cf.country`; `EXCLUDED_COUNTRIES` in `src/lib/server/events.ts`), nor unknown countries and Tor. Their pages still send the beacon (pages come from the shared edge cache, so the page can't know where its visitor is), and the Worker drops it. Cloudflare Web Analytics' own exclusion covers the EU only. To count them, empty the list.
+- **No query strings anywhere:** the Writing page's search (`?q=`) would otherwise carry what a visitor typed. Campaign tags (`utm_*`) aren't counted; the referring site is.
+- **Cost on the page:** about 1.4 KB gz of JavaScript, and one beacon per page view (plus one when a page with events is hidden). With Web Analytics off, no external script at all.
+
+**Not counting your own visits:** the same `noCount` as read counts ([view-counts.md](view-counts.md#built-87)) turns off page views and events too.
 
 ## Sources
 
@@ -156,6 +187,7 @@ Checked 2026-10-05. Third-party summaries are marked; check prices against the v
 
 - [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/): 10 M requests a month on Workers Paid, then $0.30 per million
 - [Analytics Engine pricing](https://developers.cloudflare.com/analytics/analytics-engine/pricing/): 10 M data points and 1 M queries a month
+- [Analytics Engine: get started](https://developers.cloudflare.com/analytics/analytics-engine/get-started/) (#154): `writeDataPoint`, the SQL API, `_sample_interval`, the **Account Analytics: Read** token
 
 **Alternatives**
 

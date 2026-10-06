@@ -19,6 +19,9 @@
 			"migrations_dir": "migrations"
 		}
 	],
+	// Analytics events (#154, docs/analytics.md): counts only, nothing about the visitor. `pnpm stats`
+	// reads them.
+	"analytics_engine_datasets": [{ "binding": "EVENTS", "dataset": "bs_events" }],
 	// The contact form (#135, docs/contact.md): three sends a minute per IP.
 	"ratelimits": [
 		{ "name": "CONTACT_RATE", "namespace_id": "1135", "simple": { "limit": 3, "period": 60 } }

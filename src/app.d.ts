@@ -1,5 +1,6 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
+import type { EventsDataset } from '$lib/server/events';
 import type { ReadsDb } from '$lib/server/reads';
 
 declare global {
@@ -19,9 +20,11 @@ declare global {
 		// interface PageState {}
 		interface Platform {
 			/** Bindings from wrangler.jsonc. `READS` is D1 (#87); `vite dev` gets a local copy.
-			 *  `CONTACT_RATE` limits contact-form sends per IP (#135). */
+			 *  `CONTACT_RATE` limits contact-form sends per IP (#135). `EVENTS` is the analytics
+			 *  events' Analytics Engine dataset (#154). */
 			env: {
 				READS?: ReadsDb;
+				EVENTS?: EventsDataset;
 				CONTACT_RATE?: { limit(options: { key: string }): Promise<{ success: boolean }> };
 			};
 		}

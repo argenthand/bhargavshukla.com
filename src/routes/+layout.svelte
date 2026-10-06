@@ -4,7 +4,7 @@
 	import '$lib/fonts/fonts.css';
 	import './layout.css';
 	import { onMount, tick, type Component } from 'svelte';
-	import { onNavigate } from '$app/navigation';
+	import { afterNavigate, onNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import ContactCard from '$lib/components/ContactCard.svelte';
@@ -15,8 +15,9 @@
 	import Toast from '$lib/components/Toast.svelte';
 	import PalettePicker from '$lib/components/PalettePicker.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
+	import { pageView, startAnalytics, track } from '$lib/analytics';
 	import { ABYSS_LINE, consoleNote } from '$lib/easter-eggs';
-	import { konamiKeydown, taps } from '$lib/gestures';
+	import { bouncedPastEnd, konamiKeydown, taps } from '$lib/gestures';
 	import { introHeading } from '$lib/intro.svelte';
 	import { pageTransition, reducedMotion } from '$lib/motion';
 	import { wake } from '$lib/eight-bit-sound';
@@ -43,6 +44,19 @@
 	// A note for whoever opens DevTools (#63).
 	onMount(consoleNote);
 
+	// Analytics (#154, src/lib/analytics.ts): started before the first page view, which
+	// afterNavigate sends on load and after every client-side navigation.
+	onMount(startAnalytics);
+	afterNavigate(pageView);
+
+	// The abyss (#111) is found by bouncing past the end of the page (Safari only). Once per visit.
+	let abyssFound = false;
+	function onScroll() {
+		if (abyssFound || !bouncedPastEnd()) return;
+		abyssFound = true;
+		track('easter_egg_found', { egg: 'abyss' });
+	}
+
 	// The phone tab bar's marker slides to the current tab (#60).
 	const currentTab = $derived(nav.findIndex((item) => current(item.href)));
 
@@ -65,6 +79,7 @@
 	let marker = $state<HTMLElement>();
 
 	function lap() {
+		track('easter_egg_found', { egg: 'tab-lap' });
 		if (reducedMotion() || !marker) return;
 		const at = (i: number, y = '0') => ({ translate: `${i * 100}% ${y}` });
 		const last = nav.length - 1;
@@ -195,15 +210,19 @@
 				onclick={() => void loadController()}
 				{@attach taps(3, openController, { windowMs: 1000 })}>© {year} {site.name}</span
 			>
-			<!-- A server route, not a page: reload so the browser (or a feed reader) opens the XML. -->
-			<a href={resolve('/rss.xml')} data-sveltekit-reload class="tap-target gap-1.5 link-quiet">
-				<Icon name="rss" />RSS
-			</a>
+			<div class="flex items-center gap-5">
+				<!-- The privacy note (#154, PRIV-* on the canvas). -->
+				<a href={resolve('/privacy')} class="tap-target link-quiet">Privacy</a>
+				<!-- A server route, not a page: reload so the browser (or a feed reader) opens the XML. -->
+				<a href={resolve('/rss.xml')} data-sveltekit-reload class="tap-target gap-1.5 link-quiet">
+					<Icon name="rss" />RSS
+				</a>
+			</div>
 		</div>
 	</footer>
 </div>
 
-<svelte:window onkeydown={konamiKeydown} />
+<svelte:window onkeydown={konamiKeydown} onscroll={onScroll} />
 <Shortcuts />
 <Toast />
 {#if Controller}<Controller bind:this={controller} />{/if}

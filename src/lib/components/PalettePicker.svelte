@@ -8,6 +8,7 @@
 	// In 8-bit mode (#111) the dot shows NES colours, and choosing a palette leaves the mode.
 	// The palette disco (#111, src/lib/disco.ts): five quick taps on the dot and every palette plays
 	// in turn, then it lands back where it was. Each tap before that opens or closes the menu as usual.
+	import { track } from '$lib/analytics';
 	import { taps } from '$lib/gestures';
 	import { look, PALETTES } from '$lib/look.svelte';
 
@@ -93,7 +94,10 @@
 					name="palette"
 					value={palette.id}
 					checked={look.palette === palette.id && !look.eightBit}
-					onchange={() => look.choosePalette(palette.id)}
+					onchange={() => {
+						look.choosePalette(palette.id);
+						track('palette_chosen', { palette: palette.id });
+					}}
 					class="sr-only"
 				/>
 				<span aria-hidden="true" class="size-4.5 shrink-0 rounded-full {palette.swatch}"></span>

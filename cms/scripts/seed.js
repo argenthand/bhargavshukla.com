@@ -1,7 +1,7 @@
 'use strict';
 
 // Local development seed (#8): categories, a few sample posts with code blocks, the profile (#42),
-// a sample resume (#5), sample asides and tags (#18)
+// a sample resume (#5), sample asides and tags (#18), the privacy note (#154)
 // and a read-only API token for the SvelteKit frontend. Safe to re-run; existing data is kept, and an
 // existing token gets any new permissions.
 // Usage: npm run seed
@@ -18,11 +18,28 @@ const TOKEN_PERMISSIONS = [
   'api::category.category.findOne',
   'api::profile.profile.find',
   'api::resume.resume.find',
+  'api::privacy.privacy.find',
   'api::aside.aside.find',
   'api::aside.aside.findOne',
   'api::tag.tag.find',
   'api::tag.tag.findOne',
 ];
+
+// The privacy note's first draft (#154, PRIV-* on the design canvas); the real copy is edited in production.
+const PRIVACY = {
+  lead: 'No cookies, nothing stored on your device, and nothing kept that could identify you.',
+  body: [
+    '## Page views',
+    'This site counts the pages you view, and on the first page of a visit, the site that sent you here (its name, like www.google.com, nothing more).',
+    '## Things you do here',
+    'A few things you do are counted too: finding an easter egg, choosing a palette, printing the resume, starting or sending a message, following a link to another site (its address, not the page), and how long you spend reading a post.',
+    "Each count, page views included, is only the thing, the page it happened on and when. Nothing about you is kept, not even your IP address, so it can't be linked to you or to anything else you did here. The counts stay with this site, on Cloudflare, for three months. Visitors in the European Economic Area, the UK and Switzerland aren't counted.",
+    '## Read counts',
+    'The count on a post ("1.2K reads") is kept by this site, on Cloudflare. To count each reader once a day, it keeps a hash of your IP address and browser with a secret that changes every day; both are deleted the next day. Only the number stays.',
+    '## Questions',
+    'Send me a message with the card below.',
+  ].join('\n\n'),
+};
 
 // Placeholder roles from the design mockups, clearly marked; the real resume is written in production.
 const RESUME = {
@@ -248,6 +265,14 @@ async function seed(strapi) {
   } else {
     await profile.create({ data: PROFILE });
     console.log('Profile: created');
+  }
+
+  const privacy = strapi.documents('api::privacy.privacy');
+  if (await privacy.findFirst()) {
+    console.log('Privacy: already there');
+  } else {
+    await privacy.create({ data: PRIVACY });
+    console.log('Privacy: created');
   }
 
   const resume = strapi.documents('api::resume.resume');

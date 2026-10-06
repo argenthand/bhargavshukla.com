@@ -17,6 +17,8 @@ import {
 	type ContactResult,
 	type ContactValues
 } from '$lib/contact';
+import { NO_COUNT_FIELD } from '$lib/events';
+import { contactEvent, recordServerEvent } from './events';
 import type { ReadsDb } from './reads';
 import { getContactEmail } from './profile';
 
@@ -178,14 +180,24 @@ export async function sendWithResend(
 }
 
 export const contact: Action = async (event) => {
-	const { platform, locals, fetch } = event;
+	const { platform, locals, fetch, request } = event;
 	const ip = event.getClientAddress();
 	const db = platform?.env.READS;
 	const limiter = platform?.env.CONTACT_RATE;
 	const day = new Date().toISOString().slice(0, 10);
 	const secret = env.TURNSTILE_SECRET || (dev ? TEST_SECRET : '');
+	const data = await request.formData();
 
-	return handleContact(await event.request.formData(), {
+	// Sent and blocked are decided here, so the Worker counts them itself (#154).
+	const analytics = {
+		request,
+		preview: locals.preview,
+		country: platform?.cf?.country,
+		skip: Boolean(data.get(NO_COUNT_FIELD)),
+		dataset: platform?.env.EVENTS
+	};
+
+	return handleContact(data, {
 		allow: async () => (limiter ? (await limiter.limit({ key: ip })).success : true),
 		verify: (token) =>
 			secret ? verifyTurnstile(token, secret, ip, fetch) : Promise.resolve(false),
@@ -210,6 +222,10 @@ export const contact: Action = async (event) => {
 				throw new Error('Contact: RESEND_API_KEY, CONTACT_FROM or the profile email is missing');
 			await sendWithResend(mail, { apiKey: env.RESEND_API_KEY, from: env.CONTACT_FROM, to }, fetch);
 		},
-		log: (outcome) => console.log(JSON.stringify({ contact: outcome }))
+		log: (outcome) => {
+			console.log(JSON.stringify({ contact: outcome }));
+			const name = contactEvent(outcome);
+			if (name) recordServerEvent(name, analytics);
+		}
 	});
 };

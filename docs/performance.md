@@ -406,6 +406,18 @@ Return visits now revalidate: the browser asks whether the page changed and gets
 - **Real networks likely save more:** DevTools throttling only adds a fixed delay and caps bandwidth. A new real connection sends about 14 KB in its first round trip (TCP slow start; QUIC is similar), so the 23 KB page needed a second round trip and the 2 KB 304 doesn't. On real 4G that's worth about a round trip (~165 ms), not 21 ms. The emulation can't show it.
 - **Everything else matches #123 within noise:** first visits and taps are unchanged.
 
+### Analytics beacon (#154)
+
+The beacon adds about 1.4 KB gz to the site's JavaScript (all client chunks, measured against `main`); there's no Web Vitals library, since Cloudflare Web Analytics measures those. Beacons go out with `sendBeacon`, which never holds up the page, and only when a page with events is hidden ([analytics.md](analytics.md#built-154)). Production before #154, 2026-10-05, `pnpm perf`, 3 runs, medians, JS on:
+
+| Network | First visit: home          | Tap Writing | Return visit: home |
+| ------- | -------------------------- | ----------- | ------------------ |
+| Fast 4G | 590 ms (FCP 292), 199 KB   | 257 ms      | 197 ms, 2 KB       |
+| Slow 4G | 2212 ms (FCP 800), 199 KB  | 1082 ms     | 612 ms, 2 KB       |
+| 3G      | 7690 ms (FCP 2648), 199 KB | 2550 ms     | 2088 ms, 2 KB      |
+
+After #154: to be measured on production after the deploy.
+
 ## Real-world log
 
 Add a row whenever you try the site on a slow connection. Time from tap until the page is readable, by stopwatch or by feel.

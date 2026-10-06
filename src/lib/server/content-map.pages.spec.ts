@@ -35,6 +35,7 @@ const ENTRY = {
 	cover: null,
 	seo: null,
 	tagline: 'Tagline',
+	lead: 'Lead',
 	bio: 'Bio',
 	linkedin: null,
 	github: null,
@@ -73,6 +74,7 @@ const post = await import('../../routes/blog/[slug]/+page.server');
 const asides = await import('../../routes/asides/+page.server');
 const aside = await import('../../routes/asides/[slug]/+page.server');
 const resume = await import('../../routes/resume/+page.server');
+const privacy = await import('../../routes/privacy/+page.server');
 const rss = await import('../../routes/rss.xml/+server');
 const sitemap = await import('../../routes/sitemap.xml/+server');
 const { getProfile } = await import('./profile');
@@ -94,6 +96,7 @@ const ROUTES: Record<string, Run> = {
 	'/asides': run(asides.load),
 	'/asides/[slug]': run(aside.load, { slug: 'entry' }),
 	'/resume': run(resume.load),
+	'/privacy': run(privacy.load),
 	'/rss.xml': run(rss.GET),
 	'/sitemap.xml': run(sitemap.GET),
 	'/og/default.png': ({ locals }) => getProfile(locals),

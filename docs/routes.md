@@ -22,21 +22,26 @@ src/
     server/
       strapi.ts                   typed REST client; records cache tags into locals
       posts.ts                    post queries (lists, one post, home picks, Next up)
-      profile.ts, resume.ts       single types (#42, #5), Markdown fields rendered on the server
+      profile.ts, resume.ts,      single types (#42, #5, #154), Markdown fields rendered on the server
+      privacy.ts
       asides.ts                   aside queries, untitled-aside labels (#18)
       markdown.ts                 marked + Shiki (fine-grained bundle, JS regex engine); h2/h3 ids + ToC list
       edge-cache.ts               cache key, bypass rules, TTL constants
       purge.ts                    webhook payload → tags; Cloudflare purge API call
       feeds.ts                    RSS and sitemap XML builders (#56)
+      events.ts                   analytics: checks the beacon's events, counts them in Analytics Engine (#154)
       preview.ts                  draft preview: signed links and cookies, mergeDrafts (#57)
       og.ts                       share cards: satori (0.32) + resvg-wasm templates and renderer (#62)
     share.ts                      share card size and URLs (cardUrl), for <Seo>
+    events.ts                     the analytics events and their properties, shared by the beacon and the Worker (#154)
+    analytics.ts                  the analytics beacon: easter eggs, palettes, the resume, the contact card, reading time (#154)
   routes/
     +layout.svelte                header nav (md+) and bottom tab bar (below md), footer; preview banner
     +layout.server.ts             { preview } for the banner (#57)
     +page.svelte, +page.server.ts /                 intro + up to 3 featured posts (the newest posts while none are featured)
     +error.svelte                 404 / 5xx
     resume/+page.server.ts        /resume           Strapi Resume + Profile (an empty state until published, #91); print styles, Save as PDF
+    privacy/+page.server.ts       /privacy          Strapi Privacy: the privacy note, linked from the footer (#154); 404 until saved
     blog/+page.server.ts          /blog             all posts by year; client-side search + category filter (?q=&cat=)
     blog/[slug]/+page.server.ts   /blog/:slug       ToC + up to 2 recommended posts ("Next up")
     asides/+page.server.ts        /asides           every aside in full; ?kind= ?tag= ?page= from the URL, client-side
@@ -51,6 +56,7 @@ src/
     api/preview/exit/+server.ts   preview banner "Exit" → clears the cookie
     api/views/+server.ts          read counts (#87): GET counts for some pages, POST the 10-second beacon
     api/print-contact/+server.ts  the printed resume's email, encoded (#135)
+    api/events/+server.ts         the analytics beacon's events → Analytics Engine, always 204 (#154)
 
 Every page route's +page.server.ts builds its load with `pageLoad` and exports `actions = pageActions` (`src/lib/server/page-load.ts`, #142): drafts in preview, degraded pages when Strapi is down (caching.md → Degraded pages), and the contact card's form (#135, contact.md).
 ```

@@ -91,6 +91,12 @@ export interface Profile {
 	github: string | null;
 }
 
+/** The privacy note at /privacy (single type, #154). */
+export interface Privacy {
+	lead: string;
+	body: string;
+}
+
 /** The /resume page (single type); the header comes from the Profile. */
 export interface Resume {
 	location: string | null;

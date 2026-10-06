@@ -2,7 +2,7 @@
 
 /** How long a page must be visible before it counts as read. */
 export const READ_AFTER_MS = 10_000;
-/** Set to anything on the author's own devices so their reads don't count. */
+/** Set to anything on the author's own devices so their reads and events (#154) don't count. */
 export const NO_COUNT_KEY = 'noCount';
 
 const compact = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 });
@@ -35,7 +35,7 @@ export function readCount(path: string): Promise<number | undefined> {
 	});
 }
 
-function optedOut() {
+export function optedOut() {
 	try {
 		return localStorage.getItem(NO_COUNT_KEY) !== null;
 	} catch {
