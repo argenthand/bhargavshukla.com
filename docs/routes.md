@@ -66,7 +66,7 @@ Every page route's +page.server.ts builds its load with `pageLoad` and exports `
 
 Each folder in `src/lib` is one domain from [CONTEXT.md](../CONTEXT.md), and the folder's `index.ts` (and `index.server.ts`, for server code) is its interface. Routes, hooks and other domains import only from there, for example `$lib/look` or `$lib/content/index.server`, never from the files behind it. ESLint enforces this (`eslint.config.js`), including that a domain's client code can't import its own `server/` folder (SvelteKit only guards `index.server`). There are no exceptions. Analytics spells out the palette ids it accepts (`PALETTE_IDS` in `analytics/events.ts`) rather than importing the look, and `analytics/tests/events.spec.ts` fails if they differ from `PALETTES`.
 
-Specs live in the domain's `tests/` folder, which mirrors the domain's layout: the spec for `content/server/markdown.ts` is `content/tests/server/markdown.spec.ts`. Specs for the routes live in `src/routes/tests/`. The `.svelte.spec.ts` suffix sends a spec to the browser project; every other spec runs in Node. A spec that covers more than one module sits at the top of `tests/` (for example `publishing/tests/content-map.pages.spec.ts`).
+Specs live in the domain's `tests/` folder, which mirrors the domain's layout: the spec for `content/server/markdown.ts` is `content/tests/server/markdown.spec.ts`. Specs for the routes live in `src/routes/tests/` (the API handlers in `api/` there), and the hooks' in `src/tests/`. The `.svelte.spec.ts` suffix sends a spec to the browser project; every other spec runs in Node. A spec that covers more than one module sits at the top of `tests/` (for example `publishing/tests/content-map.pages.spec.ts`).
 
 ## Conventions
 
