@@ -17,7 +17,7 @@ src/
       format.ts, asides.ts        dates as shown (UTC); aside kinds and page size
       components/                 PostMeta, Prose (+ code Copy), Toc, NextUp, AsideItem, ProfileHeader
       server/                     strapi.ts (typed REST client; records cache tags into locals), posts.ts, asides.ts (#18),
-                                  profile.ts, resume.ts, privacy.ts (single types, #42, #5, #154), markdown.ts (marked + Shiki;
+                                  single-types.ts (Profile and Privacy note, #42, #154), resume.ts (#5), markdown.ts (marked + Shiki, firstParagraph;
                                   h2/h3 ids + ToC list), image.ts, images.ts (credited external images, #40)
     look/                         the look (#141): theme, chosen palette, 8-bit mode and the easter eggs
       look.svelte.ts              the look: the only writer of its storage and <html> attributes

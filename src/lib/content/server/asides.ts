@@ -4,8 +4,7 @@
 import { kindLabel } from '../asides';
 import { formatDate } from '../format';
 import type { Aside, RenderedAside } from '../types';
-import { renderMarkdown } from './markdown';
-import { firstParagraph } from './profile';
+import { firstParagraph, renderMarkdown } from './markdown';
 import { mergeDrafts } from '$lib/publishing/index.server';
 import { strapi } from './strapi';
 

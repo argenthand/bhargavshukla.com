@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { renderMarkdown, slugify } from './markdown';
+import { firstParagraph, renderMarkdown, slugify } from './markdown';
 
 describe('slugify', () => {
 	it('makes URL-safe ids', () => {
@@ -82,5 +82,19 @@ describe('renderMarkdown', () => {
 		const { html } = renderMarkdown('![A](/a.png)\n\nJust *text* here.');
 		expect(html).toContain('<p><img src="/a.png" alt="A" loading="lazy" decoding="async"></p>');
 		expect(html).toContain('<p>Just <em>text</em> here.</p>');
+	});
+});
+
+describe('firstParagraph', () => {
+	it('takes the first paragraph as plain text', () => {
+		expect(firstParagraph('Hello **there**, see [my site](https://x.y).\n\nSecond one.')).toBe(
+			'Hello there, see my site.'
+		);
+	});
+
+	it('cuts long text at a word boundary to fit a meta description', () => {
+		const text = firstParagraph('word '.repeat(60), 30);
+		expect(text.length).toBeLessThanOrEqual(30);
+		expect(text).toBe('word word word word word word…');
 	});
 });

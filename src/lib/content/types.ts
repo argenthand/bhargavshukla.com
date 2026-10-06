@@ -91,6 +91,14 @@ export interface Profile {
 	github: string | null;
 }
 
+/** The profile as pages get it (#159): no email (#135), photos resolved, the bio rendered. */
+export interface ProfilePage extends Omit<Profile, 'email' | 'bio' | 'photo' | 'photoAlt'> {
+	photo: ResolvedImage | null;
+	photoAlt: ResolvedImage | null;
+	bioHtml: string;
+	bioSummary: string;
+}
+
 /** The privacy note at /privacy (single type, #154). */
 export interface Privacy {
 	lead: string;
