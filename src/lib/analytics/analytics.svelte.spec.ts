@@ -3,7 +3,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { MAX_BATCH, type BeaconEvent } from './events';
-import { NO_COUNT_KEY } from './reads';
+import { NO_COUNT_KEY } from './opt-out';
 
 const { pageView, startAnalytics, track, trackReading } = await import('./analytics');
 

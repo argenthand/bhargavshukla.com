@@ -53,5 +53,3 @@ export interface BeaconEvent {
 export const MAX_BATCH = 10;
 /** Where beacons go. */
 export const EVENTS_PATH = '/api/events';
-/** A form field the contact card adds on the author's devices (`noCount`), so its outcome isn't counted. */
-export const NO_COUNT_FIELD = 'no-count';

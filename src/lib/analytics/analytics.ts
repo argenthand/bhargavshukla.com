@@ -12,7 +12,7 @@ import {
 	type PageEvent,
 	type Properties
 } from './events';
-import { optedOut } from './reads';
+import { optedOut } from './opt-out';
 
 let started = false;
 let queue: BeaconEvent[] = [];
