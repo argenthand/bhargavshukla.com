@@ -6,11 +6,11 @@
 	// JavaScript only; the inline script in app.html applies the saved palette before the first paint.
 	//
 	// In 8-bit mode (#111) the dot shows NES colours, and choosing a palette leaves the mode.
-	// The palette disco (#111, src/lib/disco.ts): five quick taps on the dot and every palette plays
+	// The palette disco (#111, src/lib/look/easter-eggs/disco.ts): five quick taps on the dot and every palette plays
 	// in turn, then it lands back where it was. Each tap before that opens or closes the menu as usual.
 	import { track } from '$lib/analytics';
-	import { taps } from '$lib/gestures';
-	import { look, PALETTES } from '$lib/look.svelte';
+	import { taps } from '../easter-eggs/gestures';
+	import { look, PALETTES } from '../look.svelte';
 
 	let button = $state<HTMLButtonElement>();
 	let menu = $state<HTMLElement>();
@@ -53,7 +53,7 @@
 		if (look.eightBit) return;
 		event.preventDefault();
 		menu?.hidePopover();
-		void import('$lib/disco').then(({ disco }) => disco());
+		void import('../easter-eggs/disco').then(({ disco }) => disco());
 	}
 </script>
 

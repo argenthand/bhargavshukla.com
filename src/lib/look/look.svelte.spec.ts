@@ -92,7 +92,7 @@ describe('the first-paint script', () => {
 		if (stored.theme) localStorage.setItem('theme', stored.theme);
 		if (stored.palette) localStorage.setItem('palette', stored.palette);
 		if (stored.eightBit) sessionStorage.setItem('eight-bit', stored.eightBit);
-		const { bootScript } = await import('./look-boot');
+		const { bootScript } = await import('./boot/look-boot');
 		new Function(bootScript())();
 		return {
 			pref: root.dataset.themePref,

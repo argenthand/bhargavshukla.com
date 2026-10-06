@@ -5,8 +5,8 @@
 
 import { track } from '$lib/analytics';
 import { reducedMotion, showToast } from '$lib/site';
-import { play, type Sound } from '$lib/eight-bit-sound';
-import { look } from '$lib/look.svelte';
+import { play, type Sound } from './eight-bit-sound';
+import { look } from '../look.svelte';
 
 const SOUND_KEY = 'eight-bit-sound';
 
@@ -43,6 +43,6 @@ export async function unlock() {
 	blip('unlock');
 	showToast(already ? '↑↑↓↓←→←→BA. Still 8-bit.' : '↑↑↓↓←→←→BA. 8-bit mode unlocked.');
 	if (reducedMotion()) return;
-	const { confetti } = await import('$lib/confetti');
+	const { confetti } = await import('../confetti');
 	confetti({ vars: ['--night-red', '--night-orange', '--night-sky', '--night-green'] });
 }

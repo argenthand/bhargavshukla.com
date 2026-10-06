@@ -5,7 +5,7 @@
 
 import { track } from '$lib/analytics';
 import { reducedMotion, showToast } from '$lib/site';
-import { look, PALETTES } from '$lib/look.svelte';
+import { look, PALETTES } from '../look.svelte';
 
 /** Every other palette in picker order, ending back on the current one. */
 export function discoOrder<T>(palettes: readonly T[], current: T): T[] {
@@ -25,7 +25,7 @@ export async function disco() {
 	const stop = () => (stopped = true);
 	// Let the press that started it finish before listening for the tap that stops it.
 	setTimeout(() => document.addEventListener('pointerdown', stop, { once: true }));
-	const confetti = reducedMotion() ? null : (await import('$lib/confetti')).confetti;
+	const confetti = reducedMotion() ? null : (await import('../confetti')).confetti;
 	const ids = PALETTES.map((p) => p.id);
 	for (const id of discoOrder(ids, start)) {
 		if (stopped) break;

@@ -8,7 +8,7 @@
 	import { Icon, Seo, site } from '$lib/site';
 	import { ProfileHeader, profileContacts, formatMonth } from '$lib/content';
 	import { decodeContact } from '$lib/contact';
-	import { look } from '$lib/look.svelte';
+	import { look } from '$lib/look';
 	import type { Employer, Role } from '$lib/content/index.server';
 
 	let { data } = $props();

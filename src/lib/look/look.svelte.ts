@@ -6,7 +6,7 @@
 // The first-paint script that applies the saved look before anything renders is generated from
 // look-boot.ts (`bootScript`, injected into app.html by the server hooks), sharing these keys.
 
-import { KEYS } from './look-boot';
+import { KEYS } from './boot/look-boot';
 import { PALETTES, type PaletteId } from './palettes';
 
 export const THEMES = ['light', 'dark', 'system'] as const;

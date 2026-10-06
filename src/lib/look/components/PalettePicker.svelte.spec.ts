@@ -5,9 +5,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-svelte';
 
 const { disco } = vi.hoisted(() => ({ disco: vi.fn() }));
-vi.mock('$lib/disco', () => ({ disco }));
+vi.mock('../easter-eggs/disco', () => ({ disco }));
 
-const { look } = await import('$lib/look.svelte');
+const { look } = await import('../look.svelte');
 const { default: PalettePicker } = await import('./PalettePicker.svelte');
 
 afterEach(() => {

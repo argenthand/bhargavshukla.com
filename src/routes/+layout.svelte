@@ -9,15 +9,20 @@
 	import { page } from '$app/state';
 	import { ContactCard } from '$lib/contact';
 	import { Icon, NavProgress, Toast, pageTransition, reducedMotion, nav, site } from '$lib/site';
-	import EightBitBanner from '$lib/components/EightBitBanner.svelte';
-	import Shortcuts from '$lib/components/Shortcuts.svelte';
-	import PalettePicker from '$lib/components/PalettePicker.svelte';
-	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
+	import {
+		EightBitBanner,
+		Shortcuts,
+		PalettePicker,
+		ThemeToggle,
+		ABYSS_LINE,
+		consoleNote,
+		bouncedPastEnd,
+		konamiKeydown,
+		taps,
+		introHeading,
+		wake
+	} from '$lib/look';
 	import { pageView, startAnalytics, track } from '$lib/analytics';
-	import { ABYSS_LINE, consoleNote } from '$lib/easter-eggs';
-	import { bouncedPastEnd, konamiKeydown, taps } from '$lib/gestures';
-	import { introHeading } from '$lib/intro.svelte';
-	import { wake } from '$lib/eight-bit-sound';
 
 	let { children, data } = $props();
 
@@ -30,7 +35,7 @@
 
 	const year = new Date().getFullYear();
 
-	// The header name fade (#59, src/lib/intro.svelte.ts): on home, out while the intro's heading is
+	// The header name fade (#59, src/lib/look/easter-eggs/intro.svelte.ts): on home, out while the intro's heading is
 	// on screen. `js:` keeps it visible without JavaScript.
 	const hideName = $derived(page.route.id === '/' && !page.error && introHeading.inView);
 
@@ -56,13 +61,13 @@
 	// The phone tab bar's marker slides to the current tab (#60).
 	const currentTab = $derived(nav.findIndex((item) => current(item.href)));
 
-	// Easter eggs (#111; gestures in src/lib/gestures.ts, #143). Three quick taps on the © line open
+	// Easter eggs (#111; gestures in src/lib/look/easter-eggs/gestures.ts, #143). Three quick taps on the © line open
 	// the controller; five on the current tab send its marker round the bar and back (not with
 	// reduced motion). The controller loads on the first tap and opens on the third; the audio
 	// starts inside that tap, as iOS requires.
 	let Controller = $state<Component<Record<string, never>, { open: () => void }>>();
 	let controller = $state<{ open: () => void }>();
-	const loadController = () => import('$lib/components/Controller.svelte');
+	const loadController = () => import('$lib/look/components/Controller.svelte');
 
 	function openController() {
 		wake();

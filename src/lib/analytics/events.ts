@@ -3,7 +3,7 @@
 // (src/lib/analytics/analytics.ts) is typed from this, and the Worker (src/lib/analytics/server/events.ts) drops
 // anything that doesn't fit it.
 
-import { PALETTES } from '$lib/palettes';
+import { PALETTES } from '$lib/look/palettes';
 
 /** A value's kind: a number, a host name (`github.com`), or one of a few words. */
 type Kind = 'number' | 'host' | readonly string[];

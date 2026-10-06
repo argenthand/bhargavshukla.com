@@ -4,7 +4,7 @@
 // esbuild wraps functions in `__name(…)`, and neither helper exists on a page that hasn't loaded
 // anything yet. `bootScript` fills in the keys and palettes; the server hooks put it in app.html.
 
-import { PALETTES } from './palettes';
+import { PALETTES } from '../palettes';
 import source from './look-boot.script.js?raw';
 
 /** Where each choice is kept. The theme and palette last; 8-bit mode is for this visit only. */

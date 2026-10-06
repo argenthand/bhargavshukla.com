@@ -4,7 +4,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { commands } from 'vitest/browser';
 import { render } from 'vitest-browser-svelte';
-import '../../routes/layout.css';
+import '../../../routes/layout.css';
 import EightBitBanner from './EightBitBanner.svelte';
 
 declare module 'vitest/browser' {

@@ -1,5 +1,5 @@
 // The palettes (#81, CONTEXT.md): plain data, so build scripts can read it too (scripts/print-notes.mjs).
-// Everything that chooses or shows one goes through the look (src/lib/look.svelte.ts).
+// Everything that chooses or shows one goes through the look (src/lib/look/look.svelte.ts).
 
 /**
  * Palettes (#81): a grey family, an accent hue and a typeface each, defined in

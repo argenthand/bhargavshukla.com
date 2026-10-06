@@ -4,7 +4,7 @@
 	// selected icon come from `data-theme-pref` on <html> (theme-toggle-* in src/styles/utilities.css), which the
 	// inline script sets before the first paint, so it's right from the start. JavaScript only.
 	import { Icon } from '$lib/site';
-	import { look, nextTheme, THEMES, type Theme } from '$lib/look.svelte';
+	import { look, nextTheme, THEMES, type Theme } from '../look.svelte';
 
 	const LABELS: Record<Theme, string> = { light: 'Light', dark: 'Dark', system: 'System' };
 	const ICONS = { light: 'sun', dark: 'moon', system: 'monitor' } as const;

@@ -4,9 +4,9 @@
 	// one knows what to press. A popover, so a tap outside, Esc or × closes it. Presses blip; the
 	// strip echoes the last few. ↑↑↓↓←→←→ B A starts 8-bit mode.
 	import { Icon } from '$lib/site';
-	import { blip } from '$lib/eight-bit.svelte';
-	import { konamiKey } from '$lib/gestures';
-	import { keepAwake } from '$lib/eight-bit-sound';
+	import { blip } from '../eight-bit/eight-bit.svelte';
+	import { konamiKey } from '../easter-eggs/gestures';
+	import { keepAwake } from '../eight-bit/eight-bit-sound';
 
 	/** How each key shows on the strip. */
 	const KEY_SYMBOLS: Record<string, string> = {

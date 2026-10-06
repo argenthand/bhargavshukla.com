@@ -2,12 +2,12 @@
 	// Keyboard shortcuts (#63, F-shortcuts-*): `?` opens this panel, `g` then a letter goes to a live
 	// section, and `/` searches on Writing. Nothing fires while typing in a field or with Ctrl/⌘/Alt
 	// held, so browser and screen reader shortcuts keep working. The Konami code is a gesture, not a
-	// shortcut: src/lib/gestures.ts, listened for by the layout (#143).
+	// shortcut: src/lib/look/easter-eggs/gestures.ts, listened for by the layout (#143).
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { Icon, nav } from '$lib/site';
-	import { leaveKeyAlone } from '$lib/gestures';
+	import { leaveKeyAlone } from '../easter-eggs/gestures';
 
 	/** How long `g` waits for its second key. */
 	const SEQUENCE_MS = 1500;

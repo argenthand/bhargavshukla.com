@@ -4,7 +4,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { unlock } = vi.hoisted(() => ({ unlock: vi.fn() }));
-vi.mock('$lib/eight-bit.svelte', () => ({ unlock }));
+vi.mock('../eight-bit/eight-bit.svelte', () => ({ unlock }));
 
 const { taps, konamiKeydown, konamiKey } = await import('./gestures');
 

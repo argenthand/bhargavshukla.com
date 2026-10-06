@@ -5,8 +5,8 @@
 	// without a shift, and paper never does (#147).
 	// While the mode is on, buttons and links blip when pressed.
 	import { Icon } from '$lib/site';
-	import { blip, setSound, sound } from '$lib/eight-bit.svelte';
-	import { look } from '$lib/look.svelte';
+	import { blip, setSound, sound } from '../eight-bit/eight-bit.svelte';
+	import { look } from '../look.svelte';
 
 	// One listener for the whole page; the controller and this banner play their own sounds.
 	$effect(() => {

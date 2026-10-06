@@ -3,7 +3,7 @@
 // decides what follows. The Konami code always starts 8-bit mode, so it does that here, from one
 // place. Neither checks reduced motion; the effects do.
 
-import { unlock } from '$lib/eight-bit.svelte';
+import { unlock } from '../eight-bit/eight-bit.svelte';
 
 /** True while the reader is typing, so shortcuts and the Konami code stay out of the way. */
 export function isTyping(target: EventTarget | null): boolean {

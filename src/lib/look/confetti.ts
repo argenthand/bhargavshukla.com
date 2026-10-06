@@ -4,7 +4,7 @@
 // anything otherwise. Callers skip it under reduced motion.
 
 import canvasConfetti from 'canvas-confetti';
-import { look } from '$lib/look.svelte';
+import { look } from './look.svelte';
 
 // Palette shades per theme, matching the accent (--hue-700 in light, --hue-400 in dark) plus a grey.
 const SHADES = {

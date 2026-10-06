@@ -4,7 +4,7 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { Icon, Seo, isLive } from '$lib/site';
-	import { notFoundLine } from '$lib/easter-eggs';
+	import { notFoundLine } from '$lib/look';
 
 	const notFound = $derived(page.status === 404);
 	const label = $derived(notFound ? 'Not found' : 'Server error');
