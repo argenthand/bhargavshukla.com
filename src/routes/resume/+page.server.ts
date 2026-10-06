@@ -1,4 +1,4 @@
-import { pageActions, pageLoad } from '$lib/server/page-load';
+import { pageActions, pageLoad } from '$lib/publishing/index.server';
 import { getProfile, getResume } from '$lib/content/index.server';
 import type { PageServerLoad } from './$types';
 

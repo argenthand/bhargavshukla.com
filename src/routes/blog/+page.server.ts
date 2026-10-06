@@ -1,5 +1,5 @@
 import { listPosts } from '$lib/content/index.server';
-import { pageActions, pageLoad } from '$lib/server/page-load';
+import { pageActions, pageLoad } from '$lib/publishing/index.server';
 import type { Category } from '$lib/content';
 import type { PageServerLoad } from './$types';
 

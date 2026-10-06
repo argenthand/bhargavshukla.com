@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { getAside } from '$lib/content/index.server';
-import { pageActions, pageLoad } from '$lib/server/page-load';
+import { pageActions, pageLoad } from '$lib/publishing/index.server';
 import type { PageServerLoad } from './$types';
 
 // The aside is required: without Strapi this is the error page.

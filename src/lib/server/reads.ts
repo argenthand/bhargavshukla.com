@@ -3,7 +3,7 @@
 // for the day. Salts and hashes from earlier days are deleted, so nothing links back to a visitor;
 // the IP and User-Agent are never stored.
 
-import { entryAt } from './content-map';
+import { entryAt } from '$lib/publishing/index.server';
 
 /** Below this, pages show no count. */
 export const READS_SHOWN_FROM = 5;

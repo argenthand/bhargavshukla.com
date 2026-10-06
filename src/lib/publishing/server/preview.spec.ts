@@ -9,7 +9,7 @@ import {
 	verifyCookie,
 	verifyLink
 } from './preview';
-import { LINK_TTL_S, previewLink } from '../../../scripts/preview-link.mjs';
+import { LINK_TTL_S, previewLink } from '../../../../scripts/preview-link.mjs';
 
 const SECRET = 'test-secret';
 const NOW = 1_800_000_000;

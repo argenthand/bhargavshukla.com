@@ -7,7 +7,7 @@ vi.mock('$env/dynamic/private', () => ({
 	env: { STRAPI_URL: 'http://cms.test', STRAPI_TOKEN: 'secret' }
 }));
 
-const { pageActions } = await import('$lib/server/page-load');
+const { pageActions } = await import('$lib/publishing/server/page-load');
 
 type Answer = 'down' | 'missing' | unknown[] | Record<string, unknown>;
 /** Strapi's answer per REST path (`posts`, `profile`…); anything not listed is an empty list. */

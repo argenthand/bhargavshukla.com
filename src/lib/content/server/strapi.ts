@@ -11,7 +11,7 @@ import {
 	readTags,
 	type ContentType,
 	type SingleType
-} from '$lib/server/content-map';
+} from '$lib/publishing/index.server';
 
 export type Query = Record<string, unknown>;
 

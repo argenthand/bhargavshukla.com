@@ -3,7 +3,7 @@
 import { shownDate } from '../format';
 import type { Post, PostSummary } from '../types';
 import { resolveImage } from './image';
-import { mergeDrafts } from '$lib/server/preview';
+import { mergeDrafts } from '$lib/publishing/index.server';
 import { mediaUrl, strapi } from './strapi';
 
 /** `drafts`: in preview (#57), also show unpublished posts and unpublished edits. */

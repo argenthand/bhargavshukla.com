@@ -12,7 +12,7 @@ declare global {
 			/** A valid draft-preview cookie came with the request (#57): loads may read drafts. */
 			preview: boolean;
 			/** Set by a load that showed the page without some of its content (#142, `degrade` in
-			 *  src/lib/server/page-load.ts): never edge-cached, and a page request answers 503.
+			 *  src/lib/publishing/server/page-load.ts): never edge-cached, and a page request answers 503.
 			 *  `setHeaders` can't do it: SvelteKit leaves it off `__data.json` responses. */
 			degraded?: boolean;
 		}

@@ -10,8 +10,8 @@ vi.mock('$env/dynamic/private', () => ({
 	env: { STRAPI_URL: 'https://cms.test', STRAPI_TOKEN: 'token' }
 }));
 
-const { CONTENT_TYPES, PAGES, RELATIONS, tagOf } = await import('./content-map');
-type ContentType = import('./content-map').ContentType;
+const { CONTENT_TYPES, PAGES, RELATIONS, tagOf } = await import('../server/content-map');
+type ContentType = import('../server/content-map').ContentType;
 
 /** One entry with every field any content type has, so each load gets what it reads. */
 const ENTRY = {
@@ -68,15 +68,15 @@ const event = () => {
 
 type Run = (e: ReturnType<typeof event>) => Promise<unknown>;
 
-const home = await import('../../routes/+page.server');
-const writing = await import('../../routes/blog/+page.server');
-const post = await import('../../routes/blog/[slug]/+page.server');
-const asides = await import('../../routes/asides/+page.server');
-const aside = await import('../../routes/asides/[slug]/+page.server');
-const resume = await import('../../routes/resume/+page.server');
-const privacy = await import('../../routes/privacy/+page.server');
-const rss = await import('../../routes/rss.xml/+server');
-const sitemap = await import('../../routes/sitemap.xml/+server');
+const home = await import('../../../routes/+page.server');
+const writing = await import('../../../routes/blog/+page.server');
+const post = await import('../../../routes/blog/[slug]/+page.server');
+const asides = await import('../../../routes/asides/+page.server');
+const aside = await import('../../../routes/asides/[slug]/+page.server');
+const resume = await import('../../../routes/resume/+page.server');
+const privacy = await import('../../../routes/privacy/+page.server');
+const rss = await import('../../../routes/rss.xml/+server');
+const sitemap = await import('../../../routes/sitemap.xml/+server');
 const { getProfile } = await import('$lib/content/server/profile');
 const { getPost } = await import('$lib/content/server/posts');
 const { getAside } = await import('$lib/content/server/asides');

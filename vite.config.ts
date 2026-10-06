@@ -43,7 +43,7 @@ export default defineConfig({
 						}
 					},
 					include: ['src/**/*.svelte.{test,spec}.{js,ts}'],
-					exclude: ['src/lib/server/**']
+					exclude: ['src/lib/**/server/**']
 				}
 			},
 

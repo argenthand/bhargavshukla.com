@@ -2,8 +2,7 @@ import { env } from '$env/dynamic/private';
 import type { Handle } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { bootScript } from '$lib/look-boot';
-import { edgeCache } from '$lib/server/edge-cache';
-import { PREVIEW_COOKIE, verifyCookie } from '$lib/server/preview';
+import { edgeCache, PREVIEW_COOKIE, verifyCookie } from '$lib/publishing/index.server';
 
 // Every load that reads Strapi records its cache tags here; the edge cache turns them into the
 // stored page's Cache-Tag header (docs/caching.md).

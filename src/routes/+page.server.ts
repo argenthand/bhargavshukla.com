@@ -1,5 +1,5 @@
 import { homePosts, getProfile } from '$lib/content/index.server';
-import { pageActions, pageLoad } from '$lib/server/page-load';
+import { pageActions, pageLoad } from '$lib/publishing/index.server';
 import type { PageServerLoad } from './$types';
 
 // Without Strapi the intro falls back to the name alone and the posts section is left out. An

@@ -12,7 +12,7 @@ const SITE_PATHS: Record<string, (slug: string) => string> = {
 
 /**
  * Draft preview (#57): a short-lived link to the site's /api/preview, signed with PREVIEW_SECRET.
- * Keep the signed text in step with `linkPayload` in src/lib/server/preview.ts.
+ * Keep the signed text in step with `linkPayload` in src/lib/publishing/server/preview.ts.
  */
 function previewLink(clientUrl: string, secret: string, path: string) {
   const exp = Math.floor(Date.now() / 1000) + LINK_TTL_S;
