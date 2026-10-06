@@ -8,7 +8,7 @@ src/
     site/                         the site and its chrome: Sections, nav, share cards, page motion
       site.ts                     name, links, Primary nav (`live` flags hide sections until they ship)
       share.ts                    share card size and URLs (cardUrl), for <Seo>
-      motion.ts                   reduced motion, page and title view transitions, motionMs
+      motion.ts, transitions.ts   reduced motion and motionMs; page and title view transitions
       toast.svelte.ts             the bottom-of-screen message (#143)
       components/                 Seo, Icon, NavProgress, BackToTop (posts: ring = reading progress, #77), Toast
       server/                     og.ts (share cards: satori 0.32 + resvg-wasm, #62), feeds.ts (RSS and sitemap, #56)

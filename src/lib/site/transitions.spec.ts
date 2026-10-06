@@ -1,6 +1,6 @@
 // Page transitions (#60, #144): when a title moves between pages instead of fading.
 import { describe, expect, it } from 'vitest';
-import { movesTitles } from './motion';
+import { movesTitles } from './transitions';
 
 describe('movesTitles', () => {
 	it('moves titles between a list and an entry, either way', () => {

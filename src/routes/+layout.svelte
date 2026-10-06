@@ -39,7 +39,7 @@
 	// on screen. `js:` keeps it visible without JavaScript.
 	const hideName = $derived(page.route.id === '/' && !page.error && introHeading.inView);
 
-	// Page transitions (#60, src/lib/site/motion.ts).
+	// Page transitions (#60, src/lib/site/transitions.ts).
 	onNavigate(pageTransition);
 
 	// A note for whoever opens DevTools (#63).
