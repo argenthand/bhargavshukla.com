@@ -3,7 +3,13 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { konamiKey, konamiKeydown, onKonami, taps } from '../../easter-eggs/gestures';
+import {
+	bouncedPastEnd,
+	konamiKey,
+	konamiKeydown,
+	onKonami,
+	taps
+} from '../../easter-eggs/gestures';
 
 const unlock = vi.fn();
 onKonami(unlock);
@@ -137,5 +143,35 @@ describe('the Konami code', () => {
 		const results = CODE.map((key) => konamiKey(key.toLowerCase()));
 		expect(results.at(-1)).toBe(true);
 		expect(results.slice(0, -1).some(Boolean)).toBe(false);
+	});
+});
+
+describe('bouncedPastEnd', () => {
+	const scrollHeight = vi.spyOn(document.documentElement, 'scrollHeight', 'get');
+
+	function at(bottom: number, pageHeight = 2000) {
+		vi.stubGlobal('scrollY', bottom - innerHeight);
+		scrollHeight.mockReturnValue(pageHeight);
+	}
+
+	afterEach(() => {
+		vi.unstubAllGlobals();
+		scrollHeight.mockReset();
+	});
+
+	it('is false while the page is still scrolling or only at its end', () => {
+		at(1000);
+		expect(bouncedPastEnd()).toBe(false);
+		at(2000);
+		expect(bouncedPastEnd()).toBe(false);
+		at(2039);
+		expect(bouncedPastEnd()).toBe(false);
+	});
+
+	it('is true once the scroll goes 40px past the end (Safari’s rubber band)', () => {
+		at(2040);
+		expect(bouncedPastEnd()).toBe(true);
+		at(2200);
+		expect(bouncedPastEnd()).toBe(true);
 	});
 });
