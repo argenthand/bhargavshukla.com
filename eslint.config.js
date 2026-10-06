@@ -11,7 +11,7 @@ const gitignorePath = path.resolve(import.meta.dirname, '.gitignore');
 const domains = ['site', 'content', 'look', 'analytics', 'contact', 'publishing'];
 const domainPatterns = [
 	{
-		group: ['$lib/*/*', '!$lib/*/index.server', '!$lib/look/palettes', '!$lib/fonts/*'],
+		group: ['$lib/*/*', '!$lib/*/index.server', '!$lib/fonts/*'],
 		message: 'Import a domain through its interface: $lib/<domain> or $lib/<domain>/index.server.'
 	},
 	{
@@ -49,8 +49,7 @@ export default defineConfig(
 	},
 	{
 		// src/lib is split into domains (#157). Code reaches a domain only through its interface:
-		// `$lib/<domain>`, or `$lib/<domain>/index.server` for server code. `look/palettes` is the
-		// one exception: a dependency-free leaf that analytics reads without a cycle.
+		// `$lib/<domain>`, or `$lib/<domain>/index.server` for server code.
 		files: ['src/**/*.{ts,js,svelte}'],
 		ignores: ['**/*.spec.ts'],
 		rules: { '@typescript-eslint/no-restricted-imports': ['error', { patterns: domainPatterns }] }
