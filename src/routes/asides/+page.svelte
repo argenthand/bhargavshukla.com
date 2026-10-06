@@ -32,7 +32,7 @@
 	const tagName = $derived(
 		data.asides.flatMap((a) => a.tags).find((t) => t.slug === tag)?.name ?? tag
 	);
-	const kindPlural = $derived(KINDS.find((k) => k.value === kind)?.plural);
+	const kindInfo = $derived(KINDS.find((k) => k.value === kind));
 
 	/** /asides with these filters; page 1 and empty values are left out. */
 	function href(next: { kind?: string; tag?: string; page?: number }) {
@@ -115,9 +115,16 @@
 			<span class="body-copy">
 				{#if filtered.length > 0}
 					{filtered.length}
-					{kindPlural?.toLowerCase() ?? (filtered.length === 1 ? 'aside' : 'asides')}
+					{(kindInfo
+						? filtered.length === 1
+							? kindInfo.label
+							: kindInfo.plural
+						: filtered.length === 1
+							? 'aside'
+							: 'asides'
+					).toLowerCase()}
 				{:else}
-					{kindPlural ?? 'Asides'}
+					{kindInfo?.plural ?? 'Asides'}
 				{/if}
 				tagged
 				<em class="font-semibold text-ink not-italic">{tagName}</em>
