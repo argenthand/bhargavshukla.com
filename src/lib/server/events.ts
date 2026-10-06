@@ -17,14 +17,6 @@ const MAX_PATH = 200;
 const BOTS =
 	/bot|crawl|spider|slurp|headless|lighthouse|pagespeed|gtmetrix|curl|wget|python|httpclient|okhttp|go-http|axios|node-fetch|undici|facebookexternalhit|embedly|phantomjs|selenium|puppeteer|playwright/i;
 
-/** Cloudflare's codes for "unknown" and for Tor, where the visitor could be anywhere. */
-const UNKNOWN_COUNTRIES = new Set(['XX', 'T1']);
-
-/** Whether a visitor's country is counted: not an excluded one, and known. */
-export function countryCounted(country: string | undefined): boolean {
-	return !!country && !UNKNOWN_COUNTRIES.has(country);
-}
-
 export function isBot(userAgent: string): boolean {
 	return !userAgent || BOTS.test(userAgent);
 }
@@ -32,17 +24,13 @@ export function isBot(userAgent: string): boolean {
 /**
  * Whether a request's events count: the read counts' rules (docs/view-counts.md). Only same-origin
  * requests on bhargavshukla.com (not `vite dev` or Workers Builds preview URLs), outside preview
- * mode, not from a bot, and not from an excluded country. The author's devices don't send at all
- * (`noCount`).
+ * mode, and not from a bot. Where the visitor is doesn't matter: nothing about them is kept. The
+ * author's devices don't send at all (`noCount`).
  */
-export function counted(
-	request: Request,
-	{ preview, country }: { preview: boolean; country: string | undefined }
-): boolean {
+export function counted(request: Request, { preview }: { preview: boolean }): boolean {
 	const url = new URL(request.url);
 	return (
 		!preview &&
-		countryCounted(country) &&
 		url.host === PRODUCTION_HOST &&
 		request.headers.get('origin') === url.origin &&
 		!isBot(request.headers.get('user-agent') ?? '')
@@ -135,13 +123,9 @@ function write(dataset: EventsDataset | undefined, counts: Count[]) {
 /** POST /api/events: always 204. Counted events are written to the dataset. */
 export async function handleBeacon(
 	request: Request,
-	{
-		preview,
-		country,
-		dataset
-	}: { preview: boolean; country: string | undefined; dataset: EventsDataset | undefined }
+	{ preview, dataset }: { preview: boolean; dataset: EventsDataset | undefined }
 ): Promise<Response> {
-	if (counted(request, { preview, country })) write(dataset, readBeacon(await request.text()));
+	if (counted(request, { preview })) write(dataset, readBeacon(await request.text()));
 	return new Response(null, { status: 204 });
 }
 
@@ -154,19 +138,11 @@ export function recordServerEvent(
 	{
 		request,
 		preview,
-		country,
 		skip,
 		dataset
-	}: {
-		request: Request;
-		preview: boolean;
-		/** Cloudflare's country code for the visitor (`platform.cf.country`). */
-		country: string | undefined;
-		skip: boolean;
-		dataset: EventsDataset | undefined;
-	}
+	}: { request: Request; preview: boolean; skip: boolean; dataset: EventsDataset | undefined }
 ): void {
-	if (skip || !counted(request, { preview, country })) return;
+	if (skip || !counted(request, { preview })) return;
 	write(dataset, [{ event: name, path: new URL(request.url).pathname, value: '', seconds: 0 }]);
 }
 

@@ -416,7 +416,16 @@ The beacon adds about 1.4 KB gz to the site's JavaScript (all client chunks, mea
 | Slow 4G | 2212 ms (FCP 800), 199 KB  | 1082 ms     | 612 ms, 2 KB       |
 | 3G      | 7690 ms (FCP 2648), 199 KB | 2550 ms     | 2088 ms, 2 KB      |
 
-After #154: to be measured on production after the deploy.
+After #154 (2026-10-06, same runs and medians; Web Analytics off, page views and events counted by our own beacon):
+
+| Network | First visit: home          | Tap Writing | Return visit: home |
+| ------- | -------------------------- | ----------- | ------------------ |
+| Fast 4G | 634 ms (FCP 332), 201 KB   | 691 ms      | 206 ms, 2 KB       |
+| Slow 4G | 2234 ms (FCP 816), 201 KB  | 1078 ms     | 618 ms, 2 KB       |
+| 3G      | 7752 ms (FCP 2644), 201 KB | 2537 ms     | 2093 ms, 2 KB      |
+
+- **Within noise:** 2 KB more on a first visit; times on Slow 4G and 3G match. The Fast 4G first visit's 40 ms is noise too (a rerun: 608 ms, FCP 288).
+- **Fast 4G taps are bimodal, before and after:** a tap takes about 250 ms or about 670 ms, whichever tab draws it (Asides before #154, Writing after). The same tap with no beacon sent at all (`noCount`) splits the same way, six runs, so it's the network path, not analytics. The data comes from the edge cache either way (`HIT`).
 
 ## Real-world log
 

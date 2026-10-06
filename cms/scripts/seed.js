@@ -33,7 +33,7 @@ const PRIVACY = {
     'This site counts the pages you view, and on the first page of a visit, the site that sent you here (its name, like www.google.com, nothing more).',
     '## Things you do here',
     'A few things you do are counted too: finding an easter egg, choosing a palette, printing the resume, starting or sending a message, following a link to another site (its address, not the page), and how long you spend reading a post.',
-    "Each count, page views included, is only the thing, the page it happened on and when. Nothing about you is kept, not even your IP address, so it can't be linked to you or to anything else you did here. The counts stay with this site, on Cloudflare, for three months. Visitors in the European Economic Area, the UK and Switzerland aren't counted.",
+    "Each count, page views included, is only the thing, the page it happened on and when. Nothing about you is kept, not even your IP address, so it can't be linked to you or to anything else you did here. The counts stay with this site, on Cloudflare, for three months.",
     '## Read counts',
     'The count on a post ("1.2K reads") is kept by this site, on Cloudflare. To count each reader once a day, it keeps a hash of your IP address and browser with a secret that changes every day; both are deleted the next day. Only the number stays.',
     '## Questions',
