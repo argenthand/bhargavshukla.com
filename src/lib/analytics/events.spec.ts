@@ -6,6 +6,7 @@ import { PAGE_EVENTS } from './events';
 
 describe('palette_chosen', () => {
 	it('accepts exactly the look’s palettes', () => {
+		// A palette was added, renamed or removed: update PALETTE_IDS in events.ts to match.
 		expect([...PAGE_EVENTS.palette_chosen.palette]).toEqual(PALETTES.map((palette) => palette.id));
 	});
 });

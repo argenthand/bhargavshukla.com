@@ -8,7 +8,7 @@ type Kind = 'number' | 'host' | readonly string[];
 
 export const EGGS = ['8-bit', 'disco', 'tab-lap', 'abyss'] as const;
 
-/** The look's palettes (src/lib/look/palettes.ts), spelled out so analytics never imports the look; events.spec.ts keeps the two in step. */
+/** The look's palette ids, spelled out so analytics never imports the look (#161); events.spec.ts keeps them in step. */
 const PALETTE_IDS = ['newsprint', 'harbour', 'sage', 'plum', 'ochre'] as const;
 
 /** The events a page sends, and the one value each may carry. */
