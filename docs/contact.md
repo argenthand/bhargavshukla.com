@@ -25,7 +25,7 @@ The rules live in `src/lib/contact/contact.ts`, shared by the card and the serve
 
 The browser checks the basics (`required`, `type=email`, `maxlength`) and posts to the page it's on: `?/contact#contact`. The server answers with that same page, scrolled to the card, showing the confirmation, or the errors with everything typed kept.
 
-- **Layouts can't have form actions**, so every page route exports `actions = pageActions` (`src/lib/publishing/server/page-load.ts`, #142). `src/routes/pages.spec.ts` fails if a page route is missing it; without it, a visitor without JavaScript would get a 405.
+- **Layouts can't have form actions**, so every page route exports `actions = pageActions` (`src/lib/contact/server/contact.ts`, #142). `src/routes/pages.spec.ts` fails if a page route is missing it; without it, a visitor without JavaScript would get a 405.
 - **The URL** after a post is `…?/contact#contact`, SvelteKit's standard address for a form action.
 
 ## Spam

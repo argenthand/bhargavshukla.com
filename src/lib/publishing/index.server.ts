@@ -2,7 +2,7 @@
 export { CONTENT_TYPES, entryAt, readTags } from './server/content-map';
 export type { ContentType, SingleType } from './server/content-map';
 export { edgeCache } from './server/edge-cache';
-export { pageActions, pageLoad } from './server/page-load';
+export { pageLoad } from './server/page-load';
 export {
 	COOKIE_TTL_S,
 	isSitePath,

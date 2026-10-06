@@ -4,17 +4,12 @@
 //   export const load = pageLoad(async ({ locals }, { drafts, degrade }) => ({
 //   	asides: await listAsides(locals, { drafts }).catch(degrade([]))
 //   })) satisfies PageServerLoad;
-//   export const actions = pageActions;
 //
 // Content a page can do without is caught with `degrade(value)`: the page shows `value` instead and
 // is a degraded page. Content it can't (the entry on an entry page) isn't caught, so the error page
 // shows. `satisfies` types the event from the route's own `$types`.
 
 import type { ServerLoadEvent } from '@sveltejs/kit';
-import { contact } from '$lib/contact/index.server';
-
-/** The contact card is on every page (#135) and layouts can't have actions, so every page has it. */
-export const pageActions = { contact };
 
 export interface PageLoadTools {
 	/** In draft preview (#57): also show unpublished entries and edits. */

@@ -5,7 +5,6 @@
 
 import { MAX_BATCH, PAGE_EVENTS, type ServerEvent } from '../events';
 import { site } from '$lib/site';
-import type { ContactOutcome } from '$lib/contact/index.server';
 
 const PRODUCTION_HOST = new URL(site.url).host;
 /** A beacon is a few small events; anything bigger isn't from our page. */
@@ -145,6 +144,17 @@ export function recordServerEvent(
 	if (skip || !counted(request, { preview })) return;
 	write(dataset, [{ event: name, path: new URL(request.url).pathname, value: '', seconds: 0 }]);
 }
+
+/** What a send ended as, logged for Workers Logs (and the analytics in #136). */
+export type ContactOutcome =
+	| 'sent'
+	| 'sent-unverified'
+	| 'invalid'
+	| 'honeypot'
+	| 'rate-limited'
+	| 'turnstile-failed'
+	| 'capped'
+	| 'send-failed';
 
 /** The contact card's outcomes that are counted: sent, or blocked as spam. */
 export function contactEvent(outcome: ContactOutcome): ServerEvent | undefined {
