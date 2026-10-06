@@ -4,7 +4,7 @@
 src/
   hooks.server.ts                 the look's first-paint script (#141), cache tags, draft-preview cookie check (#57), edge-cache wrapper — see caching.md
   app.d.ts                        App.Locals { cacheTags: Set<string> }, App.Platform
-  lib/                            one folder per domain (CONTEXT.md); each has an index.ts, and index.server.ts for server code
+  lib/                            one folder per domain (CONTEXT.md); each has an index.ts, and index.server.ts for server code, and a tests/ folder
     site/                         the site and its chrome: Sections, nav, share cards, page motion
       site.ts                     name, links, Primary nav (`live` flags hide sections until they ship)
       share.ts                    share card size and URLs (cardUrl), for <Seo>
@@ -35,7 +35,7 @@ src/
     publishing/                   publish, purge, repopulate, degraded pages (server only)
       server/                     content-map.ts, purge.ts, repopulate.ts, edge-cache.ts (cache key, bypass rules, TTL),
                                   preview.ts (draft preview, #57), page-load.ts
-      tests/                      the content map's integration spec
+      tests/                      server/ holds the unit specs; content-map.pages.spec.ts checks the content map against the routes and the CMS
   routes/
     +layout.svelte                header nav (md+) and bottom tab bar (below md), footer; preview banner
     +layout.server.ts             { preview } for the banner (#57)
@@ -64,9 +64,9 @@ Every page route's +page.server.ts builds its load with `pageLoad` and exports `
 
 ## How `src/lib` is organised (#157)
 
-Each folder in `src/lib` is one domain from [CONTEXT.md](../CONTEXT.md), and the folder's `index.ts` (and `index.server.ts`, for server code) is its interface. Routes, hooks and other domains import only from there, for example `$lib/look` or `$lib/content/index.server`, never from the files behind it. ESLint enforces this (`eslint.config.js`), including that a domain's client code can't import its own `server/` folder (SvelteKit only guards `index.server`). There are no exceptions. Analytics spells out the palette ids it accepts (`PALETTE_IDS` in `analytics/events.ts`) rather than importing the look, and `analytics/events.spec.ts` fails if they differ from `PALETTES`.
+Each folder in `src/lib` is one domain from [CONTEXT.md](../CONTEXT.md), and the folder's `index.ts` (and `index.server.ts`, for server code) is its interface. Routes, hooks and other domains import only from there, for example `$lib/look` or `$lib/content/index.server`, never from the files behind it. ESLint enforces this (`eslint.config.js`), including that a domain's client code can't import its own `server/` folder (SvelteKit only guards `index.server`). There are no exceptions. Analytics spells out the palette ids it accepts (`PALETTE_IDS` in `analytics/events.ts`) rather than importing the look, and `analytics/tests/events.spec.ts` fails if they differ from `PALETTES`.
 
-Specs sit next to the module they test. The `.svelte.spec.ts` suffix sends a spec to the browser project; every other spec runs in Node. Specs that cover more than one module are in the domain's `tests/` folder, or in `src/routes/pages.spec.ts` when they exercise the routes.
+Specs live in the domain's `tests/` folder, which mirrors the domain's layout: the spec for `content/server/markdown.ts` is `content/tests/server/markdown.spec.ts`. Specs for the routes live in `src/routes/tests/`. The `.svelte.spec.ts` suffix sends a spec to the browser project; every other spec runs in Node. A spec that covers more than one module sits at the top of `tests/` (for example `publishing/tests/content-map.pages.spec.ts`).
 
 ## Conventions
 
