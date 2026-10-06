@@ -1,9 +1,7 @@
 // Gestures (#143, CONTEXT.md): what a visitor does to find an easter egg. Quick taps on one thing,
-// or the Konami code from the keyboard or the controller. Taps only say they happened: each egg
-// decides what follows. The Konami code always starts 8-bit mode, so it does that here, from one
-// place. Neither checks reduced motion; the effects do.
-
-import { unlock } from '../eight-bit/eight-bit.svelte';
+// or the Konami code from the keyboard or the controller. A gesture only says it happened: each egg
+// decides what follows (8-bit mode listens for the Konami code). Neither checks reduced motion; the
+// effects do.
 
 /** True while the reader is typing, so shortcuts and the Konami code stay out of the way. */
 export function isTyping(target: EventTarget | null): boolean {
@@ -70,12 +68,20 @@ export const KONAMI = [
 /** The last keys pressed, from the keyboard and the controller alike: one sequence. */
 let recent: string[] = [];
 
+const konamiListeners = new Set<() => void>();
+
+/** Calls `listener` whenever the Konami code is completed. Returns how to stop listening. */
+export function onKonami(listener: () => void): () => void {
+	konamiListeners.add(listener);
+	return () => konamiListeners.delete(listener);
+}
+
 /** One key of the Konami code (the controller's presses come here). True on the key that completes it. */
 export function konamiKey(key: string): boolean {
 	recent = [...recent, key.toLowerCase()].slice(-KONAMI.length);
 	if (recent.length < KONAMI.length || recent.some((k, i) => k !== KONAMI[i])) return false;
 	recent = [];
-	void unlock();
+	for (const listener of konamiListeners) listener();
 	return true;
 }
 

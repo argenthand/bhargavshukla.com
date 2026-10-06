@@ -5,6 +5,7 @@
 
 import { track } from '$lib/analytics';
 import { reducedMotion, showToast } from '$lib/site';
+import { onKonami } from '../easter-eggs/gestures';
 import { play, type Sound } from './eight-bit-sound';
 import { look } from '../look.svelte';
 
@@ -46,3 +47,5 @@ export async function unlock() {
 	const { confetti } = await import('../confetti');
 	confetti({ vars: ['--night-red', '--night-orange', '--night-sky', '--night-green'] });
 }
+
+onKonami(() => void unlock());
