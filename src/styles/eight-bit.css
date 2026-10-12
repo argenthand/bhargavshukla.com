@@ -100,6 +100,12 @@
 			box-shadow: none;
 		}
 	}
+	/* Send while it can't be sent (#190): the red block, dimmed and flat. */
+	:root[data-eight-bit] [data-eight-bit-cta][aria-disabled='true'] {
+		opacity: 0.4;
+		box-shadow: none;
+		cursor: not-allowed;
+	}
 	/* The phone tab bar: the current tab is a red key (the marker grows to fill it, so it still
 	   slides between tabs and runs the lap), with black icon and label. */
 	:root[data-eight-bit] [data-tab-marker] {

@@ -1,13 +1,14 @@
 # Contact form (#135)
 
-The email address is gone from the site. A card at the bottom of every page sends a message instead, and the address only appears on the printed resume. Mockups: CONTACT-\* on the design canvas.
+The email address is gone from the site. A card at the bottom of every page sends a message instead, and the address only appears on the printed resume. Mockups: CONTACT-\* on the design canvas; CONTACT-2-\* (#190) are the current look.
 
 ## What visitors see
 
-- **The card** (`ContactCard.svelte`), above the footer on every page except the error page, and never in print. It has three fields:
-  - **From:** the reply address.
+- **The card** (`ContactCard.svelte`), above the footer on every page except the error page, and never in print. No panel behind it: flat tinted fields with square corners and sentence-case labels (#190). It has three fields:
+  - **Your email:** the reply address, with the line "Only so I can reply to you. I use it for nothing else." under it (kept beside an error).
   - **Subject:** up to 150 characters.
   - **Message:** up to 1,000 characters, with a counter.
+- **Open or closed (#190).** From `md` up, and without JavaScript, the form is always showing. Below `md`, with JavaScript, the card starts closed: a "+ Send a message" button that opens it, with a Close link beside the heading. Typed text stays when it closes. It opens by itself for a link to `#contact` (the header link, a page load at `#contact`) and when the page comes back from a post without JavaScript.
 - **The header** on home and the resume: **Send a message** in place of the email. It scrolls to the card (`#contact`) and isn't printed.
 - **The printed resume:** the profile's email, first in the contact list (paper and PDF only).
 
@@ -15,7 +16,7 @@ The email address is gone from the site. A card at the bottom of every page send
 
 - **Leaving a field checks it.** An empty field waits for Send. Once a field has an error, every keystroke checks it again, so the error clears as it's fixed. A message over 1,000 characters is flagged as you type, and the extra text stays.
 - **An error** turns the field's outline red (`field` with `aria-invalid`) and adds a message under it, linked with `aria-describedby`.
-- **Send** looks inactive (`aria-disabled`, 40% opacity) while anything is missing or wrong. It stays focusable, and pressing it shows every error and focuses the first.
+- **Send** looks inactive (`aria-disabled`) while anything is missing or wrong: an outline with muted text and no fill, so it differs from the tinted fields by shape and not only colour; the cursor is `not-allowed`. Ready, it's the solid accent fill. It stays focusable, and pressing it shows every error and focuses the first.
 - **Send posts in the background** (`use:enhance`). The card then shows **Message sent**, or a red line if sending failed, with everything typed still in place.
 - **Colours:** Send is in the palette's `accent`. Errors use the new `danger` role: red in every palette, `red-400` in dark mode, the NES red in 8-bit mode.
 

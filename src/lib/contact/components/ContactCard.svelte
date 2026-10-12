@@ -7,6 +7,9 @@
 	// jumps to the first problem. The post goes in the background, with a Turnstile token.
 	// Without JavaScript: the browser checks the basics, posts to the page it's on, and gets that
 	// page back at the card with the result (`page.form`).
+	//
+	// Below md, with JavaScript, the card starts closed: one "Send a message" line that opens it
+	// (#190). From md up, and without JavaScript, the form is always showing.
 	import { dev } from '$app/environment';
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
@@ -42,6 +45,8 @@
 	let sending = $state(false);
 	let hydrated = $state(false);
 	let form = $state<HTMLFormElement>();
+	// Below md only. A result from a post without JavaScript, or a link to #contact, opens it too.
+	let open = $state(!!posted);
 
 	const trimmed = $derived({
 		from: values.from.trim(),
@@ -52,7 +57,15 @@
 	const count = $derived([...trimmed.message].length);
 
 	// Server-rendered, the form is the plain one; these switch to the scripted checks.
-	onMount(() => (hydrated = true));
+	onMount(() => {
+		hydrated = true;
+		if (location.hash === '#contact') open = true;
+	});
+
+	/** The header's "Send a message" link, when the card is closed. */
+	function openFromLink(event: MouseEvent) {
+		if ((event.target as Element).closest('a[href="#contact"]')) open = true;
+	}
 
 	/** Leaving a field checks it, unless it was left empty: that waits for Send. */
 	function onBlur(field: ContactField) {
@@ -145,182 +158,221 @@
 	{/if}
 {/snippet}
 
+<svelte:window onhashchange={() => location.hash === '#contact' && (open = true)} />
+<svelte:document onclick={openFromLink} />
+
 <section
 	id="contact"
 	aria-labelledby="contact-title"
-	class="flex scroll-mt-24 flex-col gap-5 surface p-5 md:p-7 print:hidden"
+	class="flex scroll-mt-24 flex-col gap-1.5 print:hidden"
 >
-	{#if sentTo}
-		<div role="status" class="flex flex-col gap-3">
-			<h2 id="contact-title" class="flex items-center gap-2.5 text-2xl font-medium text-ink">
-				<Icon name="check" size={20} class="text-accent" />Message sent
-			</h2>
-			<p class="text-lg text-body">
-				Thanks. I'll reply to <strong class="font-semibold text-ink">{sentTo}</strong>, usually
-				within a few days.
-			</p>
-			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- this page, at the card -->
-			<a href="{page.url.pathname}#contact" onclick={sendAnother} class="link-cta self-start">
-				Send another
-			</a>
-		</div>
-	{:else}
-		<div class="flex flex-col gap-1.5">
-			<h2 id="contact-title" class="text-2xl font-medium tracking-tight text-ink">
-				Send me a message
-			</h2>
-			<p class="text-lg text-muted">
+	<!-- Below md, with JavaScript: the closed card. -->
+	{#if !open}
+		<div class="hidden flex-col gap-1.5 max-md:js:flex">
+			<button
+				type="button"
+				aria-expanded="false"
+				aria-controls="contact-body"
+				onclick={() => (open = true)}
+				class="link-cta inline-flex items-center self-start"
+			>
+				<Icon name="plus" size={18} />Send a message
+			</button>
+			<p class="pl-6.5 text-lg text-muted">
 				It goes straight to my inbox. I'll reply to the address you give.
 			</p>
 		</div>
-
-		<form
-			bind:this={form}
-			method="POST"
-			action={CONTACT_ACTION}
-			novalidate={hydrated}
-			onfocusin={startSpamCheck}
-			oninput={onFirstInput}
-			class="flex flex-col gap-5"
-			use:enhance={async ({ formData, cancel }) => {
-				if (sending) return cancel();
-				if (!complete) {
-					cancel();
-					errors = checkContact(trimmed);
-					return focusFirstError();
-				}
-				sending = true;
-				failure = '';
-				const fresh = await tokenFor(4000);
-				if (fresh) formData.set('cf-turnstile-response', fresh);
-				// The author's devices: the server doesn't send this message's outcome to analytics.
-				if (optedOut()) formData.set(NO_COUNT_FIELD, '1');
-				return async ({ result }) => {
-					sending = false;
-					// A token works once.
-					if (turnstile && widgetId) turnstile.reset(widgetId);
-					token = '';
-					if (result.type === 'success') {
-						sentTo = trimmed.from;
-						values = { ...EMPTY };
-						errors = {};
-						return;
-					}
-					const contact =
-						result.type === 'failure'
-							? (result.data as { contact?: ContactResult } | undefined)?.contact
-							: undefined;
-					if (contact && contact.status !== 'sent') {
-						errors = { ...contact.errors };
-						failure = contact.error ?? '';
-						if (contact.status === 'invalid') return focusFirstError();
-					} else failure = SEND_FAILED;
-				};
-			}}
-		>
-			<div class="flex flex-col gap-2">
-				<label for="contact-from" class="label-muted">From</label>
-				<div class="field">
-					<input
-						id="contact-from"
-						name="from"
-						type="email"
-						autocomplete="email"
-						required
-						maxlength={CONTACT_MAX.from}
-						placeholder="you@example.com"
-						bind:value={values.from}
-						onblur={() => onBlur('from')}
-						oninput={() => onInput('from')}
-						aria-invalid={errors.from ? 'true' : undefined}
-						aria-describedby={errors.from ? 'contact-from-error' : undefined}
-						class="h-11 min-w-0 flex-1 border-0 bg-transparent p-0 text-lg placeholder:text-faint focus:ring-0 focus:outline-none"
-					/>
-				</div>
-				{@render error('from')}
-			</div>
-
-			<div class="flex flex-col gap-2">
-				<label for="contact-subject" class="label-muted">Subject</label>
-				<div class="field">
-					<input
-						id="contact-subject"
-						name="subject"
-						type="text"
-						required
-						maxlength={hydrated ? undefined : CONTACT_MAX.subject}
-						placeholder="What's it about?"
-						bind:value={values.subject}
-						onblur={() => onBlur('subject')}
-						oninput={() => onInput('subject')}
-						aria-invalid={errors.subject ? 'true' : undefined}
-						aria-describedby={errors.subject ? 'contact-subject-error' : undefined}
-						class="h-11 min-w-0 flex-1 border-0 bg-transparent p-0 text-lg placeholder:text-faint focus:ring-0 focus:outline-none"
-					/>
-				</div>
-				{@render error('subject')}
-			</div>
-
-			<div class="flex flex-col gap-2">
-				<div class="flex items-baseline justify-between gap-3">
-					<label for="contact-message" class="label-muted">Message</label>
-					<span
-						id="contact-count"
-						class={[
-							'text-sm tabular-nums',
-							count > CONTACT_MAX.message ? 'text-danger' : 'text-faint'
-						]}
-					>
-						{count.toLocaleString('en')} / {CONTACT_MAX.message.toLocaleString('en')}
-					</span>
-				</div>
-				<div class="field-area">
-					<!-- Without JavaScript the browser stops at 1,000; with it, longer text stays and is flagged. -->
-					<textarea
-						id="contact-message"
-						name="message"
-						required
-						rows="5"
-						maxlength={hydrated ? undefined : CONTACT_MAX.message}
-						placeholder="What's on your mind?"
-						bind:value={values.message}
-						onblur={() => onBlur('message')}
-						oninput={() => onInput('message')}
-						aria-invalid={errors.message ? 'true' : undefined}
-						aria-describedby={errors.message
-							? 'contact-message-error contact-count'
-							: 'contact-count'}
-						class="min-h-32 w-full flex-1 resize-y border-0 bg-transparent p-0 text-lg placeholder:text-faint focus:ring-0 focus:outline-none"
-					></textarea>
-				</div>
-				{@render error('message')}
-			</div>
-
-			<!-- For bots: hidden from people and screen readers; filling it in sends nothing. -->
-			<div class="sr-only" aria-hidden="true">
-				<label>Company <input name={HONEYPOT} tabindex="-1" autocomplete="off" /></label>
-			</div>
-
-			<!-- Turnstile's checkbox, only if it ever needs one. -->
-			<div bind:this={widget} class="empty:hidden"></div>
-
-			{#if failure}
-				<p role="alert" class="flex gap-2 text-danger">
-					<Icon name="alert" class="mt-1 shrink-0" />{failure}
-				</p>
-			{/if}
-
-			<div class="flex flex-wrap items-center gap-x-4 gap-y-3">
-				<button
-					type="submit"
-					data-eight-bit-cta
-					aria-disabled={hydrated && (!complete || sending) ? 'true' : undefined}
-					class="inline-flex min-h-11 items-center gap-2 rounded-full bg-accent px-6 text-lg font-medium text-page hover:bg-accent-hover aria-disabled:bg-chip aria-disabled:text-muted aria-disabled:hover:bg-chip"
-				>
-					{sending ? 'Sending…' : 'Send'}
-				</button>
-				<p class="hidden meta js:block">Spam check by Cloudflare Turnstile.</p>
-			</div>
-		</form>
 	{/if}
+
+	<div id="contact-body" class={['flex flex-col gap-5', !open && 'max-md:js:hidden']}>
+		{#if sentTo}
+			<div role="status" class="flex flex-col gap-3">
+				<h2 id="contact-title" class="flex items-center gap-2.5 text-2xl font-medium text-ink">
+					<Icon name="check" size={20} class="text-accent" />Message sent
+				</h2>
+				<p class="text-lg text-body">
+					Thanks. I'll reply to <strong class="font-semibold text-ink">{sentTo}</strong>, usually
+					within a few days.
+				</p>
+				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- this page, at the card -->
+				<a href="{page.url.pathname}#contact" onclick={sendAnother} class="link-cta self-start">
+					Send another
+				</a>
+			</div>
+		{:else}
+			<div class="flex flex-col gap-1.5">
+				<div class="flex items-center justify-between gap-3">
+					<h2 id="contact-title" class="text-2xl font-medium tracking-tight text-ink">
+						Send a message
+					</h2>
+					<button
+						type="button"
+						aria-expanded="true"
+						aria-controls="contact-body"
+						onclick={() => (open = false)}
+						class="tap-target hidden items-center gap-1.5 link-quiet text-muted max-md:js:inline-flex"
+					>
+						<Icon name="close" size={14} />Close
+					</button>
+				</div>
+				<p class="text-lg text-muted">
+					It goes straight to my inbox. I'll reply to the address you give.
+				</p>
+			</div>
+
+			<form
+				bind:this={form}
+				method="POST"
+				action={CONTACT_ACTION}
+				novalidate={hydrated}
+				onfocusin={startSpamCheck}
+				oninput={onFirstInput}
+				class="flex flex-col gap-5"
+				use:enhance={async ({ formData, cancel }) => {
+					if (sending) return cancel();
+					if (!complete) {
+						cancel();
+						errors = checkContact(trimmed);
+						return focusFirstError();
+					}
+					sending = true;
+					failure = '';
+					const fresh = await tokenFor(4000);
+					if (fresh) formData.set('cf-turnstile-response', fresh);
+					// The author's devices: the server doesn't send this message's outcome to analytics.
+					if (optedOut()) formData.set(NO_COUNT_FIELD, '1');
+					return async ({ result }) => {
+						sending = false;
+						// A token works once.
+						if (turnstile && widgetId) turnstile.reset(widgetId);
+						token = '';
+						if (result.type === 'success') {
+							sentTo = trimmed.from;
+							values = { ...EMPTY };
+							errors = {};
+							return;
+						}
+						const contact =
+							result.type === 'failure'
+								? (result.data as { contact?: ContactResult } | undefined)?.contact
+								: undefined;
+						if (contact && contact.status !== 'sent') {
+							errors = { ...contact.errors };
+							failure = contact.error ?? '';
+							if (contact.status === 'invalid') return focusFirstError();
+						} else failure = SEND_FAILED;
+					};
+				}}
+			>
+				<div class="flex flex-col gap-2">
+					<label for="contact-from" class="field-label">Your email</label>
+					<div class="field">
+						<input
+							id="contact-from"
+							name="from"
+							type="email"
+							autocomplete="email"
+							required
+							maxlength={CONTACT_MAX.from}
+							placeholder="you@example.com"
+							bind:value={values.from}
+							onblur={() => onBlur('from')}
+							oninput={() => onInput('from')}
+							aria-invalid={errors.from ? 'true' : undefined}
+							aria-describedby={errors.from
+								? 'contact-from-help contact-from-error'
+								: 'contact-from-help'}
+							class="h-11 min-w-0 flex-1 border-0 bg-transparent p-0 text-lg placeholder:text-faint focus:ring-0 focus:outline-none"
+						/>
+					</div>
+					<p id="contact-from-help" class="text-base text-muted">
+						Only so I can reply to you. I use it for nothing else.
+					</p>
+					{@render error('from')}
+				</div>
+
+				<div class="flex flex-col gap-2">
+					<label for="contact-subject" class="field-label">Subject</label>
+					<div class="field">
+						<input
+							id="contact-subject"
+							name="subject"
+							type="text"
+							required
+							maxlength={hydrated ? undefined : CONTACT_MAX.subject}
+							placeholder="What's it about?"
+							bind:value={values.subject}
+							onblur={() => onBlur('subject')}
+							oninput={() => onInput('subject')}
+							aria-invalid={errors.subject ? 'true' : undefined}
+							aria-describedby={errors.subject ? 'contact-subject-error' : undefined}
+							class="h-11 min-w-0 flex-1 border-0 bg-transparent p-0 text-lg placeholder:text-faint focus:ring-0 focus:outline-none"
+						/>
+					</div>
+					{@render error('subject')}
+				</div>
+
+				<div class="flex flex-col gap-2">
+					<div class="flex items-baseline justify-between gap-3">
+						<label for="contact-message" class="field-label">Message</label>
+						<span
+							id="contact-count"
+							class={[
+								'text-sm tabular-nums',
+								count > CONTACT_MAX.message ? 'text-danger' : 'text-faint'
+							]}
+						>
+							{count.toLocaleString('en')} / {CONTACT_MAX.message.toLocaleString('en')}
+						</span>
+					</div>
+					<div class="field-area">
+						<!-- Without JavaScript the browser stops at 1,000; with it, longer text stays and is flagged. -->
+						<textarea
+							id="contact-message"
+							name="message"
+							required
+							rows="5"
+							maxlength={hydrated ? undefined : CONTACT_MAX.message}
+							placeholder="What's on your mind?"
+							bind:value={values.message}
+							onblur={() => onBlur('message')}
+							oninput={() => onInput('message')}
+							aria-invalid={errors.message ? 'true' : undefined}
+							aria-describedby={errors.message
+								? 'contact-message-error contact-count'
+								: 'contact-count'}
+							class="min-h-32 w-full flex-1 resize-y border-0 bg-transparent p-0 text-lg placeholder:text-faint focus:ring-0 focus:outline-none"
+						></textarea>
+					</div>
+					{@render error('message')}
+				</div>
+
+				<!-- For bots: hidden from people and screen readers; filling it in sends nothing. -->
+				<div class="sr-only" aria-hidden="true">
+					<label>Company <input name={HONEYPOT} tabindex="-1" autocomplete="off" /></label>
+				</div>
+
+				<!-- Turnstile's checkbox, only if it ever needs one. -->
+				<div bind:this={widget} class="empty:hidden"></div>
+
+				{#if failure}
+					<p role="alert" class="flex gap-2 text-danger">
+						<Icon name="alert" class="mt-1 shrink-0" />{failure}
+					</p>
+				{/if}
+
+				<div class="flex flex-wrap items-center gap-x-4 gap-y-3">
+					<button
+						type="submit"
+						data-eight-bit-cta
+						aria-disabled={hydrated && (!complete || sending) ? 'true' : undefined}
+						class="inline-flex min-h-11 items-center gap-2 rounded-md border-2 border-accent bg-accent px-6 text-lg font-medium text-page hover:border-accent-hover hover:bg-accent-hover aria-disabled:cursor-not-allowed aria-disabled:border-muted aria-disabled:bg-transparent aria-disabled:text-muted aria-disabled:hover:border-muted aria-disabled:hover:bg-transparent"
+					>
+						{sending ? 'Sending…' : 'Send'}
+					</button>
+					<p class="hidden meta js:block">Spam check by Cloudflare Turnstile.</p>
+				</div>
+			</form>
+		{/if}
+	</div>
 </section>
