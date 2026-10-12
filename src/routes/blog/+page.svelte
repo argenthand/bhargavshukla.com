@@ -2,7 +2,7 @@
 	import { resolve } from '$app/paths';
 	import { replaceState } from '$app/navigation';
 	import { page } from '$app/state';
-	import { Icon, Seo, motionMs, titleTransition, site } from '$lib/site';
+	import { Icon, Seo, isLive, motionMs, titleTransition, site } from '$lib/site';
 	import { PostMeta, shownDate, yearOf } from '$lib/content';
 	import { cubicOut } from 'svelte/easing';
 	import { flip } from 'svelte/animate';
@@ -70,64 +70,67 @@
 		<p class="mt-2 standfirst">{site.description}</p>
 	</div>
 
-	<!-- Without JavaScript this is a plain GET form; with it, filtering is instant. -->
-	<form
-		method="get"
-		class="flex flex-col gap-5 md:gap-4"
-		onsubmit={(event) => event.preventDefault()}
-	>
-		<div class="flex flex-col gap-1">
-			<label for="q" class="label-muted"> Search titles </label>
-			<div class="field">
-				<Icon name="search" size={18} class="text-muted" />
-				<input
-					id="q"
-					name="q"
-					type="search"
-					placeholder="e.g. delegation"
-					bind:value={q}
-					class="h-11 min-w-0 flex-1 border-0 bg-transparent p-0 text-lg placeholder:text-faint focus:ring-0 focus:outline-none"
-				/>
+	<!-- Nothing to search or filter until there is a post. -->
+	{#if data.posts.length > 0}
+		<!-- Without JavaScript this is a plain GET form; with it, filtering is instant. -->
+		<form
+			method="get"
+			class="flex flex-col gap-5 md:gap-4"
+			onsubmit={(event) => event.preventDefault()}
+		>
+			<div class="flex flex-col gap-1">
+				<label for="q" class="label-muted"> Search titles </label>
+				<div class="field">
+					<Icon name="search" size={18} class="text-muted" />
+					<input
+						id="q"
+						name="q"
+						type="search"
+						placeholder="e.g. delegation"
+						bind:value={q}
+						class="h-11 min-w-0 flex-1 border-0 bg-transparent p-0 text-lg placeholder:text-faint focus:ring-0 focus:outline-none"
+					/>
+				</div>
 			</div>
-		</div>
 
-		<!-- Phone: a native select. -->
-		<div class="flex flex-col gap-1 md:hidden">
-			<label for="cat" class="label-muted"> Category </label>
-			<div class="relative flex items-center">
-				<select id="cat" name="cat" bind:value={cat} class="select-field">
-					<option value="">All</option>
-					{#each data.categories as category (category.slug)}
-						<option value={category.slug}>{category.name}</option>
-					{/each}
-				</select>
-				<Icon
-					name="chevron-down"
-					size={18}
-					class="pointer-events-none absolute right-4 text-muted"
-				/>
+			<!-- Phone: a native select. -->
+			<div class="flex flex-col gap-1 md:hidden">
+				<label for="cat" class="label-muted"> Category </label>
+				<div class="relative flex items-center">
+					<select id="cat" name="cat" bind:value={cat} class="select-field">
+						<option value="">All</option>
+						{#each data.categories as category (category.slug)}
+							<option value={category.slug}>{category.name}</option>
+						{/each}
+					</select>
+					<Icon
+						name="chevron-down"
+						size={18}
+						class="pointer-events-none absolute right-4 text-muted"
+					/>
+				</div>
 			</div>
-		</div>
 
-		<!-- md+: underlined filter links. With JavaScript they filter in place; without, they load the URL. -->
-		<nav aria-label="Filter by category" class="-ml-2.5 hidden flex-wrap gap-1 md:flex">
-			{#each [{ slug: '', name: 'All' }, ...data.categories] as category (category.slug)}
-				<!-- eslint-disable svelte/no-navigation-without-resolve -- catHref() starts from resolve('/blog') -->
-				<a
-					href={catHref(category.slug)}
-					aria-current={cat === category.slug ? 'true' : undefined}
-					onclick={(event) => {
-						event.preventDefault();
-						cat = category.slug;
-					}}
-					class="filter-button"
-				>
-					{category.name}
-				</a>
-				<!-- eslint-enable svelte/no-navigation-without-resolve -->
-			{/each}
-		</nav>
-	</form>
+			<!-- md+: underlined filter links. With JavaScript they filter in place; without, they load the URL. -->
+			<nav aria-label="Filter by category" class="-ml-2.5 hidden flex-wrap gap-1 md:flex">
+				{#each [{ slug: '', name: 'All' }, ...data.categories] as category (category.slug)}
+					<!-- eslint-disable svelte/no-navigation-without-resolve -- catHref() starts from resolve('/blog') -->
+					<a
+						href={catHref(category.slug)}
+						aria-current={cat === category.slug ? 'true' : undefined}
+						onclick={(event) => {
+							event.preventDefault();
+							cat = category.slug;
+						}}
+						class="filter-button"
+					>
+						{category.name}
+					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
+				{/each}
+			</nav>
+		</form>
+	{/if}
 
 	{#if filtered.length === 0}
 		<div role="status">
@@ -135,9 +138,14 @@
 				{data.degraded
 					? "Posts can't load right now. Try again in a minute."
 					: data.posts.length === 0
-						? 'Nothing published yet.'
+						? 'No posts yet.'
 						: 'No posts match those filters.'}
 			</p>
+			{#if !data.degraded && data.posts.length === 0 && isLive('/asides')}
+				<p class="mt-2 body-copy">
+					Short notes are in <a href={resolve('/asides')} class="link-cta">Asides</a>.
+				</p>
+			{/if}
 			{#if data.posts.length > 0}
 				<button type="button" onclick={clear} class="mt-2 link-cta"> Clear filters </button>
 			{/if}

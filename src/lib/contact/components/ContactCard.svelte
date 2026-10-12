@@ -315,7 +315,7 @@
 					type="submit"
 					data-eight-bit-cta
 					aria-disabled={hydrated && (!complete || sending) ? 'true' : undefined}
-					class="inline-flex min-h-11 items-center gap-2 rounded-full bg-accent px-6 text-lg font-medium text-page hover:bg-accent-hover aria-disabled:opacity-40 aria-disabled:hover:bg-accent"
+					class="inline-flex min-h-11 items-center gap-2 rounded-full bg-accent px-6 text-lg font-medium text-page hover:bg-accent-hover aria-disabled:bg-chip aria-disabled:text-muted aria-disabled:hover:bg-chip"
 				>
 					{sending ? 'Sending…' : 'Send'}
 				</button>

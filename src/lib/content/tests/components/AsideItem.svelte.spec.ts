@@ -50,6 +50,16 @@ describe('the stream', () => {
 		expect(container.querySelector('[data-clamped]')).toBeNull();
 	});
 
+	it('keeps lines of a code block in view when text above it fills the clamp', async () => {
+		const code = `<div class="code-block"><pre style="line-height: 20px">${'line\n'.repeat(30)}</pre></div>`;
+		const { container } = render(AsideItem, { aside: aside(LONG.slice(0, 8 * 40) + code) });
+		await expect.poll(() => readMore(container)).toBeTruthy();
+		const body = container.querySelector<HTMLElement>('[data-clamped]')!;
+		const pre = body.querySelector('pre')!;
+		const shown = body.getBoundingClientRect().bottom - pre.getBoundingClientRect().top;
+		expect(shown).toBeGreaterThanOrEqual(6 * 20);
+	});
+
 	it('cuts a long quote, caption and all', async () => {
 		const { container } = render(AsideItem, {
 			aside: aside(LONG, { kind: 'quote', sourceAuthor: 'Someone' })
