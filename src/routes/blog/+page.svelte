@@ -79,7 +79,7 @@
 			onsubmit={(event) => event.preventDefault()}
 		>
 			<div class="flex flex-col gap-1">
-				<label for="q" class="label-muted"> Search titles </label>
+				<label for="q" class="sr-only"> Search titles </label>
 				<div class="field">
 					<Icon name="search" size={18} class="text-muted" />
 					<input
@@ -95,7 +95,7 @@
 
 			<!-- Phone: a native select. -->
 			<div class="flex flex-col gap-1 md:hidden">
-				<label for="cat" class="label-muted"> Category </label>
+				<label for="cat" class="field-label"> Category </label>
 				<div class="relative flex items-center">
 					<select id="cat" name="cat" bind:value={cat} class="select-field">
 						<option value="">All</option>

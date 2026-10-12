@@ -69,7 +69,7 @@
 
 		<!-- Phone: a native select. -->
 		<div class="flex flex-col gap-1 md:hidden">
-			<label for="kind" class="label-muted"> Kind </label>
+			<label for="kind" class="field-label"> Kind </label>
 			<div class="relative flex items-center">
 				<select
 					id="kind"

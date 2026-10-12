@@ -34,6 +34,10 @@
 @utility label-muted {
 	@apply label text-muted;
 }
+/* The label above a form field: sentence case, ink, no small caps. */
+@utility field-label {
+	@apply text-base font-medium text-ink;
+}
 @utility section-heading {
 	@apply label text-faint;
 }
@@ -123,7 +127,7 @@
 	@apply min-h-11 items-center gap-2 rounded-full bg-fill px-4;
 }
 @utility field {
-	@apply flex pill focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent;
+	@apply flex min-h-11 items-center gap-2 rounded-md bg-fill px-3.5 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent;
 	/* An input with an error (#135): the danger outline, focused or not. */
 	&:has([aria-invalid='true']) {
 		outline: 2px solid var(--color-danger);
@@ -132,10 +136,10 @@
 }
 /* `field` for a textarea (#135). */
 @utility field-area {
-	@apply field rounded-2xl py-3;
+	@apply field py-3;
 }
 @utility select-field {
-	@apply h-11 w-full appearance-none rounded-full border-0 bg-fill bg-none py-0 pr-10 pl-4 text-lg focus:ring-0;
+	@apply h-11 w-full appearance-none rounded-md border-0 bg-fill bg-none py-0 pr-10 pl-3.5 text-lg focus:ring-0;
 }
 @utility chip {
 	@apply inline-flex items-center rounded-md bg-chip px-1.5;

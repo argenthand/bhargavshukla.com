@@ -98,6 +98,74 @@ async function submit(formData = new FormData()) {
 	return { cancel, after, formData };
 }
 
+describe('closed and open (#190)', () => {
+	// Below md, with JavaScript, the card starts closed; the page's CSS does the hiding, so these
+	// check the state it keys off: the body's class and the buttons' aria-expanded.
+	const body = (q: (s: string) => HTMLElement) => q('#contact-body');
+	const hidden = 'max-md:js:hidden';
+	const opener = (q: (s: string) => HTMLElement) => q('button[aria-controls=contact-body]');
+
+	afterEach(() => history.replaceState(null, '', location.pathname));
+
+	it('starts closed, with one button that opens it', async () => {
+		const { q } = await card();
+		expect(body(q).classList.contains(hidden)).toBe(true);
+		expect(opener(q).getAttribute('aria-expanded')).toBe('false');
+		opener(q).click();
+		await tick();
+		expect(body(q).classList.contains(hidden)).toBe(false);
+		expect(opener(q).getAttribute('aria-expanded')).toBe('true');
+	});
+
+	it('closes again with Close, keeping what was typed', async () => {
+		const { q, type, field } = await card();
+		opener(q).click();
+		await tick();
+		await type('subject', 'Hello');
+		opener(q).click();
+		await tick();
+		expect(body(q).classList.contains(hidden)).toBe(true);
+		expect(field('subject').value).toBe('Hello');
+	});
+
+	it('opens for a click on the header’s Send a message link', async () => {
+		const { q } = await card();
+		const link = document.createElement('a');
+		link.href = '#contact';
+		document.body.append(link);
+		link.click();
+		await tick();
+		link.remove();
+		expect(body(q).classList.contains(hidden)).toBe(false);
+	});
+
+	it('opens when the page loads at #contact', async () => {
+		history.replaceState(null, '', '#contact');
+		const { q } = await card();
+		expect(body(q).classList.contains(hidden)).toBe(false);
+	});
+
+	it('opens when the page comes back from a post without JavaScript', async () => {
+		page.form = { contact: { status: 'sent', from: GOOD.from } };
+		const { q } = await card();
+		expect(body(q).classList.contains(hidden)).toBe(false);
+	});
+});
+
+describe('the email field', () => {
+	it('says what the address is for, and keeps saying it beside an error', async () => {
+		const { q, type, leave, field } = await card();
+		const help = 'Only so I can reply to you. I use it for nothing else.';
+		expect(q('#contact-from-help').textContent?.trim()).toBe(help);
+		expect(field('from').getAttribute('aria-describedby')).toBe('contact-from-help');
+		await type('from', 'nope');
+		await leave('from');
+		expect(field('from').getAttribute('aria-describedby')).toBe(
+			'contact-from-help contact-from-error'
+		);
+	});
+});
+
 describe('checking a field', () => {
 	it('checks a field when it is left, but leaves an empty one for Send', async () => {
 		const { type, leave, text } = await card();
@@ -299,7 +367,7 @@ describe('the answer', () => {
 		const { q, text, field } = await sent({ type: 'success' });
 		q<HTMLAnchorElement>('a[href$="#contact"]').click();
 		await tick();
-		expect(text()).toContain('Send me a message');
+		expect(text()).toContain('Send a message');
 		expect(field('message').value).toBe('');
 	});
 });
