@@ -191,10 +191,17 @@ describe('the URL', () => {
 });
 
 describe('when there are no posts', () => {
-	it('says nothing is published yet, with nothing to clear', () => {
+	it('says there are no posts yet and points to Asides, with nothing to clear', () => {
 		const { view } = blog('', { posts: [] });
-		expect(view.container.textContent).toContain('Nothing published yet.');
+		expect(view.container.textContent).toContain('No posts yet.');
+		expect(view.container.querySelector('a[href="/asides"]')?.textContent).toBe('Asides');
 		expect(view.container.querySelector('button.link-cta')).toBeNull();
+	});
+
+	it('hides the search and the filters', () => {
+		const { view } = blog('', { posts: [] });
+		expect(view.container.querySelector('input[type="search"]')).toBeNull();
+		expect(view.container.querySelector('nav[aria-label="Filter by category"]')).toBeNull();
 	});
 
 	it('says the posts can’t load when the CMS is down', () => {

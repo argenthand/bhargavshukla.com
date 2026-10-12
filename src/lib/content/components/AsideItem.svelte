@@ -23,12 +23,25 @@
 
 	// The stream cuts a body taller than `aside-clamp` allows; without JavaScript (no `.js` class)
 	// nothing is cut and no link shows. Re-measured when the width, and so the wrapping, changes.
+	// A code block keeps CODE_PREVIEW_LINES lines of code in view even when text above it uses up
+	// the clamp, so the cut never leaves one faded line.
+	const CODE_PREVIEW_LINES = 6;
 	let body = $state<HTMLElement>();
 	let cut = $state(false);
 	$effect(() => {
 		if (standalone || !body) return;
 		const el = body;
-		const measure = () => (cut = el.scrollHeight > el.clientHeight);
+		const measure = () => {
+			el.style.maxHeight = '';
+			const pre = el.querySelector('.code-block pre');
+			if (pre) {
+				const top = pre.getBoundingClientRect().top - el.getBoundingClientRect().top;
+				const lineHeight = parseFloat(getComputedStyle(pre).lineHeight) || 0;
+				const wanted = top + CODE_PREVIEW_LINES * lineHeight;
+				if (wanted > el.clientHeight) el.style.maxHeight = `${wanted}px`;
+			}
+			cut = el.scrollHeight > el.clientHeight;
+		};
 		measure();
 		const observer = new ResizeObserver(measure);
 		observer.observe(el);
