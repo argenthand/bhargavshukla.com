@@ -30,6 +30,9 @@
 		var(--container-article) + var(--spacing-article-gap) + var(--spacing-toc)
 	); /* header and cover span text + ToC: max-w-article-wide */
 	--spacing-resume-label: calc(var(--spacing) * 36); /* the resume's skill-group label column */
+	--spacing-aside-clamp: calc(
+		var(--text-lg) * var(--leading-relaxed) * 8
+	); /* 8 lines of an aside's text in the stream (#185): max-h-aside-clamp */
 	--spacing-tab-bar: calc(var(--spacing) * 15); /* the phone tab bar, above the safe area */
 
 	/* Quiet (#77): faint shadows instead of the lines under the sticky phone header and above the

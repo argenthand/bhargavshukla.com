@@ -201,6 +201,17 @@
 	max-height: 80dvh; /* the ToC bottom sheet */
 }
 
+/* A long aside in the stream (#185): cut at 8 lines, and faded out if it was cut. Only with
+   JavaScript, which is what measures it; without, the aside shows whole. */
+@utility aside-clamp {
+	@variant js {
+		@apply max-h-aside-clamp overflow-hidden;
+	}
+}
+@utility aside-fade {
+	mask-image: linear-gradient(to bottom, black calc(100% - var(--spacing) * 14), transparent);
+}
+
 /* The default `transition` leaves out visibility, which a fade-out needs to hide the element too.
    Colour too, so a link that fades (the header name) still eases its hover colour. */
 @utility transition-fade {

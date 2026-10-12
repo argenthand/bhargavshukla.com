@@ -20,6 +20,14 @@ _Avoid_: article, blog post
 A short piece: a code snippet, a quote, a tip.
 _Avoid_: snippet, note
 
+**Series**:
+An ordered set of posts meant to be read in sequence.
+_Avoid_: multi-part post, collection
+
+**Part**:
+A post's place in its series.
+_Avoid_: episode, chapter
+
 **Section**:
 One of the site's top-level areas, each a tab in the nav: Writing, Asides, Resume.
 _Avoid_: area, tab
