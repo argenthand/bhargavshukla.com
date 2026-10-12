@@ -29,7 +29,7 @@ const robots = () => document.head.querySelector<HTMLMetaElement>('meta[name=rob
 describe('a 404', () => {
 	it('says the page isn’t here, in the label and the heading', () => {
 		const view = render(ErrorPage);
-		expect(view.container.textContent).toContain('404 · Not found');
+		expect(view.container.textContent).toContain('404, Not found');
 		expect(view.container.querySelector('h1')!.textContent).toBe("This page isn't here");
 	});
 
@@ -79,7 +79,7 @@ describe('a server error', () => {
 		page.status = 500;
 		page.url = new URL('https://site.test/blog/a?x=1');
 		const view = render(ErrorPage);
-		expect(view.container.textContent).toContain('500 · Server error');
+		expect(view.container.textContent).toContain('500, Server error');
 		expect(view.container.querySelector('h1')!.textContent).toBe('Something broke on my end');
 		const retry = [...view.container.querySelectorAll('a')].find((a) =>
 			a.textContent?.includes('Try again')

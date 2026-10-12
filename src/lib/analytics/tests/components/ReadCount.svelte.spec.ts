@@ -1,4 +1,4 @@
-// "· 1.2K reads" (#87): holds its space while the count loads and when there is none, and counts
+// "1.2K reads" (#87): holds its space while the count loads and when there is none, and counts
 // the read and the reading time only on the page that asks (`track`).
 
 import { afterEach, describe, expect, it, vi } from 'vitest';

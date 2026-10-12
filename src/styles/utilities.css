@@ -25,21 +25,26 @@
 @utility meta {
 	@apply text-sm text-muted;
 }
+/* Sentence case, no small caps or tracking (#192). `meta-label` is a category or kind inside a meta
+   line; `label` a heading for a small block; `section-heading` groups a list or a page's sections. */
 @utility label {
-	@apply text-xs font-semibold tracking-widest uppercase;
+	@apply text-base font-medium;
 }
-@utility label-accent {
-	@apply label text-accent;
+@utility label-ink {
+	@apply label text-ink;
 }
 @utility label-muted {
 	@apply label text-muted;
+}
+@utility meta-label {
+	@apply text-sm font-medium text-ink;
 }
 /* The label above a form field: sentence case, ink, no small caps. */
 @utility field-label {
 	@apply text-base font-medium text-ink;
 }
 @utility section-heading {
-	@apply label text-faint;
+	@apply text-lg font-medium text-muted;
 }
 
 /* Lists of posts and asides: every item alike. */
@@ -147,15 +152,15 @@
 @utility surface {
 	@apply rounded-lg bg-panel;
 }
-/* Curly quotes in accent red around a quote's text: post blockquotes and quote asides (#77). */
+/* Curly quotes in faint grey around a quote's text: post blockquotes and quote asides (#77, #192). */
 @utility quote-marks {
 	& > p:first-child::before {
 		content: '“';
-		@apply text-accent;
+		@apply text-faint;
 	}
 	& > p:last-child::after {
 		content: '”';
-		@apply text-accent;
+		@apply text-faint;
 	}
 }
 

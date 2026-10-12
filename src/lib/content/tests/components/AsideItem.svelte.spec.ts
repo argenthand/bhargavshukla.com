@@ -33,6 +33,17 @@ afterEach(() => document.documentElement.classList.remove('js'));
 const readMore = (container: Element) =>
 	[...container.querySelectorAll('a')].find((a) => a.textContent?.includes('Read more'));
 
+describe('the meta line (#192)', () => {
+	it('shows the kind in ink and the date after it, with no middle dot', async () => {
+		const { container } = render(AsideItem, { aside: aside(SHORT, { kind: 'tip' }) });
+		await expect.element(container.querySelector('p')!).toBeVisible();
+		const meta = container.querySelector('p')!;
+		expect(meta.querySelector('.meta-label')?.textContent?.trim()).toBe('Tip');
+		expect(meta.textContent).not.toContain('·');
+		expect(meta.textContent).toContain('January 1, 2026');
+	});
+});
+
 describe('the stream', () => {
 	it('cuts a long body and links to the aside', async () => {
 		const { container } = render(AsideItem, { aside: aside(LONG) });

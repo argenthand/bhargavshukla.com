@@ -18,7 +18,7 @@
 			href={resolve('/blog/[slug]', { slug: first.slug })}
 			class="flex flex-col gap-2 surface p-5 hover:bg-chip"
 		>
-			<span class="flex items-center justify-between label-accent">
+			<span class="flex items-center justify-between label-ink">
 				Next up <Icon name="arrow-right" size={18} />
 			</span>
 			<span class="list-title">{first.title}</span>

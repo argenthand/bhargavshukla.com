@@ -4,7 +4,7 @@
 	import { formatDate, isoDay, shownDate } from '../format';
 	import type { PostSummary } from '../types';
 
-	// Category label · date, as in list rows, featured posts and the Next up card.
+	// Category label, date, as in list rows, featured posts and the Next up card.
 	// In draft preview (#57) an unpublished post says so instead of showing a date. With `reads`
 	// (the home page, #87), its read count follows the date.
 	let {
@@ -16,12 +16,11 @@
 	} = $props();
 </script>
 
-<span class="flex flex-wrap items-center gap-2">
+<span class="flex flex-wrap items-center gap-x-3.5 gap-y-1">
 	{#if post.category}
-		<span class="label-accent">
+		<span class="meta-label">
 			{post.category.name}
 		</span>
-		<span aria-hidden="true" class="text-muted">·</span>
 	{/if}
 	{#if post.draft}
 		<span class="meta">Not published</span>

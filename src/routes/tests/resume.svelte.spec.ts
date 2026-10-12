@@ -124,7 +124,7 @@ describe('on screen', () => {
 		expect(text()).toContain('Jan 2020 - Jan 2022');
 		expect(text()).toContain('TypeScript, Go');
 		expect(text()).toContain('BSc');
-		expect(text()).toContain('Cert · Body');
+		expect(text()).toContain('Cert, Body');
 	});
 
 	it('says when it was last updated, and offers Save as PDF', async () => {
