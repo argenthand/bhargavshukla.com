@@ -1,5 +1,5 @@
 <script lang="ts">
-	// "· 1.2K reads" at the end of a meta line (#87, RC-* on the canvas). With `track`, this page's
+	// "1.2K reads" at the end of a meta line (#87, RC-* on the canvas). With `track`, this page's
 	// read is also counted after 10 seconds of reading, and its reading time goes to analytics
 	// (#154). JavaScript only. The space is held while the count loads, and stays (empty) when
 	// there's none to show, so nothing on the page moves.
@@ -25,7 +25,6 @@
 </script>
 
 <span class={['hidden items-center gap-2 meta js:inline-flex', count === undefined && 'invisible']}>
-	<span aria-hidden="true">·</span>
 	{#if count === undefined}
 		<span aria-hidden="true">0 reads</span>
 	{:else}

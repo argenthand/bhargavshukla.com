@@ -18,8 +18,8 @@
 
 <div class="page max-w-3xl">
 	<section aria-labelledby="error-title" class="flex max-w-140 flex-col gap-4">
-		<span class="label-accent">
-			{page.status} · {label}
+		<span class="meta-label">
+			{page.status}, {label}
 		</span>
 		<h1 id="error-title" class="page-title">
 			{notFound ? "This page isn't here" : 'Something broke on my end'}

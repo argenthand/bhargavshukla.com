@@ -48,7 +48,7 @@
 		]}
 	>
 		{#if post.category}
-			<span class="label-accent">
+			<span class="meta-label">
 				{post.category.name}
 			</span>
 		{/if}
@@ -62,7 +62,7 @@
 		>
 			{post.title}
 		</h1>
-		<p class="flex flex-wrap items-center gap-2 meta">
+		<p class="flex flex-wrap items-center gap-x-3.5 gap-y-1 meta">
 			{#if post.draft}
 				<span>Not published</span>
 				<span class="draft-badge">Draft</span>
@@ -70,7 +70,6 @@
 				<time datetime={isoDay(shownDate(post))}>{formatDate(shownDate(post))}</time>
 			{/if}
 			{#if updated && !post.draft}
-				<span aria-hidden="true">·</span>
 				<time datetime={isoDay(updated)}>Updated {formatDate(updated)}</time>
 			{/if}
 			{#if !post.draft}

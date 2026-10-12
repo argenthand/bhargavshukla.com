@@ -188,7 +188,7 @@
 		{#if sentTo}
 			<div role="status" class="flex flex-col gap-3">
 				<h2 id="contact-title" class="flex items-center gap-2.5 text-2xl font-medium text-ink">
-					<Icon name="check" size={20} class="text-accent" />Message sent
+					<Icon name="check" size={20} />Message sent
 				</h2>
 				<p class="text-lg text-body">
 					Thanks. I'll reply to <strong class="font-semibold text-ink">{sentTo}</strong>, usually

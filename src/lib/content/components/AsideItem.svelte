@@ -1,5 +1,5 @@
 <script lang="ts">
-	// One aside (#18, F-asides-*): kind · date, optional title, the body styled by kind, quote
+	// One aside (#18, F-asides-*): kind, date, optional title, the body styled by kind, quote
 	// attribution, tags. In the stream the date links to the aside's own page; on that page it doesn't.
 	// In the stream a long body is cut short (#185) with a Read more link; on its page it's whole.
 	import { resolve } from '$app/paths';
@@ -52,11 +52,10 @@
 </script>
 
 <div class="flex flex-col gap-3">
-	<p class="flex flex-wrap items-center gap-2">
-		<span class="label-accent">
+	<p class="flex flex-wrap items-center gap-x-3.5 gap-y-1">
+		<span class="meta-label">
 			{kindLabel(aside.kind)}
 		</span>
-		<span aria-hidden="true" class="text-muted">·</span>
 		{#snippet date()}
 			<!-- In draft preview (#57) an unpublished aside says so instead of showing a date. -->
 			{#if aside.draft}

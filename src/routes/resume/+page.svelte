@@ -109,7 +109,7 @@
 				<div class="mb-5 print:mb-2">{@render companyHeading(employer)}</div>
 			{/if}
 			<div class="flex gap-3.5">
-				<span aria-hidden="true" class="mt-2.5 size-2 shrink-0 rounded-full bg-accent print:hidden"
+				<span aria-hidden="true" class="mt-2.5 size-2 shrink-0 rounded-full bg-faint print:hidden"
 				></span>
 				<div class="min-w-0 flex-1">
 					<div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
@@ -226,7 +226,7 @@
 							>
 								<span
 									><strong class="text-ink print:text-black">{item.credential}</strong>
-									· {item.school}</span
+									, {item.school}</span
 								>
 								{#if item.year}<span class="text-muted tabular-nums print:text-black"
 										>{item.year}</span
@@ -247,7 +247,7 @@
 							>
 								<span
 									><strong class="text-ink print:text-black">{cert.name}</strong
-									>{#if cert.issuer}{` · ${cert.issuer}`}{/if}</span
+									>{#if cert.issuer}{`, ${cert.issuer}`}{/if}</span
 								>
 								{#if cert.year}<span class="text-muted tabular-nums print:text-black"
 										>{cert.year}</span
